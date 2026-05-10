@@ -5,6 +5,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Snapshot now exposes `magicDNSSuffix` and `advertisedRoutes` (computed
+  from each peer's `AllowedIPs` minus its own `/32` and `/128`).
+- "Accept DNS" toggle shows the MagicDNS suffix as a right-side pill
+  (e.g. `hair-acoustic.ts.net`).
+- "Accept routes" toggle shows a pill with the count of routes the
+  tailnet currently advertises (e.g. `1 advertised`).
+- "Tailnet routes" submenu (read-only) at the bottom of the toggle
+  section: lists every `cidr → via peer-hostname` pair. Hidden — along
+  with its separator — when no peer advertises a route.
+
+### Changed
+- Menu order: Peers now appears **before** Exit node, and DNS appears
+  **before** Routes inside the toggle block (DNS is the more common
+  preference to flip).
+- "Tailscale Settings…" entry renamed to "Extension settings".
+- Empty exit-node submenu shows a clearer two-line hint: *No approved
+  exit nodes / Approve one in the admin console* (the daemon's netmap
+  only surfaces *approved* exit nodes, so an unapproved Redmi never
+  appears).
+
 ### Fixed
 - Disconnect now actually disconnects: switched the QuickMenuToggle to
   `toggleMode: true` and dispatch on the post-click `this.checked`. Previous
