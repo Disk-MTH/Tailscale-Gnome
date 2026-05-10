@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "Install",
-            "detail": "make install — copy to ~/.local/share/gnome-shell/extensions",
+            "detail": "Build schemas and copy the extension to ~/.local/share/gnome-shell/extensions",
             "type": "shell",
             "command": "make",
             "args": ["install"],
@@ -12,16 +12,8 @@
             "problemMatcher": []
         },
         {
-            "label": "Compile schemas",
-            "type": "shell",
-            "command": "make",
-            "args": ["schemas"],
-            "presentation": { "reveal": "silent", "panel": "shared" },
-            "problemMatcher": []
-        },
-        {
-            "label": "Pack release zip",
-            "detail": "make pack — produces tailscale-gnome@diskmth.fr.shell-extension.zip",
+            "label": "Pack release",
+            "detail": "Produce tailscale-gnome@diskmth.fr.shell-extension.zip for extensions.gnome.org",
             "type": "shell",
             "command": "make",
             "args": ["pack"],
@@ -29,27 +21,17 @@
             "problemMatcher": []
         },
         {
-            "label": "Reload extension (Xorg only)",
-            "detail": "Disable + enable. Wayland: log out / log in instead.",
-            "type": "shell",
-            "command": "gnome-extensions disable tailscale-gnome@diskmth.fr ; gnome-extensions enable tailscale-gnome@diskmth.fr",
-            "dependsOn": ["Install"],
-            "presentation": { "reveal": "always", "panel": "shared" },
-            "problemMatcher": []
-        },
-        {
-            "label": "Open extension preferences",
-            "detail": "Spawns the Adwaita prefs dialog. Re-opens fresh on every run.",
+            "label": "Open preferences",
+            "detail": "Spawn the Adwaita prefs dialog (re-reads prefs.js every time)",
             "type": "shell",
             "command": "gnome-extensions",
             "args": ["prefs", "tailscale-gnome@diskmth.fr"],
-            "isBackground": true,
             "presentation": { "reveal": "silent", "panel": "shared" },
             "problemMatcher": []
         },
         {
-            "label": "Tail GNOME Shell logs",
-            "detail": "journalctl filtered for our extension. Run in a dedicated terminal.",
+            "label": "Tail extension logs",
+            "detail": "journalctl --user -f filtered for tailscale + extension. Run in a dedicated terminal.",
             "type": "shell",
             "command": "journalctl --user -f /usr/bin/gnome-shell | grep --line-buffered -iE 'tailscale|extension'",
             "isBackground": true,
@@ -57,16 +39,8 @@
             "problemMatcher": []
         },
         {
-            "label": "Tail tailscaled logs",
-            "type": "shell",
-            "command": "journalctl -u tailscaled -f --since '5 minutes ago'",
-            "isBackground": true,
-            "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
-            "problemMatcher": []
-        },
-        {
             "label": "Launch nested GNOME Shell",
-            "detail": "Opens a new Wayland window running a fresh shell — best way to test without re-logging.",
+            "detail": "Open a fresh Wayland window running a child gnome-shell — fastest way to iterate without re-login",
             "type": "shell",
             "command": "dbus-run-session -- gnome-shell --nested --wayland",
             "isBackground": true,
@@ -74,56 +48,10 @@
             "problemMatcher": []
         },
         {
-            "label": "Validate JS syntax",
-            "detail": "node --check on every JS file.",
+            "label": "Validate syntax",
+            "detail": "node --check on every JS file",
             "type": "shell",
             "command": "for f in extension.js prefs.js lib/*.js; do printf '%-25s ' \"$f\"; node --check \"$f\" && echo OK; done",
-            "presentation": { "reveal": "always", "panel": "shared", "clear": true },
-            "problemMatcher": []
-        },
-        {
-            "label": "Validate gschema XML",
-            "type": "shell",
-            "command": "xmllint --noout schemas/*.gschema.xml && echo 'schema XML OK'",
-            "presentation": { "reveal": "always", "panel": "shared" },
-            "problemMatcher": []
-        },
-        {
-            "label": "Reset extension settings (dconf)",
-            "type": "shell",
-            "command": "make",
-            "args": ["reset"],
-            "presentation": { "reveal": "always", "panel": "shared" },
-            "problemMatcher": []
-        },
-        {
-            "label": "Uninstall",
-            "type": "shell",
-            "command": "make",
-            "args": ["uninstall"],
-            "presentation": { "reveal": "always", "panel": "shared" },
-            "problemMatcher": []
-        },
-        {
-            "label": "Clean build artifacts",
-            "type": "shell",
-            "command": "make",
-            "args": ["clean"],
-            "presentation": { "reveal": "silent", "panel": "shared" },
-            "problemMatcher": []
-        },
-        {
-            "label": "Tailscale: status --json (pretty)",
-            "detail": "Inspect the JSON the extension polls.",
-            "type": "shell",
-            "command": "tailscale status --json | jq .",
-            "presentation": { "reveal": "always", "panel": "shared", "clear": true },
-            "problemMatcher": []
-        },
-        {
-            "label": "Tailscale: debug prefs",
-            "type": "shell",
-            "command": "tailscale debug prefs | jq .",
             "presentation": { "reveal": "always", "panel": "shared", "clear": true },
             "problemMatcher": []
         }
