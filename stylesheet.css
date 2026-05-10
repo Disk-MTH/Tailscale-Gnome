@@ -1,0 +1,40 @@
+/* Tailscale GNOME — Quick Settings styling */
+
+/* Panel indicator: dim when "always visible" but Tailscale is stopped. */
+.tailscale-indicator-stopped StIcon {
+    opacity: 0.55;
+}
+
+/* Header status pill inside the toggle menu. */
+.tailscale-status-pill {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 9999px;
+    padding: 2px 10px;
+    font-size: 11pt;
+    margin-left: 6px;
+}
+
+.tailscale-status-pill.online {
+    background-color: rgba(64, 200, 120, 0.18);
+    color: #66d68a;
+}
+
+.tailscale-status-pill.offline {
+    background-color: rgba(220, 80, 80, 0.18);
+    color: #e07b7b;
+}
+
+/* Sub-menu node items: tag the active exit node. */
+.tailscale-exit-node-active StLabel {
+    font-weight: bold;
+}
+
+.tailscale-peer-offline StLabel {
+    opacity: 0.55;
+}
+
+/* "Copy IP" action shows a tiny IP under the hostname. */
+.tailscale-peer-ip {
+    font-size: 9pt;
+    opacity: 0.65;
+}

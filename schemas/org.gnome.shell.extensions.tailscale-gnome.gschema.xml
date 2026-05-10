@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="tailscale-gnome">
+    <schema id="org.gnome.shell.extensions.tailscale-gnome"
+            path="/org/gnome/shell/extensions/tailscale-gnome/">
+
+        <key name="poll-interval" type="i">
+            <default>5</default>
+            <range min="2" max="60"/>
+            <summary>Status poll interval (seconds)</summary>
+            <description>How often the extension calls `tailscale status --json`
+                to refresh its UI. Lower values feel snappier but slightly
+                increase CPU/wakeups.</description>
+        </key>
+
+        <key name="show-indicator" type="b">
+            <default>true</default>
+            <summary>Show the panel indicator icon</summary>
+            <description>If true, a small Tailscale icon appears next to the
+                Wi-Fi indicator while Tailscale is connected.</description>
+        </key>
+
+        <key name="show-subtitle" type="b">
+            <default>true</default>
+            <summary>Show subtitle text on the Quick Settings tile</summary>
+            <description>If true, the toggle subtitle shows the connected
+                account or current status.</description>
+        </key>
+
+        <key name="indicator-always-visible" type="b">
+            <default>false</default>
+            <summary>Always show the indicator icon</summary>
+            <description>If true, the panel indicator is shown even when
+                Tailscale is stopped.</description>
+        </key>
+
+        <key name="tailscale-binary" type="s">
+            <default>'tailscale'</default>
+            <summary>Path to the tailscale CLI binary</summary>
+            <description>Override if `tailscale` is not on PATH for the user
+                running gnome-shell.</description>
+        </key>
+
+    </schema>
+</schemalist>
