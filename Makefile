@@ -1,7 +1,7 @@
 # Tailscale GNOME Shell extension — build / install / package
 # Tested on GNOME Shell 46 → 50.
 
-UUID        := tailscale-gnome@diskmth.github.io
+UUID        := tailscale-gnome@diskmth.fr
 NAME        := Tailscale
 USER_EXTDIR := $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
 SCHEMA      := schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml

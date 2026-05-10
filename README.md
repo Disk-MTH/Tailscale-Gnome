@@ -44,7 +44,7 @@ cd tailscale-gnome
 make install
 # Wayland: log out / log in.
 # Xorg:    Alt+F2, type "r", press Enter.
-gnome-extensions enable tailscale-gnome@diskmth.github.io
+gnome-extensions enable tailscale-gnome@diskmth.fr
 ```
 
 To test without restarting your session:
@@ -59,14 +59,14 @@ dbus-run-session -- gnome-shell --nested --wayland
 
 ```bash
 make pack
-# produces tailscale-gnome@diskmth.github.io.shell-extension.zip
+# produces tailscale-gnome@diskmth.fr.shell-extension.zip
 ```
 
 This is the file you upload to <https://extensions.gnome.org/upload/>.
 
 ## Settings
 
-Open with `gnome-extensions prefs tailscale-gnome@diskmth.github.io` or click
+Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 **Tailscale Settings…** in the menu.
 
 | Key                       | Default       | Effect                                     |
