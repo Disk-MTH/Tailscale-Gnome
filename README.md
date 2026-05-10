@@ -29,12 +29,18 @@ another extension, the daemon).
 
 - GNOME Shell **46 – 50**
 - `tailscale` ≥ 1.70 on `PATH`
-- The user running gnome-shell must be the Tailscale **operator**, otherwise
-  state-changing commands need `sudo`. Set it once with:
+- **The user running gnome-shell must be the Tailscale operator.** Without
+  this, every state-changing call (`up`, `down`, `set`, `switch`) is rejected
+  by the daemon with "Access denied: …" — and worse, the CLI still exits 0,
+  so failures are silent. Set it once with:
 
   ```bash
   sudo tailscale set --operator=$USER
   ```
+
+  The extension detects the missing operator and shows a banner at the top of
+  the menu with the exact command to run; clicking it copies it to your
+  clipboard.
 
 ## Install (from source)
 
@@ -79,11 +85,33 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 
 ## Debugging
 
+Tail extension logs in a terminal:
+
 ```bash
-journalctl --user -f /usr/bin/gnome-shell | grep -i tailscale
+journalctl --user -f /usr/bin/gnome-shell | grep -iE 'tailscale|extension'
 ```
 
-Or open Looking Glass (`Alt+F2`, type `lg`, Enter) and inspect the extension.
+Or use the **Tail extension logs** task in VS Code (`Ctrl+Shift+P` → `Tasks: Run Task`).
+
+For interactive inspection, open Looking Glass with `Alt+F2`, type `lg`, press
+Enter. The `Errors` tab lists every error thrown by any extension since the
+shell started.
+
+Inspect what the extension is polling:
+
+```bash
+tailscale status --json | jq .          # state the UI binds to
+tailscale debug prefs   | jq .          # toggle states + OperatorUser
+tailscale switch --list                 # accounts (requires operator)
+```
+
+Iteration loop without logging out (Wayland-friendly):
+
+```bash
+make install
+dbus-run-session -- gnome-shell --nested --wayland
+# the nested shell loads the freshly installed code
+```
 
 ## Project layout
 
