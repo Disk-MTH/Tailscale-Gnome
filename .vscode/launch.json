@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run nested GNOME Shell (test extension)",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "dbus-run-session -- gnome-shell --nested --wayland 2>&1 | tee /tmp/gnome-shell-nested.log",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Open extension preferences",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "gnome-extensions prefs tailscale-gnome@diskmth.fr",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Install"
+        }
+    ]
+}

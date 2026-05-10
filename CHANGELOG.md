@@ -3,6 +3,26 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- prefs.js used the wrong resource path for `ExtensionPreferences`
+  (`resource:///org/gnome/shell/extensions/prefs.js`); switched to the
+  canonical `resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js`
+  so the preferences dialog opens on GNOME 46–50.
+
+### Changed
+- UUID renamed `tailscale-gnome@diskmth.github.io` →
+  `tailscale-gnome@diskmth.fr`. Re-login required to switch.
+
+### Added
+- `.vscode/` workspace config: tasks (install / pack / reload / nested
+  shell / log tail / prefs / syntax-check / dconf reset / uninstall /
+  status JSON / debug prefs), launch configurations, recommended
+  extensions, GJS-aware editor settings.
+- `jsconfig.json` for IntelliSense.
+- `.editorconfig` for consistent indentation across editors.
+
 ## [0.1.0] - 2026-05-10
 
 ### Added

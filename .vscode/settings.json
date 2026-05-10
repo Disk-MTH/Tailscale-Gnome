@@ -1,0 +1,47 @@
+{
+    // GJS uses ESM with `gi://` and `resource://` imports. They aren't
+    // resolvable on disk, so silence module-resolution warnings.
+    "javascript.validate.enable": true,
+    "javascript.suggest.autoImports": false,
+    "javascript.preferences.importModuleSpecifier": "relative",
+
+    "files.associations": {
+        "*.gschema.xml": "xml",
+        "*.gresource.xml": "xml"
+    },
+
+    "[javascript]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false
+    },
+    "[xml]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+    "[json][jsonc]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+
+    "files.exclude": {
+        "**/.git": true,
+        "**/schemas/gschemas.compiled": true,
+        "**/*.shell-extension.zip": true
+    },
+
+    "search.exclude": {
+        "**/schemas/gschemas.compiled": true,
+        "**/*.shell-extension.zip": true,
+        "**/build": true,
+        "**/dist": true
+    },
+
+    // Light "intellisense" hint for GJS resource imports.
+    "javascript.implicitProjectConfig.target": "ESNext",
+    "javascript.implicitProjectConfig.module": "ESNext"
+}

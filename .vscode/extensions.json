@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "redhat.vscode-xml",
+        "EditorConfig.EditorConfig",
+        "esbenp.prettier-vscode",
+        "tamasfe.even-better-toml",
+        "ms-vscode.makefile-tools"
+    ]
+}

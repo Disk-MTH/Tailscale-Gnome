@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "target": "ESNext",
+        "moduleResolution": "node",
+        "checkJs": false,
+        "noEmit": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "strict": false,
+        "lib": ["ESNext"]
+    },
+    "include": ["extension.js", "prefs.js", "lib/**/*.js"],
+    "exclude": ["node_modules", "build", "dist", "schemas/gschemas.compiled"]
+}
