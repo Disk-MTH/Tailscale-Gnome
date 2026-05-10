@@ -1,4 +1,4 @@
-/* Tailscale GNOME — Quick Settings styling */
+/* Tailscale GNOME: Quick Settings styling */
 
 /* Panel indicator: dim when "always visible" but Tailscale is stopped. */
 .tailscale-indicator-stopped StIcon {

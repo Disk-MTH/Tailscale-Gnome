@@ -40,7 +40,7 @@
         },
         {
             "label": "Launch nested GNOME Shell",
-            "detail": "Open a fresh Wayland window running a child gnome-shell — fastest way to iterate without re-login",
+            "detail": "Open a fresh Wayland window running a child gnome-shell. Fastest way to iterate without re-login",
             "type": "shell",
             "command": "dbus-run-session -- gnome-shell --nested --wayland",
             "isBackground": true,

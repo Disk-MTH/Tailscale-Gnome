@@ -26,18 +26,31 @@
                 account or current status.</description>
         </key>
 
-        <key name="indicator-always-visible" type="b">
-            <default>false</default>
-            <summary>Always show the indicator icon</summary>
-            <description>If true, the panel indicator is shown even when
-                Tailscale is stopped.</description>
-        </key>
-
         <key name="tailscale-binary" type="s">
             <default>'tailscale'</default>
             <summary>Path to the tailscale CLI binary</summary>
             <description>Override if `tailscale` is not on PATH for the user
                 running gnome-shell.</description>
+        </key>
+
+        <key name="shortcut-toggle-tailscale" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: connect / disconnect Tailscale</summary>
+        </key>
+
+        <key name="shortcut-toggle-exit-node" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: toggle automatic exit node</summary>
+        </key>
+
+        <key name="shortcut-show-menu" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: open the Tailscale quick settings menu</summary>
+        </key>
+
+        <key name="shortcut-copy-self-ip" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: copy this device's Tailscale IP to clipboard</summary>
         </key>
 
     </schema>
