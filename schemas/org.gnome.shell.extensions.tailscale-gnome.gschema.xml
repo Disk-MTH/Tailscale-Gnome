@@ -53,5 +53,10 @@
             <summary>Shortcut: copy this device's Tailscale IP to clipboard</summary>
         </key>
 
+        <key name="shortcut-open-admin-panel" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: open the Tailscale admin console in a browser</summary>
+        </key>
+
     </schema>
 </schemalist>

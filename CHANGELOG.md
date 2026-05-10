@@ -5,6 +5,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Critical.** Selecting any exit node (Automatic or a specific peer)
+  crashed gnome-shell and logged the user out. Root cause: the persistent
+  `_allowLanRow` ToggleRow was destroyed by `PopupMenuBase.removeAll()`
+  during the next render, then re-attached as a disposed actor.
+  `_renderExitNodes` now builds a fresh ToggleRow each pass.
+
+### Added
+- "Admin panel" button in the Quick Settings menu, paired on the same
+  row as "Extension settings" at the bottom of the menu. Opens
+  `https://login.tailscale.com/admin/machines` via the default browser.
+- New `shortcut-open-admin-panel` GSettings key + Shortcuts row in
+  preferences (unbound by default).
+- Right-side pill accessory on the Peers, Exit node, Tailnet routes
+  and Funnel submenus showing the count or current selection at a
+  glance, reusing the same `tailscale-status-pill` styling as the
+  toggle accessories.
+
+### Changed
+- "Approve one in admin console" hint removed from the empty
+  exit-nodes case (the user now reaches the admin console via the
+  paired button at the bottom of the menu).
+- Operator status icon no longer carries the green `success` CSS
+  class when set; it now renders in the theme's neutral symbolic
+  colour, matching the warning icon's black-and-white look.
+
 ### Added
 - **Funnel support.** Snapshot now exposes the active funnels parsed from
   `tailscale funnel status --json`. The Quick Settings menu shows a

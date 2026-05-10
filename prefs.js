@@ -214,14 +214,13 @@ class OperatorRow extends Adw.ActionRow {
             return;
         }
         if (user) {
-            // object-select-symbolic renders as a clean checkmark in Adwaita,
-            // unlike emblem-ok-symbolic which is a small badge-style tick.
+            // object-select-symbolic renders as a clean checkmark in Adwaita
+            // and stays in the theme's neutral symbolic colour (matches the
+            // black/white style of the warning icon, just without the tint).
             this._statusIcon.icon_name = 'object-select-symbolic';
-            this._statusIcon.add_css_class?.('success');
             this.subtitle = _fmt(_('Set to "%s". The extension can control Tailscale.'), user);
             this._copyButton.visible = false;
         } else {
-            this._statusIcon.remove_css_class?.('success');
             this._statusIcon.icon_name = 'dialog-warning-symbolic';
             this.subtitle = _('Not set. Without it, every up/down/set call is silently denied.');
             this._copyButton.visible = true;
@@ -440,10 +439,11 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         page.add(shortcutsGroup);
 
         for (const def of [
-            { key: 'shortcut-toggle-tailscale', title: _('Connect / disconnect Tailscale') },
-            { key: 'shortcut-toggle-exit-node', title: _('Toggle automatic exit node') },
-            { key: 'shortcut-show-menu',        title: _('Open the Tailscale menu') },
-            { key: 'shortcut-copy-self-ip',     title: _("Copy this device's Tailscale IP") },
+            { key: 'shortcut-toggle-tailscale',  title: _('Connect / disconnect Tailscale') },
+            { key: 'shortcut-toggle-exit-node',  title: _('Toggle automatic exit node') },
+            { key: 'shortcut-show-menu',         title: _('Open the Tailscale menu') },
+            { key: 'shortcut-copy-self-ip',      title: _("Copy this device's Tailscale IP") },
+            { key: 'shortcut-open-admin-panel',  title: _('Open the Tailscale admin console') },
         ]) {
             shortcutsGroup.add(new ShortcutRow({ ...def, settings }));
         }

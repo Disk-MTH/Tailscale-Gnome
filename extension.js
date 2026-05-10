@@ -1,6 +1,7 @@
 // Tailscale GNOME entry point.
 // GNOME Shell 46+ (ESM extensions API).
 
+import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
@@ -19,7 +20,10 @@ const SHORTCUT_KEYS = [
     'shortcut-toggle-exit-node',
     'shortcut-show-menu',
     'shortcut-copy-self-ip',
+    'shortcut-open-admin-panel',
 ];
+
+const ADMIN_URL = 'https://login.tailscale.com/admin/machines';
 
 export default class TailscaleGnomeExtension extends Extension {
     enable() {
@@ -127,8 +131,18 @@ export default class TailscaleGnomeExtension extends Extension {
                 St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, ip);
                 Main.notify('Tailscale', `Copied ${ip} to clipboard`);
             };
+        case 'shortcut-open-admin-panel':
+            return () => openAdminPanel();
         default:
             return null;
         }
+    }
+}
+
+export function openAdminPanel() {
+    try {
+        Gio.AppInfo.launch_default_for_uri(ADMIN_URL, null);
+    } catch (e) {
+        Main.notify('Tailscale', `Could not open ${ADMIN_URL}`);
     }
 }
