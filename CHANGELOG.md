@@ -6,6 +6,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **Funnel support.** Snapshot now exposes the active funnels parsed from
+  `tailscale funnel status --json`. The Quick Settings menu shows a
+  read-only "Funnel" submenu (hidden when none are active) listing each
+  public URL and the local target it proxies; clicking a row copies the
+  URL. The preferences dialog gains a "Funnel" section with a port
+  spin-button to add a funnel and a remove button per active entry.
+  Wraps `tailscale funnel --bg --https=<port>` and `tailscale funnel
+  --https=<port> off`.
 - "Operator status" row at the top of the preferences dialog. Shows whether
   `tailscale debug prefs` reports an `OperatorUser`, with a one-click
   copy of the fix command when it's missing.
@@ -32,12 +40,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   was running on the old account, it is brought up again on the new one;
   if it was stopped, it stays stopped. Previously the daemon would
   reuse whatever state the new profile was last left in.
-- Preferences dialog reorganized:
-  Operator status, Service, Display (panel indicator + toggle subtitle),
-  Shortcuts, Advanced (poll interval + binary path).
+- Preferences dialog reorganized: Operator status, Display (panel
+  indicator + toggle subtitle), Funnel, Shortcuts, Advanced (Start at
+  boot + poll interval + binary path). The boot toggle moved into
+  Advanced because it's a one-time low-frequency setting.
+- Operator status row: when set, shows a clean checkmark
+  (`object-select-symbolic`) instead of the small `emblem-ok` badge,
+  and quotes the user name in the subtitle (`Set to "diskmth"...`).
+- Account submenu now uses the tailnet column (the email) as the row
+  title for both the collapsed preview and each account row, falling
+  back to the account column only when it differs (and showing it as
+  the subtitle). Accounts that logged in as a tagged-machine identity
+  no longer display their FQDN as the primary label.
+- Quick Settings toggle: when "Show subtitle" is off, the title actor
+  is repositioned to vertical center so it doesn't keep sitting where
+  the subtitle row used to be.
+- `switchAccount` now detects `loggedOut` / `NeedsLogin` after the
+  switch and dispatches `login()` instead of trying `up`. Silences the
+  spurious "Access denied" notification users saw when reconnecting to
+  a tailnet whose auth token had expired.
 - Removed the "Always visible" panel-indicator option (and the
   `indicator-always-visible` GSettings key). The icon now follows
   `show-indicator` and the running state.
+- Dropped the standalone "Service" preferences group; "Start Tailscale
+  at boot" now lives at the top of the Advanced section.
 - Extension description in `metadata.json` shortened to one sentence.
 - README rewritten in plainer style; repository URL updated to
   https://github.com/Disk-MTH/Tailscale-Gnome.

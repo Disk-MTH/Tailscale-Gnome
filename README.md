@@ -25,8 +25,12 @@ through 50, ESM-only, with proper async I/O and reactive rendering.
   routes (with route count), Shields up, and the SSH server.
 - Tailnet routes submenu showing every advertised CIDR. Hidden when
   Accept routes is off or no peer advertises one.
-- Account switcher that preserves your connection state across switches.
+- Account switcher that preserves your connection state across switches
+  and dispatches a fresh login automatically when the new profile's
+  auth has expired.
 - Login / logout entries.
+- Funnel section in preferences and a "Funnel" submenu in the Quick
+  Settings menu showing every active public URL.
 - Configurable polling interval.
 - Configurable keyboard shortcuts (toggle, exit node, open menu, copy IP).
 - Optional "Start Tailscale at boot" toggle in preferences.
@@ -82,13 +86,14 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | Group     | Setting                       | Default       | Effect                                       |
 | --------- | ----------------------------- | ------------- | -------------------------------------------- |
 | Operator  | (read-only status)            | n/a           | Reflects `OperatorUser` from `debug prefs`   |
-| Service   | Start Tailscale at boot       | system        | `systemctl enable/disable --now tailscaled`  |
 | Display   | Show panel indicator          | on            | Show the icon next to Wi-Fi while connected  |
 | Display   | Show subtitle on the toggle   | on            | Show account/status under the toggle title   |
+| Funnel    | Add / remove funnels          | n/a           | Wraps `tailscale funnel`                     |
 | Shortcuts | Connect / disconnect          | unbound       | Click row to capture keys                    |
 | Shortcuts | Toggle automatic exit node    | unbound       | Click row to capture keys                    |
 | Shortcuts | Open the Tailscale menu       | unbound       | Click row to capture keys                    |
 | Shortcuts | Copy this device's IP         | unbound       | Click row to capture keys                    |
+| Advanced  | Start Tailscale at boot       | system        | `systemctl enable/disable --now tailscaled`  |
 | Advanced  | Poll interval                 | 5             | Seconds between status polls (2 to 60)       |
 | Advanced  | tailscale binary              | `'tailscale'` | Override CLI path                            |
 

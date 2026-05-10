@@ -48,6 +48,29 @@ async function _operatorUser(binary) {
     }
 }
 
+async function _fetchFunnels(binary) {
+    const r = await _spawn([binary, 'funnel', 'status', '--json']);
+    if (!r.ok) return [];
+    try {
+        const j = JSON.parse(r.stdout);
+        const flagMap = j?.Funnel ?? j?.AllowFunnel ?? {};
+        const webMap  = j?.Web ?? {};
+        const out = [];
+        for (const key of Object.keys(flagMap)) {
+            if (!flagMap[key]) continue;
+            const m = key.match(/^(.+):(\d+)$/);
+            if (!m) continue;
+            const httpsPort = parseInt(m[2], 10);
+            const slash = webMap[key]?.Handlers?.['/'];
+            const target = slash?.Proxy || slash?.Text || '';
+            out.push({ host: m[1], httpsPort, target });
+        }
+        return out.sort((a, b) => a.httpsPort - b.httpsPort);
+    } catch {
+        return [];
+    }
+}
+
 async function _serviceEnabled() {
     const r = await _spawn(['systemctl', 'is-enabled', TAILSCALED_UNIT]);
     // systemctl is-enabled prints "enabled" / "disabled" / "static" / etc.
@@ -191,10 +214,14 @@ class OperatorRow extends Adw.ActionRow {
             return;
         }
         if (user) {
-            this._statusIcon.icon_name = 'emblem-ok-symbolic';
-            this.subtitle = _fmt(_('Set to %s. The extension can control Tailscale.'), user);
+            // object-select-symbolic renders as a clean checkmark in Adwaita,
+            // unlike emblem-ok-symbolic which is a small badge-style tick.
+            this._statusIcon.icon_name = 'object-select-symbolic';
+            this._statusIcon.add_css_class?.('success');
+            this.subtitle = _fmt(_('Set to "%s". The extension can control Tailscale.'), user);
             this._copyButton.visible = false;
         } else {
+            this._statusIcon.remove_css_class?.('success');
             this._statusIcon.icon_name = 'dialog-warning-symbolic';
             this.subtitle = _('Not set. Without it, every up/down/set call is silently denied.');
             this._copyButton.visible = true;
@@ -221,6 +248,88 @@ class OperatorRow extends Adw.ActionRow {
 /* -------------------------------------------------------------------------- */
 /*                           Service (boot) row                               */
 /* -------------------------------------------------------------------------- */
+
+// Manage Tailscale Funnels (public HTTPS exposure of a local service). Builds
+// a PreferencesGroup whose top row adds new funnels and whose subsequent rows
+// list active ones with a remove button each. Refreshes itself after every
+// add/remove.
+function _makeFunnelGroup(binary) {
+    const group = new Adw.PreferencesGroup({
+        title: _('Funnel'),
+        description: _('Expose a local service on the public internet via Tailscale. Anyone with the URL can reach the exposed port.'),
+    });
+
+    const dynamicRows = [];
+
+    const portSpin = new Gtk.SpinButton({
+        valign: Gtk.Align.CENTER,
+        adjustment: new Gtk.Adjustment({
+            lower: 1, upper: 65535, step_increment: 1, page_increment: 100,
+            value: 3000,
+        }),
+    });
+
+    const addRow = new Adw.ActionRow({
+        title: _('Add a funnel'),
+        subtitle: _('Local port to expose on https://<device>.<tailnet>.ts.net'),
+    });
+    addRow.add_suffix(portSpin);
+    const addButton = new Gtk.Button({
+        label: _('Add'),
+        valign: Gtk.Align.CENTER,
+        css_classes: ['suggested-action'],
+    });
+    addRow.add_suffix(addButton);
+    group.add(addRow);
+
+    const toast = (title) => {
+        group.get_root()?.add_toast?.(new Adw.Toast({ title, timeout: 4 }));
+    };
+
+    const refresh = async () => {
+        for (const r of dynamicRows) group.remove(r);
+        dynamicRows.length = 0;
+        const funnels = await _fetchFunnels(binary);
+        for (const f of funnels) {
+            const url = `https://${f.host}${f.httpsPort === 443 ? '' : `:${f.httpsPort}`}`;
+            const row = new Adw.ActionRow({
+                title: url,
+                subtitle: f.target ? _fmt(_('proxies %s'), f.target) : '',
+            });
+            const removeBtn = new Gtk.Button({
+                icon_name: 'user-trash-symbolic',
+                valign: Gtk.Align.CENTER,
+                css_classes: ['flat'],
+                tooltip_text: _('Remove this funnel'),
+            });
+            removeBtn.connect('clicked', async () => {
+                removeBtn.sensitive = false;
+                const r = await _spawn([binary, 'funnel', `--https=${f.httpsPort}`, 'off']);
+                if (!r.ok) toast(_('Could not remove funnel'));
+                refresh();
+            });
+            row.add_suffix(removeBtn);
+            group.add(row);
+            dynamicRows.push(row);
+        }
+    };
+
+    addButton.connect('clicked', async () => {
+        const port = portSpin.get_value_as_int();
+        addButton.sensitive = false;
+        const r = await _spawn([binary, 'funnel', '--bg', '--https=443', String(port)]);
+        addButton.sensitive = true;
+        if (!r.ok) {
+            const msg = (r.stderr || r.stdout).split('\n')[0]?.trim() || _('Could not add funnel');
+            toast(msg);
+            return;
+        }
+        refresh();
+    });
+
+    refresh();
+    return { group, refresh };
+}
 
 // Adw.SwitchRow is `final` in libadwaita 1.4+, so we can't subclass it. Build
 // one and wire the systemctl toggle externally instead.
@@ -299,13 +408,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         operatorGroup.add(operatorRow);
         page.add(operatorGroup);
 
-        /* ----------------------------- Service -------------------------- */
-        const serviceGroup = new Adw.PreferencesGroup({
-            title: _('Service'),
-        });
-        serviceGroup.add(_makeServiceRow());
-        page.add(serviceGroup);
-
         /* ----------------------------- Display -------------------------- */
         const displayGroup = new Adw.PreferencesGroup({
             title: _('Display'),
@@ -325,6 +427,10 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         settings.bind('show-subtitle', subtitleRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         displayGroup.add(subtitleRow);
+
+        /* ----------------------------- Funnel --------------------------- */
+        const { group: funnelGroup } = _makeFunnelGroup(binary);
+        page.add(funnelGroup);
 
         /* ---------------------------- Shortcuts ------------------------- */
         const shortcutsGroup = new Adw.PreferencesGroup({
@@ -347,6 +453,10 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             title: _('Advanced'),
         });
         page.add(advanced);
+
+        // Start at boot lives at the top of Advanced so the section stays
+        // a single, low-frequency settings block.
+        advanced.add(_makeServiceRow());
 
         const pollRow = new Adw.SpinRow({
             title: _('Poll interval'),
