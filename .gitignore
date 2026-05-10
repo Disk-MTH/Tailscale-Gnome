@@ -1,0 +1,20 @@
+# Compiled schema
+schemas/gschemas.compiled
+
+# Generated translations
+locale/*/LC_MESSAGES/*.mo
+
+# Packaged zip
+*.shell-extension.zip
+build/
+dist/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Node / misc
+node_modules/

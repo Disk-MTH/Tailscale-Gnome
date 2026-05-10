@@ -1,0 +1,16 @@
+{
+    "uuid": "tailscale-gnome@diskmth.github.io",
+    "name": "Tailscale",
+    "description": "Manage Tailscale from the GNOME Quick Settings panel: connect/disconnect, switch accounts, pick exit nodes, browse peers, toggle accept-routes / accept-dns / allow-lan / shields-up / SSH — all without touching the CLI. Auto-refreshes when state changes externally.",
+    "shell-version": [
+        "46",
+        "47",
+        "48",
+        "49",
+        "50"
+    ],
+    "url": "https://github.com/diskmth/tailscale-gnome",
+    "settings-schema": "org.gnome.shell.extensions.tailscale-gnome",
+    "gettext-domain": "tailscale-gnome",
+    "version-name": "0.1.0"
+}
