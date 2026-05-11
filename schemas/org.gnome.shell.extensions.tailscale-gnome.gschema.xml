@@ -19,13 +19,6 @@
                 Wi-Fi indicator while Tailscale is connected.</description>
         </key>
 
-        <key name="show-subtitle" type="b">
-            <default>true</default>
-            <summary>Show subtitle text on the Quick Settings tile</summary>
-            <description>If true, the toggle subtitle shows the connected
-                account or current status.</description>
-        </key>
-
         <key name="tailscale-binary" type="s">
             <default>'tailscale'</default>
             <summary>Path to the tailscale CLI binary</summary>

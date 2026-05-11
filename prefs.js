@@ -260,26 +260,21 @@ function _makeFunnelGroup(binary) {
 
     const dynamicRows = [];
 
-    const portSpin = new Gtk.SpinButton({
-        valign: Gtk.Align.CENTER,
-        adjustment: new Gtk.Adjustment({
-            lower: 1, upper: 65535, step_increment: 1, page_increment: 100,
-            value: 3000,
-        }),
+    // Use an EntryRow so the user types the port number directly.
+    // Gtk.SpinButton's +/- arrows make no sense for port selection.
+    const portEntry = new Adw.EntryRow({
+        title: _('Local port to expose'),
+        input_purpose: Gtk.InputPurpose.NUMBER,
+        text: '3000',
     });
 
-    const addRow = new Adw.ActionRow({
-        title: _('Add a funnel'),
-        subtitle: _('Local port to expose on https://<device>.<tailnet>.ts.net'),
-    });
-    addRow.add_suffix(portSpin);
     const addButton = new Gtk.Button({
         label: _('Add'),
         valign: Gtk.Align.CENTER,
         css_classes: ['suggested-action'],
     });
-    addRow.add_suffix(addButton);
-    group.add(addRow);
+    portEntry.add_suffix(addButton);
+    group.add(portEntry);
 
     const toast = (title) => {
         group.get_root()?.add_toast?.(new Adw.Toast({ title, timeout: 4 }));
@@ -303,9 +298,15 @@ function _makeFunnelGroup(binary) {
             });
             removeBtn.connect('clicked', async () => {
                 removeBtn.sensitive = false;
-                const r = await _spawn([binary, 'funnel', `--https=${f.httpsPort}`, 'off']);
-                if (!r.ok) toast(_('Could not remove funnel'));
-                refresh();
+                try {
+                    const r = await _spawn([binary, 'funnel', `--https=${f.httpsPort}`, 'off']);
+                    if (!r.ok) toast(_('Could not remove funnel'));
+                    await refresh();
+                } catch (e) {
+                    toast(`Error: ${e.message}`);
+                } finally {
+                    removeBtn.sensitive = true;
+                }
             });
             row.add_suffix(removeBtn);
             group.add(row);
@@ -314,16 +315,27 @@ function _makeFunnelGroup(binary) {
     };
 
     addButton.connect('clicked', async () => {
-        const port = portSpin.get_value_as_int();
-        addButton.sensitive = false;
-        const r = await _spawn([binary, 'funnel', '--bg', '--https=443', String(port)]);
-        addButton.sensitive = true;
-        if (!r.ok) {
-            const msg = (r.stderr || r.stdout).split('\n')[0]?.trim() || _('Could not add funnel');
-            toast(msg);
+        const port = parseInt(portEntry.text, 10);
+        if (isNaN(port) || port < 1 || port > 65535) {
+            toast(_('Enter a valid port number (1-65535)'));
             return;
         }
-        refresh();
+        addButton.sensitive = false;
+        try {
+            const r = await _spawn([binary, 'funnel', '--bg', `--https=443`, String(port)]);
+            if (!r.ok) {
+                const msg = (r.stderr || r.stdout).split('\n')[0]?.trim() ||
+                    _('Could not add funnel');
+                toast(msg);
+                return;
+            }
+            portEntry.text = '3000';
+            await refresh();
+        } catch (e) {
+            toast(`Error: ${e.message}`);
+        } finally {
+            addButton.sensitive = true;
+        }
     });
 
     refresh();
@@ -419,13 +431,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         settings.bind('show-indicator', showRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         displayGroup.add(showRow);
-
-        const subtitleRow = new Adw.SwitchRow({
-            title: _('Show subtitle on the toggle'),
-            subtitle: _('Display the connected account or status under the title.'),
-        });
-        settings.bind('show-subtitle', subtitleRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-        displayGroup.add(subtitleRow);
 
         /* ----------------------------- Funnel --------------------------- */
         const { group: funnelGroup } = _makeFunnelGroup(binary);
