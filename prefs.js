@@ -322,7 +322,7 @@ function _makeFunnelGroup(binary) {
         }
         addButton.sensitive = false;
         try {
-            const r = await _spawn([binary, 'funnel', '--bg', `--https=443`, String(port)]);
+            const r = await _spawn([binary, 'funnel', `--https=443`, String(port)]);
             if (!r.ok) {
                 const msg = (r.stderr || r.stdout).split('\n')[0]?.trim() ||
                     _('Could not add funnel');
