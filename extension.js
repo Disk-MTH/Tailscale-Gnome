@@ -62,12 +62,35 @@ export default class TailscaleGnomeExtension extends Extension {
             this._rebindShortcut(key);
 
         this._client.start();
+
+        // One-shot startup check: if the operator pref is missing once the
+        // first poll has landed, fire a single polkit prompt. We avoid a
+        // state-changed handler because logout/login transiently flip
+        // canControl=false during the privileged script (the daemon clears
+        // the pref before the second `set --operator=$USER` lands), and a
+        // listener would race the pkexec child with its own prompt. After
+        // startup, the user's own actions (clicking the toggle, the menu
+        // "Set operator" button, etc.) handle every re-prompt explicitly.
+        this._startupCheckId = GLib.timeout_add_seconds(
+            GLib.PRIORITY_DEFAULT, 2, () => {
+                this._startupCheckId = 0;
+                const snap = this._client?.snapshot;
+                if (snap && !snap.error && !snap.canControl)
+                    this._client.setOperator();
+                return GLib.SOURCE_REMOVE;
+            },
+        );
     }
 
     disable() {
         for (const id of this._settingIds ?? [])
             this._settings.disconnect(id);
         this._settingIds = [];
+
+        if (this._startupCheckId) {
+            GLib.source_remove(this._startupCheckId);
+            this._startupCheckId = 0;
+        }
 
         for (const key of this._boundShortcuts ?? [])
             Main.wm.removeKeybinding(key);
@@ -110,8 +133,17 @@ export default class TailscaleGnomeExtension extends Extension {
         case 'shortcut-toggle-tailscale':
             return () => {
                 const snap = this._client.snapshot;
+                const ready =
+                    snap.canControl &&
+                    !snap.loggedOut &&
+                    snap.backendState !== 'NeedsLogin' &&
+                    snap.backendState !== 'NoState';
+                if (!ready) {
+                    if (!snap.canControl) this._client.setOperator();
+                    else Main.notify('Tailscale', 'Login required');
+                    return;
+                }
                 if (snap.running) this._client.down();
-                else if (snap.loggedOut || snap.backendState === 'NeedsLogin') this._client.login();
                 else this._client.up();
             };
         case 'shortcut-toggle-exit-node':

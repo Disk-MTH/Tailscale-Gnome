@@ -3,7 +3,6 @@
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk';
 
@@ -35,17 +34,6 @@ function _spawn(argv) {
             } catch (e) { reject(e); }
         });
     });
-}
-
-async function _operatorUser(binary) {
-    const r = await _spawn([binary || 'tailscale', 'debug', 'prefs']);
-    if (!r.ok) return { available: false, user: null };
-    try {
-        const json = JSON.parse(r.stdout);
-        return { available: true, user: json?.OperatorUser || null };
-    } catch {
-        return { available: false, user: null };
-    }
 }
 
 async function _fetchFunnels(binary) {
@@ -169,78 +157,6 @@ class ShortcutRow extends Adw.ActionRow {
             return Gdk.EVENT_STOP;
         });
         dialog.present();
-    }
-});
-
-/* -------------------------------------------------------------------------- */
-/*                          Operator status row                               */
-/* -------------------------------------------------------------------------- */
-
-const OperatorRow = GObject.registerClass(
-class OperatorRow extends Adw.ActionRow {
-    _init({ binary }) {
-        super._init({
-            title: _('Tailscale operator'),
-            subtitle: _('Checking…'),
-        });
-        this._binary = binary;
-
-        this._statusIcon = new Gtk.Image({
-            icon_name: 'content-loading-symbolic',
-            valign: Gtk.Align.CENTER,
-        });
-        this.add_prefix(this._statusIcon);
-
-        this._copyButton = new Gtk.Button({
-            label: _('Copy fix command'),
-            valign: Gtk.Align.CENTER,
-            visible: false,
-            css_classes: ['suggested-action'],
-        });
-        this._copyButton.connect('clicked', () => this._copyCommand());
-        this.add_suffix(this._copyButton);
-
-        this.refresh();
-    }
-
-    setBinary(bin) { this._binary = bin; }
-
-    async refresh() {
-        const { available, user } = await _operatorUser(this._binary);
-        if (!available) {
-            this._statusIcon.icon_name = 'dialog-warning-symbolic';
-            this.subtitle = _('tailscaled is not reachable. Is the daemon running?');
-            this._copyButton.visible = false;
-            return;
-        }
-        if (user) {
-            // object-select-symbolic renders as a clean checkmark in Adwaita
-            // and stays in the theme's neutral symbolic colour (matches the
-            // black/white style of the warning icon, just without the tint).
-            this._statusIcon.icon_name = 'object-select-symbolic';
-            this.subtitle = _fmt(_('Set to "%s". The extension can control Tailscale.'), user);
-            this._copyButton.visible = false;
-        } else {
-            this._statusIcon.icon_name = 'dialog-warning-symbolic';
-            this.subtitle = _('Not set. Without it, every up/down/set call is silently denied.');
-            this._copyButton.visible = true;
-        }
-    }
-
-    _copyCommand() {
-        const cmd = `sudo tailscale set --operator=${GLib.get_user_name()}`;
-        const display = this.get_display();
-        if (display) {
-            const clipboard = display.get_clipboard();
-            clipboard.set(cmd);
-        }
-        const root = this.get_root();
-        if (root && root.add_toast) {
-            root.add_toast(new Adw.Toast({
-                title: _('Command copied to clipboard'),
-                timeout: 3,
-            }));
-        }
     }
 });
 
@@ -410,15 +326,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         window.add(page);
 
-        /* ---------------------------- Operator -------------------------- */
-        const operatorGroup = new Adw.PreferencesGroup({
-            title: _('Operator status'),
-            description: _('Tailscale on Linux only accepts state changes from the user marked as operator.'),
-        });
-        const operatorRow = new OperatorRow({ binary });
-        operatorGroup.add(operatorRow);
-        page.add(operatorGroup);
-
         /* ----------------------------- Display -------------------------- */
         const displayGroup = new Adw.PreferencesGroup({
             title: _('Display'),
@@ -477,11 +384,5 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         settings.bind('tailscale-binary', binaryRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         advanced.add(binaryRow);
 
-        // Re-check operator status if the user changes the binary path.
-        const id = settings.connect('changed::tailscale-binary', () => {
-            operatorRow.setBinary(settings.get_string('tailscale-binary') || 'tailscale');
-            operatorRow.refresh();
-        });
-        window.connect('close-request', () => settings.disconnect(id));
     }
 }
