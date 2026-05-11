@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Nautilus right-click action: send selected files via Taildrop.
+# Installed by the Tailscale GNOME extension under
+# ~/.local/share/nautilus/scripts/.
+
+set -eu
+
+# Selected files arrive as positional args. Nautilus also exports
+# NAUTILUS_SCRIPT_SELECTED_FILE_PATHS (newline-separated, only available
+# for local paths). Prefer "$@" so remote URIs surface as errors.
+if [ "$#" -eq 0 ]; then
+    zenity --error --text="No files selected." --no-wrap
+    exit 1
+fi
+
+# Build "Peer\tIP" rows. tailscale file cp --targets prints
+# "<IP>\t<hostname>[\t<status>]" per line. We strip offline peers.
+mapfile -t TARGETS < <(
+    tailscale file cp --targets 2>/dev/null \
+        | awk -F'\t' '$3 !~ /offline/ {printf "%s\n%s\n", $2, $1}'
+)
+if [ "${#TARGETS[@]}" -eq 0 ]; then
+    zenity --error --text="No online Tailscale peers available." --no-wrap
+    exit 1
+fi
+
+PEER=$(printf '%s\n' "${TARGETS[@]}" \
+    | zenity --list \
+        --title="Send via Taildrop" \
+        --column="Peer" --column="IP" \
+        --print-column=2 --hide-column=2 \
+        --width=380 --height=320)
+[ -z "${PEER:-}" ] && exit 0
+
+if tailscale file cp "$@" "${PEER}:"; then
+    zenity --notification --text="Sent $# file(s) via Taildrop"
+else
+    zenity --error --text="Taildrop send failed." --no-wrap
+fi

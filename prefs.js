@@ -3,6 +3,7 @@
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk';
 
@@ -34,29 +35,6 @@ function _spawn(argv) {
             } catch (e) { reject(e); }
         });
     });
-}
-
-async function _fetchFunnels(binary) {
-    const r = await _spawn([binary, 'funnel', 'status', '--json']);
-    if (!r.ok) return [];
-    try {
-        const j = JSON.parse(r.stdout);
-        const flagMap = j?.Funnel ?? j?.AllowFunnel ?? {};
-        const webMap  = j?.Web ?? {};
-        const out = [];
-        for (const key of Object.keys(flagMap)) {
-            if (!flagMap[key]) continue;
-            const m = key.match(/^(.+):(\d+)$/);
-            if (!m) continue;
-            const httpsPort = parseInt(m[2], 10);
-            const slash = webMap[key]?.Handlers?.['/'];
-            const target = slash?.Proxy || slash?.Text || '';
-            out.push({ host: m[1], httpsPort, target });
-        }
-        return out.sort((a, b) => a.httpsPort - b.httpsPort);
-    } catch {
-        return [];
-    }
 }
 
 async function _serviceEnabled() {
@@ -164,98 +142,151 @@ class ShortcutRow extends Adw.ActionRow {
 /*                           Service (boot) row                               */
 /* -------------------------------------------------------------------------- */
 
-// Manage Tailscale Funnels (public HTTPS exposure of a local service). Builds
-// a PreferencesGroup whose top row adds new funnels and whose subsequent rows
-// list active ones with a remove button each. Refreshes itself after every
-// add/remove.
-function _makeFunnelGroup(binary) {
+// Taildrop preferences: accept toggle + inbox folder. The accept toggle is
+// mirrored from gsettings (the quick menu writes it too). The inbox path
+// is text-editable and has a folder picker button as a suffix.
+function _makeTaildropGroup(settings) {
     const group = new Adw.PreferencesGroup({
-        title: _('Funnel'),
-        description: _('Expose a local service on the public internet via Tailscale. Anyone with the URL can reach the exposed port.'),
+        title: _('Taildrop'),
+        description: _('Send and receive files between Tailscale nodes.'),
     });
 
-    const dynamicRows = [];
+    const acceptRow = new Adw.SwitchRow({
+        title: _('Accept incoming files'),
+        subtitle: _('Runs the Tailscale receiver in the background while enabled.'),
+    });
+    settings.bind('taildrop-accept', acceptRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    group.add(acceptRow);
 
-    // Use an EntryRow so the user types the port number directly.
-    // Gtk.SpinButton's +/- arrows make no sense for port selection.
-    const portEntry = new Adw.EntryRow({
-        title: _('Local port to expose'),
-        input_purpose: Gtk.InputPurpose.NUMBER,
-        text: '3000',
+    const inboxRow = new Adw.EntryRow({
+        title: _('Inbox folder'),
+        show_apply_button: false,
+    });
+    settings.bind('taildrop-inbox', inboxRow, 'text', Gio.SettingsBindFlags.DEFAULT);
+
+    const browseBtn = new Gtk.Button({
+        icon_name: 'document-open-symbolic',
+        valign: Gtk.Align.CENTER,
+        css_classes: ['flat'],
+        tooltip_text: _('Browse'),
+    });
+    browseBtn.connect('clicked', () => {
+        const dlg = new Gtk.FileDialog({
+            title: _('Choose Taildrop inbox folder'),
+            modal: true,
+        });
+        dlg.select_folder(group.get_root(), null, (d, res) => {
+            try {
+                const f = d.select_folder_finish(res);
+                if (f) inboxRow.text = f.get_path();
+            } catch (_) { /* cancelled */ }
+        });
+    });
+    inboxRow.add_suffix(browseBtn);
+    group.add(inboxRow);
+
+    const hintRow = new Adw.ActionRow({
+        title: _('Folder is created if it does not exist'),
+        subtitle: _('Leave empty to use ~/Downloads/Taildrop.'),
+    });
+    hintRow.add_prefix(new Gtk.Image({ icon_name: 'dialog-information-symbolic' }));
+    group.add(hintRow);
+
+    return group;
+}
+
+// File manager integration: install/remove Nautilus scripts that hook
+// "Send with Taildrop" and "Send with Taildrop as ZIP" into the right-click
+// menu of selected files.
+function _makeIntegrationsGroup(extensionDir) {
+    const group = new Adw.PreferencesGroup({
+        title: _('File manager integration'),
+        description: _('Add right-click actions in Nautilus to send selected files via Taildrop.'),
     });
 
-    const addButton = new Gtk.Button({
-        label: _('Add'),
+    const scriptsDir = GLib.build_filenamev([
+        GLib.get_user_data_dir(), 'nautilus', 'scripts',
+    ]);
+    const sendName = 'Send with Taildrop';
+    const zipName  = 'Send with Taildrop as ZIP';
+
+    const isInstalled = () => {
+        const p1 = Gio.File.new_for_path(GLib.build_filenamev([scriptsDir, sendName]));
+        const p2 = Gio.File.new_for_path(GLib.build_filenamev([scriptsDir, zipName]));
+        return p1.query_exists(null) && p2.query_exists(null);
+    };
+
+    const row = new Adw.ActionRow({
+        title: _('Nautilus right-click scripts'),
+    });
+    const statusLabel = new Gtk.Label({
+        valign: Gtk.Align.CENTER,
+        css_classes: ['dim-label'],
+    });
+    row.add_suffix(statusLabel);
+
+    const installBtn = new Gtk.Button({
+        label: _('Install'),
         valign: Gtk.Align.CENTER,
         css_classes: ['suggested-action'],
     });
-    portEntry.add_suffix(addButton);
-    group.add(portEntry);
+    const removeBtn = new Gtk.Button({
+        label: _('Remove'),
+        valign: Gtk.Align.CENTER,
+        css_classes: ['destructive-action'],
+    });
+    row.add_suffix(installBtn);
+    row.add_suffix(removeBtn);
+
+    const refresh = () => {
+        const ok = isInstalled();
+        statusLabel.label = ok ? _('Installed') : _('Not installed');
+        installBtn.visible = !ok;
+        removeBtn.visible  = ok;
+    };
 
     const toast = (title) => {
         group.get_root()?.add_toast?.(new Adw.Toast({ title, timeout: 4 }));
     };
 
-    const refresh = async () => {
-        for (const r of dynamicRows) group.remove(r);
-        dynamicRows.length = 0;
-        const funnels = await _fetchFunnels(binary);
-        for (const f of funnels) {
-            const url = `https://${f.host}${f.httpsPort === 443 ? '' : `:${f.httpsPort}`}`;
-            const row = new Adw.ActionRow({
-                title: url,
-                subtitle: f.target ? _fmt(_('proxies %s'), f.target) : '',
-            });
-            const removeBtn = new Gtk.Button({
-                icon_name: 'user-trash-symbolic',
-                valign: Gtk.Align.CENTER,
-                css_classes: ['flat'],
-                tooltip_text: _('Remove this funnel'),
-            });
-            removeBtn.connect('clicked', async () => {
-                removeBtn.sensitive = false;
-                try {
-                    const r = await _spawn([binary, 'funnel', `--https=${f.httpsPort}`, 'off']);
-                    if (!r.ok) toast(_('Could not remove funnel'));
-                    await refresh();
-                } catch (e) {
-                    toast(`Error: ${e.message}`);
-                } finally {
-                    removeBtn.sensitive = true;
-                }
-            });
-            row.add_suffix(removeBtn);
-            group.add(row);
-            dynamicRows.push(row);
-        }
-    };
-
-    addButton.connect('clicked', async () => {
-        const port = parseInt(portEntry.text, 10);
-        if (isNaN(port) || port < 1 || port > 65535) {
-            toast(_('Enter a valid port number (1-65535)'));
-            return;
-        }
-        addButton.sensitive = false;
+    installBtn.connect('clicked', () => {
         try {
-            const r = await _spawn([binary, 'funnel', `--https=443`, String(port)]);
-            if (!r.ok) {
-                const msg = (r.stderr || r.stdout).split('\n')[0]?.trim() ||
-                    _('Could not add funnel');
-                toast(msg);
+            Gio.File.new_for_path(scriptsDir).make_directory_with_parents(null);
+        } catch (e) {
+            if (!e.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS)) {
+                toast(`Error: ${e.message}`); return;
+            }
+        }
+        const srcDir = extensionDir.get_child('nautilus');
+        for (const name of [sendName, zipName]) {
+            const src = srcDir.get_child(name);
+            const dst = Gio.File.new_for_path(GLib.build_filenamev([scriptsDir, name]));
+            try {
+                src.copy(dst, Gio.FileCopyFlags.OVERWRITE, null, null);
+                const info = new Gio.FileInfo();
+                info.set_attribute_uint32('unix::mode', 0o755);
+                dst.set_attributes_from_info(info, Gio.FileQueryInfoFlags.NONE, null);
+            } catch (e) {
+                toast(`Error installing ${name}: ${e.message}`);
                 return;
             }
-            portEntry.text = '3000';
-            await refresh();
-        } catch (e) {
-            toast(`Error: ${e.message}`);
-        } finally {
-            addButton.sensitive = true;
         }
+        refresh();
+        toast(_('Installed. You may need to restart Nautilus.'));
+    });
+
+    removeBtn.connect('clicked', () => {
+        for (const name of [sendName, zipName]) {
+            const f = Gio.File.new_for_path(GLib.build_filenamev([scriptsDir, name]));
+            try { f.delete(null); } catch (_) {}
+        }
+        refresh();
+        toast(_('Removed.'));
     });
 
     refresh();
-    return { group, refresh };
+    group.add(row);
+    return group;
 }
 
 // Adw.SwitchRow is `final` in libadwaita 1.4+, so we can't subclass it. Build
@@ -318,7 +349,6 @@ function _fmt(template, ...args) {
 export default class TailscaleGnomePrefs extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
-        const binary = settings.get_string('tailscale-binary') || 'tailscale';
 
         const page = new Adw.PreferencesPage({
             title: _('General'),
@@ -339,9 +369,9 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         settings.bind('show-indicator', showRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         displayGroup.add(showRow);
 
-        /* ----------------------------- Funnel --------------------------- */
-        const { group: funnelGroup } = _makeFunnelGroup(binary);
-        page.add(funnelGroup);
+        /* ----------------------------- Taildrop ------------------------- */
+        page.add(_makeTaildropGroup(settings));
+        page.add(_makeIntegrationsGroup(this.dir));
 
         /* ---------------------------- Shortcuts ------------------------- */
         const shortcutsGroup = new Adw.PreferencesGroup({
@@ -356,6 +386,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             { key: 'shortcut-show-menu',         title: _('Open the Tailscale menu') },
             { key: 'shortcut-copy-self-ip',      title: _("Copy this device's Tailscale IP") },
             { key: 'shortcut-open-admin-panel',  title: _('Open the Tailscale admin console') },
+            { key: 'shortcut-send-file',         title: _('Send a file via Taildrop') },
         ]) {
             shortcutsGroup.add(new ShortcutRow({ ...def, settings }));
         }

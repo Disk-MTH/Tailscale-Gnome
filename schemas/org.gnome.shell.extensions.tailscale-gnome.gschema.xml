@@ -51,5 +51,24 @@
             <summary>Shortcut: open the Tailscale admin console in a browser</summary>
         </key>
 
+        <key name="shortcut-send-file" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: send a file via Taildrop</summary>
+        </key>
+
+        <key name="taildrop-accept" type="b">
+            <default>false</default>
+            <summary>Accept incoming Taildrop files</summary>
+            <description>When enabled, `tailscale file get --loop` runs in the
+                background and writes incoming files to the inbox directory.</description>
+        </key>
+
+        <key name="taildrop-inbox" type="s">
+            <default>''</default>
+            <summary>Directory where Taildrop files are saved</summary>
+            <description>Empty means $HOME/Downloads/Taildrop (created on
+                first receipt).</description>
+        </key>
+
     </schema>
 </schemalist>

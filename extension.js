@@ -21,6 +21,7 @@ const SHORTCUT_KEYS = [
     'shortcut-show-menu',
     'shortcut-copy-self-ip',
     'shortcut-open-admin-panel',
+    'shortcut-send-file',
 ];
 
 const ADMIN_URL = 'https://login.tailscale.com/admin/machines';
@@ -62,6 +63,30 @@ export default class TailscaleGnomeExtension extends Extension {
             this._rebindShortcut(key);
 
         this._client.start();
+
+        // Restore Taildrop receiver state. The setting is the source of
+        // truth across reloads; the receiver subprocess is owned by the
+        // client and gets killed on `disable()` via client.destroy().
+        if (this._settings.get_boolean('taildrop-accept')) {
+            const inbox = this._settings.get_string('taildrop-inbox');
+            this._client.setAcceptFiles(true, inbox);
+        }
+        this._settingIds.push(
+            this._settings.connect('changed::taildrop-accept', () => {
+                const on    = this._settings.get_boolean('taildrop-accept');
+                const inbox = this._settings.get_string('taildrop-inbox');
+                this._client.setAcceptFiles(on, inbox);
+            }),
+            this._settings.connect('changed::taildrop-inbox', () => {
+                // Inbox path changed: bounce the receiver if it's on so the
+                // new directory takes effect.
+                if (this._settings.get_boolean('taildrop-accept')) {
+                    this._client.setAcceptFiles(false);
+                    this._client.setAcceptFiles(true,
+                        this._settings.get_string('taildrop-inbox'));
+                }
+            }),
+        );
 
         // One-shot startup check: if the operator pref is missing once the
         // first poll has landed, fire a single polkit prompt. We avoid a
@@ -165,6 +190,8 @@ export default class TailscaleGnomeExtension extends Extension {
             };
         case 'shortcut-open-admin-panel':
             return () => openAdminPanel();
+        case 'shortcut-send-file':
+            return () => this._indicator?._toggle?._runSendFlow?.();
         default:
             return null;
         }

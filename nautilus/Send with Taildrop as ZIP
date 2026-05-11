@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Nautilus right-click action: zip the selection and send the archive via
+# Taildrop. Useful for folders or many files.
+
+set -eu
+
+if [ "$#" -eq 0 ]; then
+    zenity --error --text="No files selected." --no-wrap
+    exit 1
+fi
+
+mapfile -t TARGETS < <(
+    tailscale file cp --targets 2>/dev/null \
+        | awk -F'\t' '$3 !~ /offline/ {printf "%s\n%s\n", $2, $1}'
+)
+if [ "${#TARGETS[@]}" -eq 0 ]; then
+    zenity --error --text="No online Tailscale peers available." --no-wrap
+    exit 1
+fi
+
+PEER=$(printf '%s\n' "${TARGETS[@]}" \
+    | zenity --list \
+        --title="Send via Taildrop (ZIP)" \
+        --column="Peer" --column="IP" \
+        --print-column=2 --hide-column=2 \
+        --width=380 --height=320)
+[ -z "${PEER:-}" ] && exit 0
+
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+# Name the archive after the first selected item to give the receiver a hint.
+FIRST_NAME=$(basename -- "$1")
+ZIP_NAME="${FIRST_NAME%.*}-$(date +%Y%m%d-%H%M%S).zip"
+ZIP_PATH="$TMPDIR/$ZIP_NAME"
+
+# zip wants paths relative to its CWD for clean entry names. We cd into each
+# parent and add the basename so the archive doesn't bake in absolute paths.
+(
+    for f in "$@"; do
+        dir=$(dirname -- "$f")
+        base=$(basename -- "$f")
+        ( cd "$dir" && zip -qr "$ZIP_PATH" "$base" )
+    done
+)
+
+if tailscale file cp "$ZIP_PATH" "${PEER}:"; then
+    zenity --notification --text="Sent $ZIP_NAME via Taildrop"
+else
+    zenity --error --text="Taildrop send failed." --no-wrap
+fi

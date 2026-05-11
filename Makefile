@@ -48,7 +48,7 @@ schemas: $(COMPILED)
 install: schemas
 	@mkdir -p "$(USER_EXTDIR)"
 	@cp -r metadata.json extension.js prefs.js stylesheet.css "$(USER_EXTDIR)/"
-	@cp -r lib icons schemas "$(USER_EXTDIR)/"
+	@cp -r lib icons schemas nautilus "$(USER_EXTDIR)/"
 	@cp -r LICENSE README.md CHANGELOG.md "$(USER_EXTDIR)/" 2>/dev/null || true
 	@printf "Installed to %s\n" "$(USER_EXTDIR)"
 	@printf "Restart GNOME Shell (Xorg: Alt+F2 r ; Wayland: log out / log in)\n"
@@ -81,7 +81,7 @@ pack: schemas
 	@rm -f "$(ZIPNAME)"
 	@cd "$(CURDIR)" && zip -qr "$(ZIPNAME)" \
 	    metadata.json extension.js prefs.js stylesheet.css \
-	    lib icons schemas \
+	    lib icons schemas nautilus \
 	    LICENSE README.md CHANGELOG.md
 	@printf "Built %s\n" "$(ZIPNAME)"
 
