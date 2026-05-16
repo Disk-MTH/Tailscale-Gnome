@@ -48,3 +48,25 @@
     border-radius: 8px;
     padding: 4px 10px;
 }
+
+/* Compact icon-button injected into the QuickToggleMenu header
+   (right side of the title/subtitle area). Keeps the click target small
+   so it doesn't compete with the title visually. */
+.tailscale-header-btn {
+    min-width: 22px;
+    min-height: 22px;
+    padding: 2px 4px;
+    margin-left: 4px;
+    border-radius: 6px;
+    background-color: transparent;
+}
+.tailscale-header-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.tailscale-header-btn StIcon {
+    icon-size: 14px;
+    opacity: 0.75;
+}
+.tailscale-header-btn:hover StIcon {
+    opacity: 1;
+}
