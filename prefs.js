@@ -510,10 +510,12 @@ function _makeFeaturesGroup(settings) {
         settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         if (def.availabilityKey) {
+            // suggested-action so the button reads as a clear call-to-action
+            // when it shows up (flat would have looked like a label).
             const adminBtn = new Gtk.Button({
                 label: _('Open admin'),
                 valign: Gtk.Align.CENTER,
-                css_classes: ['flat'],
+                css_classes: ['suggested-action'],
             });
             adminBtn.connect('clicked', () => _openUrl(def.adminUrl));
             row.add_suffix(adminBtn);
