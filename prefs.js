@@ -336,35 +336,14 @@ function _makeServiceRow() {
 // When the cache says the tailnet doesn't allow the feature, the toggle is
 // greyed out and a "Open admin" button + hint subtitle appear.
 const FEATURE_DEFS = [
-    {
-        key: 'feature-exit-nodes',
-        title: () => _('Exit nodes'),
-        subtitle: () => _('Show the Exit-node submenu in Quick Settings.'),
-    },
-    {
-        key: 'feature-dns',
-        title: () => _('Accept DNS'),
-        subtitle: () => _('Show the Accept-DNS toggle in Quick Settings.'),
-    },
-    {
-        key: 'feature-routes',
-        title: () => _('Subnet routes'),
-        subtitle: () => _('Show the Accept-routes toggle and route list.'),
-    },
-    {
-        key: 'feature-shields-up',
-        title: () => _('Shields up'),
-        subtitle: () => _('Show the Shields-up toggle in Quick Settings.'),
-    },
-    {
-        key: 'feature-ssh-server',
-        title: () => _('Tailscale SSH server'),
-        subtitle: () => _('Show the SSH-server toggle in Quick Settings.'),
-    },
+    { key: 'feature-exit-nodes',  title: () => _('Exit nodes') },
+    { key: 'feature-dns',         title: () => _('Magic DNS') },
+    { key: 'feature-routes',      title: () => _('Subnet routes') },
+    { key: 'feature-shields-up',  title: () => _('Shields up') },
+    { key: 'feature-ssh-server',  title: () => _('Tailscale SSH server') },
     {
         key: 'feature-taildrop',
         title: () => _('Taildrop'),
-        subtitle: () => _('Show Send / Accept files controls in Quick Settings.'),
         availabilityKey: 'feature-taildrop-available',
         adminUrl: 'https://login.tailscale.com/admin/acls',
         unavailableHint: () =>
@@ -373,7 +352,6 @@ const FEATURE_DEFS = [
     {
         key: 'feature-funnels',
         title: () => _('Funnel'),
-        subtitle: () => _('Show the Funnel submenu in Quick Settings.'),
         availabilityKey: 'feature-funnels-available',
         adminUrl: 'https://login.tailscale.com/admin/funnel',
         unavailableHint: () =>
@@ -388,14 +366,11 @@ function _openUrl(url) {
 function _makeFeaturesGroup(settings) {
     const group = new Adw.PreferencesGroup({
         title: _('Features'),
-        description: _('Choose which Tailscale features appear in the menu.'),
+        description: _('Enable or disable specific Tailscale features. Disabled features are hidden from the Quick Settings menu.'),
     });
 
     for (const def of FEATURE_DEFS) {
-        const row = new Adw.SwitchRow({
-            title: def.title(),
-            subtitle: def.subtitle(),
-        });
+        const row = new Adw.SwitchRow({ title: def.title() });
         settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         if (def.availabilityKey) {
@@ -410,7 +385,7 @@ function _makeFeaturesGroup(settings) {
             const refresh = () => {
                 const available = settings.get_boolean(def.availabilityKey);
                 row.sensitive = available;
-                row.subtitle = available ? def.subtitle() : def.unavailableHint();
+                row.subtitle = available ? '' : def.unavailableHint();
                 adminBtn.visible = !available;
             };
             const id = settings.connect(`changed::${def.availabilityKey}`, refresh);
@@ -491,6 +466,26 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         settings.bind('poll-interval', pollRow, 'value', Gio.SettingsBindFlags.DEFAULT);
         advanced.add(pollRow);
+
+        const toastDurRow = new Adw.SpinRow({
+            title: _('Toast duration'),
+            subtitle: _('Seconds the result toast stays on screen (1 to 10).'),
+            adjustment: new Gtk.Adjustment({
+                lower: 1, upper: 10, step_increment: 1, page_increment: 1,
+            }),
+        });
+        settings.bind('toast-duration', toastDurRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        advanced.add(toastDurRow);
+
+        const spinnerRow = new Adw.SpinRow({
+            title: _('Minimum spinner duration'),
+            subtitle: _('Milliseconds the spinner stays visible before showing the result (0 to 3000). Prevents flicker on instant actions.'),
+            adjustment: new Gtk.Adjustment({
+                lower: 0, upper: 3000, step_increment: 100, page_increment: 500,
+            }),
+        });
+        settings.bind('toast-min-spinner', spinnerRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        advanced.add(spinnerRow);
 
         const binaryRow = new Adw.EntryRow({ title: _('tailscale binary') });
         settings.bind('tailscale-binary', binaryRow, 'text', Gio.SettingsBindFlags.DEFAULT);

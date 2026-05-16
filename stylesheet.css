@@ -70,3 +70,55 @@
 .tailscale-header-btn:hover StIcon {
     opacity: 1;
 }
+
+/* Taildrop send dialog (in-shell ModalDialog). Mirrors the look of the
+   QuickSettings peer rows so the picker feels native. */
+.tailscale-send-dialog {
+    spacing: 8px;
+}
+.tailscale-send-title {
+    font-weight: bold;
+    font-size: 13pt;
+    padding: 4px 4px 0 4px;
+}
+.tailscale-send-subtitle {
+    font-size: 10pt;
+    opacity: 0.65;
+    padding: 0 4px 6px 4px;
+}
+.tailscale-send-scroll {
+    min-width: 360px;
+    min-height: 220px;
+    max-height: 420px;
+}
+.tailscale-send-list {
+    spacing: 0;
+}
+.tailscale-send-separator {
+    background-color: rgba(255, 255, 255, 0.08);
+    margin: 0 8px;
+}
+.tailscale-send-row {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background-color: transparent;
+    color: inherit;
+}
+.tailscale-send-row:hover,
+.tailscale-send-row:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Toast feedback widgets inherit the native .osd-window look (theme-aware
+   background, radius, font weight). Single-line horizontal layout: icon on
+   the left, label on the right. */
+.tailscale-osd {
+    min-width: 180px;
+    spacing: 8px;
+}
+.tailscale-osd-label {
+    font-weight: bold;
+}
+.tailscale-osd-icon-success { color: #66d68a; }
+.tailscale-osd-icon-error   { color: #e07b7b; }
+.tailscale-osd-icon-info    { color: #8ab4f8; }
