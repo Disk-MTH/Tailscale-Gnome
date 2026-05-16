@@ -41,11 +41,6 @@
             <summary>Shortcut: open the Tailscale quick settings menu</summary>
         </key>
 
-        <key name="shortcut-copy-self-ip" type="as">
-            <default><![CDATA[[]]]></default>
-            <summary>Shortcut: copy this device's Tailscale IP to clipboard</summary>
-        </key>
-
         <key name="shortcut-open-admin-panel" type="as">
             <default><![CDATA[[]]]></default>
             <summary>Shortcut: open the Tailscale admin console in a browser</summary>
@@ -97,6 +92,30 @@
         <key name="feature-funnels" type="b">
             <default>true</default>
             <summary>Show Funnel UI</summary>
+        </key>
+
+        <key name="feature-exit-nodes-saved" type="s">
+            <default>''</default>
+            <summary>Saved exit-node target while the Exit-nodes feature is off</summary>
+            <description>Holds the exit node that was active when the user
+                disabled the Exit-nodes feature in prefs. Re-enabling the
+                feature restores it.</description>
+        </key>
+        <key name="feature-dns-saved" type="b">
+            <default>false</default>
+            <summary>Saved Magic-DNS state while the Magic-DNS feature is off</summary>
+        </key>
+        <key name="feature-routes-saved" type="b">
+            <default>false</default>
+            <summary>Saved accept-routes state while the Subnet-routes feature is off</summary>
+        </key>
+        <key name="feature-shields-up-saved" type="b">
+            <default>false</default>
+            <summary>Saved shields-up state while the Shields-up feature is off</summary>
+        </key>
+        <key name="feature-ssh-server-saved" type="b">
+            <default>false</default>
+            <summary>Saved SSH-server state while the SSH-server feature is off</summary>
         </key>
 
         <key name="feature-taildrop-available" type="b">

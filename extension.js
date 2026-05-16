@@ -5,9 +5,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
-import St from 'gi://St';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { TailscaleClient } from './lib/tailscale.js';
@@ -20,7 +19,6 @@ const SHORTCUT_KEYS = [
     'shortcut-toggle-tailscale',
     'shortcut-toggle-exit-node',
     'shortcut-show-menu',
-    'shortcut-copy-self-ip',
     'shortcut-open-admin-panel',
     'shortcut-send-file',
 ];
@@ -45,7 +43,7 @@ export default class TailscaleGnomeExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
 
-        ToastManager.init(this._settings);
+        ToastManager.init(this._settings, { extension: this });
 
         this._client = new TailscaleClient({
             binary:      this._settings.get_string('tailscale-binary') || 'tailscale',
@@ -132,9 +130,84 @@ export default class TailscaleGnomeExtension extends Extension {
         // A Feature toggled OFF in prefs must also disable the underlying
         // tailscale setting -hiding the menu UI alone leaves the feature
         // active (e.g. accept-routes still letting traffic through). We
-        // run a reconciliation pass on every state-changed AND on every
-        // feature pref change; both calls are idempotent because each
-        // check is gated on "off in prefs but still on in the snapshot".
+        // also remember the prior state so re-enabling the feature can
+        // restore it without forcing the user to re-flip everything.
+        //
+        // Each entry describes one feature: how to read it from the
+        // snapshot, the setter on the client, the GSettings key holding
+        // the saved value, and a UI label used in toast messages.
+        const FEATURE_META = {
+            'feature-exit-nodes': {
+                label: _('Exit nodes'),
+                savedKey: 'feature-exit-nodes-saved',
+                type: 'string',
+                snapKey: 'exitNodeID',
+                set: (c, v) => c.setExitNode(v),
+            },
+            'feature-dns': {
+                label: _('Magic DNS'),
+                savedKey: 'feature-dns-saved',
+                type: 'bool',
+                snapKey: 'acceptDNS',
+                set: (c, v) => c.setAcceptDNS(v),
+            },
+            'feature-routes': {
+                label: _('Subnet routes'),
+                savedKey: 'feature-routes-saved',
+                type: 'bool',
+                snapKey: 'acceptRoutes',
+                set: (c, v) => c.setAcceptRoutes(v),
+            },
+            'feature-shields-up': {
+                label: _('Shields up'),
+                savedKey: 'feature-shields-up-saved',
+                type: 'bool',
+                snapKey: 'shieldsUp',
+                set: (c, v) => c.setShieldsUp(v),
+            },
+            'feature-ssh-server': {
+                label: _('Tailscale SSH'),
+                savedKey: 'feature-ssh-server-saved',
+                type: 'bool',
+                snapKey: 'runSSH',
+                set: (c, v) => c.setRunSSH(v),
+            },
+        };
+
+        // Run a long-running client call behind a pending → success/error
+        // toast. Honours toast-min-spinner so instant operations don't
+        // flash. Errors fall back to the underlying client error message.
+        const withSpinner = async (pendingMsg, successMsg, fn) => {
+            const toast = ToastManager.show({ level: 'pending', message: pendingMsg });
+            const startMs = GLib.get_monotonic_time() / 1000;
+            try {
+                const r = await fn();
+                const elapsed = GLib.get_monotonic_time() / 1000 - startMs;
+                const wait = Math.max(0, ToastManager.minSpinnerMs - elapsed);
+                if (wait > 0) {
+                    await new Promise((res) =>
+                        GLib.timeout_add(GLib.PRIORITY_DEFAULT, wait, () => {
+                            res(); return GLib.SOURCE_REMOVE;
+                        }));
+                }
+                const ok = r?.ok !== false;
+                toast.update({
+                    level: ok ? 'success' : 'error',
+                    message: ok ? successMsg : (r?.message || _('Operation failed')),
+                });
+                return r;
+            } catch (e) {
+                toast.update({
+                    level: 'error',
+                    message: String(e?.message ?? e),
+                });
+                throw e;
+            }
+        };
+
+        // Drift correction: if the daemon state diverges from a feature
+        // pref that's OFF, force the daemon back. Runs on every snapshot
+        // (cheap; each branch is gated on "off in prefs but on in snap").
         const ensureFeatureCompliance = () => {
             const snap = this._client?.snapshot;
             if (!snap || !snap.canControl || snap.loggedOut ||
@@ -142,17 +215,14 @@ export default class TailscaleGnomeExtension extends Extension {
                 snap.backendState === 'NoState')
                 return;
             const off = (k) => !this._settings.get_boolean(k);
-            if (off('feature-exit-nodes') &&
-                (snap.exitNodeID || snap.autoExitNode))
+            for (const [key, meta] of Object.entries(FEATURE_META)) {
+                if (!off(key)) continue;
+                const cur = snap[meta.snapKey];
+                if (meta.type === 'bool' && cur) meta.set(this._client, false);
+                else if (meta.type === 'string' && cur) meta.set(this._client, '');
+            }
+            if (off('feature-exit-nodes') && snap.autoExitNode)
                 this._client.setExitNode('');
-            if (off('feature-dns') && snap.acceptDNS)
-                this._client.setAcceptDNS(false);
-            if (off('feature-routes') && snap.acceptRoutes)
-                this._client.setAcceptRoutes(false);
-            if (off('feature-shields-up') && snap.shieldsUp)
-                this._client.setShieldsUp(false);
-            if (off('feature-ssh-server') && snap.runSSH)
-                this._client.setRunSSH(false);
             if (off('feature-funnels') && (snap.funnels?.length || 0) > 0)
                 this._client.resetFunnels();
         };
@@ -161,13 +231,92 @@ export default class TailscaleGnomeExtension extends Extension {
             this._client.connect('state-changed', ensureFeatureCompliance),
         ];
 
-        for (const key of [
-            'feature-exit-nodes', 'feature-dns', 'feature-routes',
-            'feature-shields-up', 'feature-ssh-server', 'feature-funnels',
-        ]) {
+        // Per-feature handler with toast feedback and state save/restore.
+        // The sync "disabled"/"enabled" toast fires immediately; the
+        // underlying tailscale CLI call (if needed) runs behind a spinner
+        // toast that resolves to success or error in place.
+        const handleFeatureToggled = (key) => {
+            const meta = FEATURE_META[key];
+            if (!meta) return;
+            const enabled = this._settings.get_boolean(key);
+            const snap = this._client?.snapshot;
+            if (!snap || !snap.canControl || snap.loggedOut ||
+                snap.backendState === 'NeedsLogin' ||
+                snap.backendState === 'NoState') {
+                // Daemon not ready: still toast the sync feature flip; the
+                // drift-correction pass will reconcile once it's back.
+                ToastManager.show({
+                    level: 'success',
+                    message: `${meta.label}: ${enabled ? _('enabled') : _('disabled')}`,
+                });
+                return;
+            }
+            const current = snap[meta.snapKey];
+
+            if (enabled) {
+                ToastManager.show({
+                    level: 'success',
+                    message: `${meta.label}: ${_('enabled')}`,
+                });
+                const saved = meta.type === 'bool'
+                    ? this._settings.get_boolean(meta.savedKey)
+                    : this._settings.get_string(meta.savedKey);
+                const needRestore = meta.type === 'bool'
+                    ? (saved && !current)
+                    : (saved && current !== saved);
+                if (needRestore) {
+                    withSpinner(
+                        `${meta.label}: ${_('turning on')}`,
+                        `${meta.label}: ${_('on')}`,
+                        () => meta.set(this._client, saved),
+                    );
+                }
+            } else {
+                // Snapshot the current daemon state before flipping it off
+                // so the next re-enable can restore it.
+                if (meta.type === 'bool')
+                    this._settings.set_boolean(meta.savedKey, !!current);
+                else
+                    this._settings.set_string(meta.savedKey, current || '');
+
+                ToastManager.show({
+                    level: 'success',
+                    message: `${meta.label}: ${_('disabled')}`,
+                });
+                if (current) {
+                    const off = meta.type === 'bool' ? false : '';
+                    withSpinner(
+                        `${meta.label}: ${_('turning off')}`,
+                        `${meta.label}: ${_('off')}`,
+                        () => meta.set(this._client, off),
+                    );
+                }
+            }
+        };
+
+        for (const key of Object.keys(FEATURE_META)) {
             this._settingIds.push(
                 this._settings.connect(`changed::${key}`,
-                    ensureFeatureCompliance),
+                    () => handleFeatureToggled(key)),
+            );
+        }
+
+        // Taildrop & funnels: no daemon state to save/restore; just toast
+        // the feature flip. Funnels still gets its destructive reset via
+        // ensureFeatureCompliance when turned off.
+        for (const [key, label] of [
+            ['feature-taildrop', _('Taildrop')],
+            ['feature-funnels',  _('Funnel')],
+        ]) {
+            this._settingIds.push(
+                this._settings.connect(`changed::${key}`, () => {
+                    const on = this._settings.get_boolean(key);
+                    ToastManager.show({
+                        level: 'success',
+                        message: `${label}: ${on ? _('enabled') : _('disabled')}`,
+                    });
+                    ensureFeatureCompliance();
+                }),
             );
         }
 
@@ -315,19 +464,6 @@ export default class TailscaleGnomeExtension extends Extension {
             };
         case 'shortcut-show-menu':
             return () => this._indicator?.openMenu();
-        case 'shortcut-copy-self-ip':
-            return () => {
-                const ip = this._client.snapshot?.selfIps?.[0];
-                if (!ip) {
-                    ToastManager.show({ level: 'info', message: 'No Tailscale IP yet' });
-                    return;
-                }
-                St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, ip);
-                ToastManager.show({
-                    level: 'success',
-                    message: `Copied ${ip} to clipboard`,
-                });
-            };
         case 'shortcut-open-admin-panel':
             return () => openAdminPanel();
         case 'shortcut-send-file':
