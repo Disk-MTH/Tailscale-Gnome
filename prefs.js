@@ -44,6 +44,24 @@ async function _serviceEnabled() {
     return { available: r.code !== 4, enabled: out === 'enabled' || out === 'enabled-runtime' };
 }
 
+// True when the user can create/write at the given path without elevation:
+// walk up to the first existing ancestor and check the can-write attribute.
+// Empty/relative paths and system roots (/etc, /var, …) all land here via
+// the kernel's own permission bits — no allow-list to maintain.
+function _isPathSafe(p) {
+    if (!p || !p.trim().startsWith('/')) return false;
+    let f = Gio.File.new_for_path(p);
+    while (f && !f.query_exists(null)) f = f.get_parent();
+    if (!f) return false;
+    try {
+        const info = f.query_info(
+            'access::can-write', Gio.FileQueryInfoFlags.NONE, null);
+        return info.get_attribute_boolean('access::can-write');
+    } catch (_) {
+        return false;
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 /*                         Shortcut capture row                               */
 /* -------------------------------------------------------------------------- */
@@ -188,20 +206,60 @@ function _makeTaildropGroup(settings, extensionDir) {
     // committed below, only on apply (Enter / check button) or focus-out.
     inboxRow.text = settings.get_string('taildrop-inbox') || defaultInbox;
 
-    const commitInbox = () => {
-        let v = inboxRow.text.trim();
-        if (v === '') v = defaultInbox;
+    // Warning glyph that surfaces when the typed path would need elevation.
+    // Outline-style symbolic icon tinted with the Adwaita "warning" accent
+    // (yellow/orange), matching the visual language of the rest of the app.
+    const warningIcon = new Gtk.Image({
+        icon_name: 'dialog-warning-symbolic',
+        valign: Gtk.Align.CENTER,
+        tooltip_text: _('Path is empty or not writable without admin privileges.'),
+        visible: false,
+        css_classes: ['warning'],
+    });
+    inboxRow.add_suffix(warningIcon);
+
+    // Canonicalise text (expand ~, force absolute under $HOME) without
+    // touching the row so a transient invalid text doesn't leak back into
+    // the input. Returns the path that would be persisted.
+    const normalisePath = (text) => {
+        let v = (text ?? '').trim();
+        if (v === '') return defaultInbox;
         v = expandHome(v);
-        // Coerce to absolute under $HOME — a relative path would otherwise
-        // make the receiver subprocess create directories in its cwd
-        // (the project root, in dev).
         if (!v.startsWith('/'))
             v = GLib.build_filenamev([GLib.get_home_dir(), v]);
+        return v;
+    };
+
+    const updateValidity = () => {
+        const v = normalisePath(inboxRow.text);
+        const text = inboxRow.text.trim();
+        const valid = text !== '' && _isPathSafe(v);
+        // show_apply_button doubles as our "commit affordance is allowed"
+        // signal. Hiding it when invalid stops both the check-button click
+        // and the Enter key from emitting `apply` on an unwritable path.
+        inboxRow.show_apply_button = valid;
+        warningIcon.visible = !valid;
+    };
+
+    const commitInbox = () => {
+        const text = inboxRow.text.trim();
+        const v = normalisePath(inboxRow.text);
+        // Refuse to persist a path the user can't write to — the receiver
+        // would just crash on first file. Revert to the last committed
+        // value so the row keeps reflecting reality.
+        if (text === '' || !_isPathSafe(v)) {
+            const committed = settings.get_string('taildrop-inbox') || defaultInbox;
+            if (inboxRow.text !== committed) inboxRow.text = committed;
+            updateValidity();
+            return;
+        }
         if (v !== inboxRow.text) inboxRow.text = v;
         if (v !== settings.get_string('taildrop-inbox'))
             settings.set_string('taildrop-inbox', v);
+        updateValidity();
     };
     inboxRow.connect('apply', commitInbox);
+    inboxRow.connect('notify::text', updateValidity);
 
     const focusCtrl = new Gtk.EventControllerFocus();
     inboxRow.add_controller(focusCtrl);
@@ -212,8 +270,11 @@ function _makeTaildropGroup(settings, extensionDir) {
     const inboxId = settings.connect('changed::taildrop-inbox', () => {
         const v = settings.get_string('taildrop-inbox') || defaultInbox;
         if (inboxRow.text !== v) inboxRow.text = v;
+        updateValidity();
     });
     inboxRow.connect('destroy', () => settings.disconnect(inboxId));
+
+    updateValidity();
 
     const browseBtn = new Gtk.Button({
         icon_name: 'document-open-symbolic',
