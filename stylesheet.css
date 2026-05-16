@@ -49,19 +49,6 @@
     padding: 4px 10px;
 }
 
-/* Scrollable middle section wrapping the variable menu items.
-   Strip the default popup-menu-item padding so the inner items look
-   like regular top-level entries. */
-.tailscale-scroll-wrap {
-    padding: 0;
-    margin: 0;
-    spacing: 0;
-}
-.tailscale-scroll-wrap:hover,
-.tailscale-scroll-wrap:focus {
-    background-color: transparent;
-}
-
 /* Compact icon-button injected into the QuickToggleMenu header
    (right side of the title/subtitle area). Keeps the click target small
    so it doesn't compete with the title visually. */
