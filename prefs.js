@@ -142,21 +142,21 @@ class ShortcutRow extends Adw.ActionRow {
 /*                           Service (boot) row                               */
 /* -------------------------------------------------------------------------- */
 
-// Taildrop preferences: accept toggle + inbox folder. The accept toggle is
-// mirrored from gsettings (the quick menu writes it too). The inbox path
-// is text-editable and has a folder picker button as a suffix.
-function _makeTaildropGroup(settings) {
+// Taildrop preferences: inbox folder + Nautilus integration.
+// The accept toggle lives in the Quick Settings panel.
+function _makeTaildropGroup(settings, extensionDir) {
     const group = new Adw.PreferencesGroup({
         title: _('Taildrop'),
         description: _('Send and receive files between Tailscale nodes.'),
     });
-
-    const acceptRow = new Adw.SwitchRow({
-        title: _('Accept incoming files'),
-        subtitle: _('Runs the Tailscale receiver in the background while enabled.'),
-    });
-    settings.bind('taildrop-accept', acceptRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-    group.add(acceptRow);
+    // Mirror the feature switch: when Taildrop is disabled in Features,
+    // these rows are greyed so it's clear they have no effect.
+    const syncSensitivity = () => {
+        group.sensitive = settings.get_boolean('feature-taildrop');
+    };
+    const sensId = settings.connect('changed::feature-taildrop', syncSensitivity);
+    group.connect('destroy', () => settings.disconnect(sensId));
+    syncSensitivity();
 
     const inboxRow = new Adw.EntryRow({
         title: _('Inbox folder'),
@@ -192,18 +192,7 @@ function _makeTaildropGroup(settings) {
     hintRow.add_prefix(new Gtk.Image({ icon_name: 'dialog-information-symbolic' }));
     group.add(hintRow);
 
-    return group;
-}
-
-// File manager integration: install/remove Nautilus scripts that hook
-// "Send with Taildrop" and "Send with Taildrop as ZIP" into the right-click
-// menu of selected files.
-function _makeIntegrationsGroup(extensionDir) {
-    const group = new Adw.PreferencesGroup({
-        title: _('File manager integration'),
-        description: _('Add right-click actions in Nautilus to send selected files via Taildrop.'),
-    });
-
+    // Nautilus right-click integration
     const scriptsDir = GLib.build_filenamev([
         GLib.get_user_data_dir(), 'nautilus', 'scripts',
     ]);
@@ -216,14 +205,15 @@ function _makeIntegrationsGroup(extensionDir) {
         return p1.query_exists(null) && p2.query_exists(null);
     };
 
-    const row = new Adw.ActionRow({
+    const nautilusRow = new Adw.ActionRow({
         title: _('Nautilus right-click scripts'),
+        subtitle: _('Add "Send with Taildrop" to the Nautilus context menu.'),
     });
     const statusLabel = new Gtk.Label({
         valign: Gtk.Align.CENTER,
         css_classes: ['dim-label'],
     });
-    row.add_suffix(statusLabel);
+    nautilusRow.add_suffix(statusLabel);
 
     const installBtn = new Gtk.Button({
         label: _('Install'),
@@ -235,10 +225,10 @@ function _makeIntegrationsGroup(extensionDir) {
         valign: Gtk.Align.CENTER,
         css_classes: ['destructive-action'],
     });
-    row.add_suffix(installBtn);
-    row.add_suffix(removeBtn);
+    nautilusRow.add_suffix(installBtn);
+    nautilusRow.add_suffix(removeBtn);
 
-    const refresh = () => {
+    const refreshNautilus = () => {
         const ok = isInstalled();
         statusLabel.label = ok ? _('Installed') : _('Not installed');
         installBtn.visible = !ok;
@@ -271,7 +261,7 @@ function _makeIntegrationsGroup(extensionDir) {
                 return;
             }
         }
-        refresh();
+        refreshNautilus();
         toast(_('Installed. You may need to restart Nautilus.'));
     });
 
@@ -280,12 +270,13 @@ function _makeIntegrationsGroup(extensionDir) {
             const f = Gio.File.new_for_path(GLib.build_filenamev([scriptsDir, name]));
             try { f.delete(null); } catch (_) {}
         }
-        refresh();
+        refreshNautilus();
         toast(_('Removed.'));
     });
 
-    refresh();
-    group.add(row);
+    refreshNautilus();
+    group.add(nautilusRow);
+
     return group;
 }
 
@@ -338,6 +329,102 @@ function _makeServiceRow() {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                              Features group                                */
+/* -------------------------------------------------------------------------- */
+
+// Each entry can mark itself optional + give an availability cache key.
+// When the cache says the tailnet doesn't allow the feature, the toggle is
+// greyed out and a "Open admin" button + hint subtitle appear.
+const FEATURE_DEFS = [
+    {
+        key: 'feature-exit-nodes',
+        title: () => _('Exit nodes'),
+        subtitle: () => _('Show the Exit-node submenu in Quick Settings.'),
+    },
+    {
+        key: 'feature-dns',
+        title: () => _('Accept DNS'),
+        subtitle: () => _('Show the Accept-DNS toggle in Quick Settings.'),
+    },
+    {
+        key: 'feature-routes',
+        title: () => _('Subnet routes'),
+        subtitle: () => _('Show the Accept-routes toggle and route list.'),
+    },
+    {
+        key: 'feature-shields-up',
+        title: () => _('Shields up'),
+        subtitle: () => _('Show the Shields-up toggle in Quick Settings.'),
+    },
+    {
+        key: 'feature-ssh-server',
+        title: () => _('Tailscale SSH server'),
+        subtitle: () => _('Show the SSH-server toggle in Quick Settings.'),
+    },
+    {
+        key: 'feature-taildrop',
+        title: () => _('Taildrop'),
+        subtitle: () => _('Show Send / Accept files controls in Quick Settings.'),
+        availabilityKey: 'feature-taildrop-available',
+        adminUrl: 'https://login.tailscale.com/admin/acls',
+        unavailableHint: () =>
+            _('Disabled by the tailnet ACL. Add a "node-attrs" rule for "filesharing".'),
+    },
+    {
+        key: 'feature-funnels',
+        title: () => _('Funnel'),
+        subtitle: () => _('Show the Funnel submenu in Quick Settings.'),
+        availabilityKey: 'feature-funnels-available',
+        adminUrl: 'https://login.tailscale.com/admin/funnel',
+        unavailableHint: () =>
+            _('Funnel is not enabled for this tailnet. Enable it in the admin console.'),
+    },
+];
+
+function _openUrl(url) {
+    try { Gio.AppInfo.launch_default_for_uri(url, null); } catch (_) {}
+}
+
+function _makeFeaturesGroup(settings) {
+    const group = new Adw.PreferencesGroup({
+        title: _('Features'),
+        description: _('Choose which Tailscale features appear in the menu.'),
+    });
+
+    for (const def of FEATURE_DEFS) {
+        const row = new Adw.SwitchRow({
+            title: def.title(),
+            subtitle: def.subtitle(),
+        });
+        settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        if (def.availabilityKey) {
+            const adminBtn = new Gtk.Button({
+                label: _('Open admin'),
+                valign: Gtk.Align.CENTER,
+                css_classes: ['flat'],
+            });
+            adminBtn.connect('clicked', () => _openUrl(def.adminUrl));
+            row.add_suffix(adminBtn);
+
+            const refresh = () => {
+                const available = settings.get_boolean(def.availabilityKey);
+                row.sensitive = available;
+                row.subtitle = available ? def.subtitle() : def.unavailableHint();
+                adminBtn.visible = !available;
+            };
+            const id = settings.connect(`changed::${def.availabilityKey}`, refresh);
+            row.connect('destroy', () => settings.disconnect(id));
+            refresh();
+        }
+
+        group.add(row);
+    }
+
+    return group;
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                  Page                                      */
 /* -------------------------------------------------------------------------- */
 
@@ -356,22 +443,11 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         window.add(page);
 
-        /* ----------------------------- Display -------------------------- */
-        const displayGroup = new Adw.PreferencesGroup({
-            title: _('Display'),
-        });
-        page.add(displayGroup);
-
-        const showRow = new Adw.SwitchRow({
-            title: _('Show panel indicator'),
-            subtitle: _('Small Tailscale icon next to Wi-Fi while connected.'),
-        });
-        settings.bind('show-indicator', showRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-        displayGroup.add(showRow);
+        /* ----------------------------- Features ------------------------- */
+        page.add(_makeFeaturesGroup(settings));
 
         /* ----------------------------- Taildrop ------------------------- */
-        page.add(_makeTaildropGroup(settings));
-        page.add(_makeIntegrationsGroup(this.dir));
+        page.add(_makeTaildropGroup(settings, this.dir));
 
         /* ---------------------------- Shortcuts ------------------------- */
         const shortcutsGroup = new Adw.PreferencesGroup({
@@ -397,8 +473,13 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         page.add(advanced);
 
-        // Start at boot lives at the top of Advanced so the section stays
-        // a single, low-frequency settings block.
+        const showRow = new Adw.SwitchRow({
+            title: _('Show panel indicator'),
+            subtitle: _('Small Tailscale icon next to Wi-Fi while connected.'),
+        });
+        settings.bind('show-indicator', showRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        advanced.add(showRow);
+
         advanced.add(_makeServiceRow());
 
         const pollRow = new Adw.SpinRow({

@@ -43,5 +43,6 @@
 
     // Light "intellisense" hint for GJS resource imports.
     "javascript.implicitProjectConfig.target": "ESNext",
-    "javascript.implicitProjectConfig.module": "ESNext"
+    "javascript.implicitProjectConfig.module": "ESNext",
+    "makefile.configureOnOpen": false
 }

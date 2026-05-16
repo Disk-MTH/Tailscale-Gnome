@@ -70,5 +70,48 @@
                 first receipt).</description>
         </key>
 
+        <key name="feature-exit-nodes" type="b">
+            <default>true</default>
+            <summary>Show Exit-node UI</summary>
+        </key>
+        <key name="feature-dns" type="b">
+            <default>true</default>
+            <summary>Show Accept-DNS toggle</summary>
+        </key>
+        <key name="feature-routes" type="b">
+            <default>true</default>
+            <summary>Show Accept-routes toggle</summary>
+        </key>
+        <key name="feature-shields-up" type="b">
+            <default>true</default>
+            <summary>Show Shields-up toggle</summary>
+        </key>
+        <key name="feature-ssh-server" type="b">
+            <default>true</default>
+            <summary>Show SSH-server toggle</summary>
+        </key>
+        <key name="feature-taildrop" type="b">
+            <default>true</default>
+            <summary>Show Taildrop UI</summary>
+        </key>
+        <key name="feature-funnels" type="b">
+            <default>true</default>
+            <summary>Show Funnel UI</summary>
+        </key>
+
+        <key name="feature-taildrop-available" type="b">
+            <default>true</default>
+            <summary>Cached: Taildrop usable on this tailnet</summary>
+            <description>Flipped to false when the daemon reports Taildrop is
+                not enabled by ACL; flipped back to true when a Taildrop call
+                succeeds.</description>
+        </key>
+        <key name="feature-funnels-available" type="b">
+            <default>true</default>
+            <summary>Cached: Funnel enabled for this tailnet</summary>
+            <description>Flipped to false when the daemon reports Funnel is
+                not enabled; flipped back to true when a Funnel call succeeds.</description>
+        </key>
+
     </schema>
 </schemalist>

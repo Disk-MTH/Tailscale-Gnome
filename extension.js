@@ -33,6 +33,7 @@ export default class TailscaleGnomeExtension extends Extension {
         this._client = new TailscaleClient({
             binary:      this._settings.get_string('tailscale-binary') || 'tailscale',
             pollSeconds: this._settings.get_int('poll-interval'),
+            settings:    this._settings,
         });
 
         this._settingIds = [
@@ -67,20 +68,24 @@ export default class TailscaleGnomeExtension extends Extension {
         // Restore Taildrop receiver state. The setting is the source of
         // truth across reloads; the receiver subprocess is owned by the
         // client and gets killed on `disable()` via client.destroy().
-        if (this._settings.get_boolean('taildrop-accept')) {
-            const inbox = this._settings.get_string('taildrop-inbox');
-            this._client.setAcceptFiles(true, inbox);
-        }
+        // The receiver only runs when BOTH the user-facing accept toggle
+        // is on AND the Taildrop feature itself is enabled in prefs.
+        const syncTaildrop = () => {
+            const featureOn = this._settings.get_boolean('feature-taildrop');
+            const acceptOn  = this._settings.get_boolean('taildrop-accept');
+            const inbox     = this._settings.get_string('taildrop-inbox');
+            this._client.setAcceptFiles(featureOn && acceptOn, inbox);
+        };
+        syncTaildrop();
         this._settingIds.push(
-            this._settings.connect('changed::taildrop-accept', () => {
-                const on    = this._settings.get_boolean('taildrop-accept');
-                const inbox = this._settings.get_string('taildrop-inbox');
-                this._client.setAcceptFiles(on, inbox);
-            }),
+            this._settings.connect('changed::taildrop-accept',  syncTaildrop),
+            this._settings.connect('changed::feature-taildrop', syncTaildrop),
             this._settings.connect('changed::taildrop-inbox', () => {
-                // Inbox path changed: bounce the receiver if it's on so the
-                // new directory takes effect.
-                if (this._settings.get_boolean('taildrop-accept')) {
+                // Inbox path changed: bounce the receiver if it's running so
+                // the new directory takes effect.
+                const featureOn = this._settings.get_boolean('feature-taildrop');
+                const acceptOn  = this._settings.get_boolean('taildrop-accept');
+                if (featureOn && acceptOn) {
                     this._client.setAcceptFiles(false);
                     this._client.setAcceptFiles(true,
                         this._settings.get_string('taildrop-inbox'));
@@ -105,12 +110,59 @@ export default class TailscaleGnomeExtension extends Extension {
                 return GLib.SOURCE_REMOVE;
             },
         );
+
+        /* -------------------- feature enforcement -------------------- */
+        // A Feature toggled OFF in prefs must also disable the underlying
+        // tailscale setting -hiding the menu UI alone leaves the feature
+        // active (e.g. accept-routes still letting traffic through). We
+        // run a reconciliation pass on every state-changed AND on every
+        // feature pref change; both calls are idempotent because each
+        // check is gated on "off in prefs but still on in the snapshot".
+        const ensureFeatureCompliance = () => {
+            const snap = this._client?.snapshot;
+            if (!snap || !snap.canControl || snap.loggedOut ||
+                snap.backendState === 'NeedsLogin' ||
+                snap.backendState === 'NoState')
+                return;
+            const off = (k) => !this._settings.get_boolean(k);
+            if (off('feature-exit-nodes') &&
+                (snap.exitNodeID || snap.autoExitNode))
+                this._client.setExitNode('');
+            if (off('feature-dns') && snap.acceptDNS)
+                this._client.setAcceptDNS(false);
+            if (off('feature-routes') && snap.acceptRoutes)
+                this._client.setAcceptRoutes(false);
+            if (off('feature-shields-up') && snap.shieldsUp)
+                this._client.setShieldsUp(false);
+            if (off('feature-ssh-server') && snap.runSSH)
+                this._client.setRunSSH(false);
+            if (off('feature-funnels') && (snap.funnels?.length || 0) > 0)
+                this._client.resetFunnels();
+        };
+
+        this._clientSignalIds = [
+            this._client.connect('state-changed', ensureFeatureCompliance),
+        ];
+
+        for (const key of [
+            'feature-exit-nodes', 'feature-dns', 'feature-routes',
+            'feature-shields-up', 'feature-ssh-server', 'feature-funnels',
+        ]) {
+            this._settingIds.push(
+                this._settings.connect(`changed::${key}`,
+                    ensureFeatureCompliance),
+            );
+        }
     }
 
     disable() {
         for (const id of this._settingIds ?? [])
             this._settings.disconnect(id);
         this._settingIds = [];
+
+        for (const id of this._clientSignalIds ?? [])
+            this._client?.disconnect(id);
+        this._clientSignalIds = [];
 
         if (this._startupCheckId) {
             GLib.source_remove(this._startupCheckId);
