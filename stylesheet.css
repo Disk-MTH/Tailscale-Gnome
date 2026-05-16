@@ -64,10 +64,7 @@
     background-color: rgba(255, 255, 255, 0.08);
 }
 .tailscale-header-btn StIcon {
-    icon-size: 14px;
-    opacity: 0.75;
-}
-.tailscale-header-btn:hover StIcon {
+    icon-size: 16px;
     opacity: 1;
 }
 
@@ -111,14 +108,13 @@
 
 /* Toast feedback widgets inherit the native .osd-window look (theme-aware
    background, radius, font weight). Single-line horizontal layout: icon on
-   the left, label on the right. */
+   the left, label on the right. Width follows content — no min-width so
+   short labels don't leave dead space inside the bubble. */
 .tailscale-osd {
-    min-width: 180px;
     spacing: 8px;
 }
 .tailscale-osd-label {
     font-weight: bold;
 }
-.tailscale-osd-icon-success { color: #66d68a; }
-.tailscale-osd-icon-error   { color: #e07b7b; }
-.tailscale-osd-icon-info    { color: #8ab4f8; }
+.tailscale-osd-icon-error { color: #e07b7b; }
+.tailscale-osd-icon-info  { color: #8ab4f8; }

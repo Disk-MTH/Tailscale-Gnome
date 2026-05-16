@@ -158,11 +158,62 @@ function _makeTaildropGroup(settings, extensionDir) {
     group.connect('destroy', () => settings.disconnect(sensId));
     syncSensitivity();
 
+    // Default inbox: must match TailscaleClient._resolveInbox in lib/tailscale.js.
+    const defaultInbox = GLib.build_filenamev([
+        GLib.get_home_dir(), 'Downloads', 'Taildrop',
+    ]);
+    // Migrate "empty means default" to an explicit prefilled value so the
+    // input is never blank. The receiver treats both equivalently.
+    if (!settings.get_string('taildrop-inbox'))
+        settings.set_string('taildrop-inbox', defaultInbox);
+
+    // Expand ~ and $HOME into an absolute path, leaving relative paths
+    // alone so the user can spot and correct them on commit.
+    const expandHome = (p) => {
+        if (!p) return p;
+        if (p === '~' || p.startsWith('~/'))
+            return GLib.build_filenamev([GLib.get_home_dir(), p.slice(2)]);
+        if (p.startsWith('$HOME'))
+            return GLib.build_filenamev([GLib.get_home_dir(), p.slice(5).replace(/^\//, '')]);
+        return p;
+    };
+
     const inboxRow = new Adw.EntryRow({
-        title: _('Inbox folder'),
-        show_apply_button: false,
+        title: _('Inbox folder (created if it does not exist)'),
+        show_apply_button: true,
     });
-    settings.bind('taildrop-inbox', inboxRow, 'text', Gio.SettingsBindFlags.DEFAULT);
+    // Initialise from the stored value but do NOT live-bind to settings;
+    // every keystroke would otherwise restart the receiver and pre-create
+    // partial folders ("T", "Ta", "Tai", ...) on disk. The setting is
+    // committed below, only on apply (Enter / check button) or focus-out.
+    inboxRow.text = settings.get_string('taildrop-inbox') || defaultInbox;
+
+    const commitInbox = () => {
+        let v = inboxRow.text.trim();
+        if (v === '') v = defaultInbox;
+        v = expandHome(v);
+        // Coerce to absolute under $HOME — a relative path would otherwise
+        // make the receiver subprocess create directories in its cwd
+        // (the project root, in dev).
+        if (!v.startsWith('/'))
+            v = GLib.build_filenamev([GLib.get_home_dir(), v]);
+        if (v !== inboxRow.text) inboxRow.text = v;
+        if (v !== settings.get_string('taildrop-inbox'))
+            settings.set_string('taildrop-inbox', v);
+    };
+    inboxRow.connect('apply', commitInbox);
+
+    const focusCtrl = new Gtk.EventControllerFocus();
+    inboxRow.add_controller(focusCtrl);
+    focusCtrl.connect('leave', commitInbox);
+
+    // Keep the row in sync when the setting is changed externally
+    // (e.g. the reset button below, or another prefs window).
+    const inboxId = settings.connect('changed::taildrop-inbox', () => {
+        const v = settings.get_string('taildrop-inbox') || defaultInbox;
+        if (inboxRow.text !== v) inboxRow.text = v;
+    });
+    inboxRow.connect('destroy', () => settings.disconnect(inboxId));
 
     const browseBtn = new Gtk.Button({
         icon_name: 'document-open-symbolic',
@@ -178,19 +229,28 @@ function _makeTaildropGroup(settings, extensionDir) {
         dlg.select_folder(group.get_root(), null, (d, res) => {
             try {
                 const f = d.select_folder_finish(res);
-                if (f) inboxRow.text = f.get_path();
+                if (f) {
+                    inboxRow.text = f.get_path();
+                    commitInbox();
+                }
             } catch (_) { /* cancelled */ }
         });
     });
-    inboxRow.add_suffix(browseBtn);
-    group.add(inboxRow);
 
-    const hintRow = new Adw.ActionRow({
-        title: _('Folder is created if it does not exist'),
-        subtitle: _('Leave empty to use ~/Downloads/Taildrop.'),
+    const resetBtn = new Gtk.Button({
+        icon_name: 'view-refresh-symbolic',
+        valign: Gtk.Align.CENTER,
+        css_classes: ['flat'],
+        tooltip_text: _('Reset to default'),
     });
-    hintRow.add_prefix(new Gtk.Image({ icon_name: 'dialog-information-symbolic' }));
-    group.add(hintRow);
+    resetBtn.connect('clicked', () => {
+        inboxRow.text = defaultInbox;
+        commitInbox();
+    });
+
+    inboxRow.add_suffix(browseBtn);
+    inboxRow.add_suffix(resetBtn);
+    group.add(inboxRow);
 
     // Nautilus right-click integration
     const scriptsDir = GLib.build_filenamev([
@@ -363,6 +423,21 @@ function _openUrl(url) {
     try { Gio.AppInfo.launch_default_for_uri(url, null); } catch (_) {}
 }
 
+// Per-row reset suffix: restores the GSettings key to its schema default.
+// `view-refresh-symbolic` is reused intentionally to make the gesture
+// recognisable across rows (the Quick Settings refresh icon is the more
+// distinctive `emblem-synchronizing-symbolic` to avoid confusion).
+function _resetButton(settings, key) {
+    const btn = new Gtk.Button({
+        icon_name: 'view-refresh-symbolic',
+        valign: Gtk.Align.CENTER,
+        css_classes: ['flat'],
+        tooltip_text: _('Reset to default'),
+    });
+    btn.connect('clicked', () => settings.reset(key));
+    return btn;
+}
+
 function _makeFeaturesGroup(settings) {
     const group = new Adw.PreferencesGroup({
         title: _('Features'),
@@ -393,6 +468,7 @@ function _makeFeaturesGroup(settings) {
             refresh();
         }
 
+        row.add_suffix(_resetButton(settings, def.key));
         group.add(row);
     }
 
@@ -435,7 +511,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             { key: 'shortcut-toggle-tailscale',  title: _('Connect / disconnect Tailscale') },
             { key: 'shortcut-toggle-exit-node',  title: _('Toggle automatic exit node') },
             { key: 'shortcut-show-menu',         title: _('Open the Tailscale menu') },
-            { key: 'shortcut-copy-self-ip',      title: _("Copy this device's Tailscale IP") },
             { key: 'shortcut-open-admin-panel',  title: _('Open the Tailscale admin console') },
             { key: 'shortcut-send-file',         title: _('Send a file via Taildrop') },
         ]) {
@@ -448,14 +523,17 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         page.add(advanced);
 
+        // The systemd unit toggle isn't a GSettings key, so no reset
+        // suffix; the system manages its own state.
+        advanced.add(_makeServiceRow());
+
         const showRow = new Adw.SwitchRow({
             title: _('Show panel indicator'),
             subtitle: _('Small Tailscale icon next to Wi-Fi while connected.'),
         });
         settings.bind('show-indicator', showRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        showRow.add_suffix(_resetButton(settings, 'show-indicator'));
         advanced.add(showRow);
-
-        advanced.add(_makeServiceRow());
 
         const pollRow = new Adw.SpinRow({
             title: _('Poll interval'),
@@ -465,6 +543,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             }),
         });
         settings.bind('poll-interval', pollRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        pollRow.add_suffix(_resetButton(settings, 'poll-interval'));
         advanced.add(pollRow);
 
         const toastDurRow = new Adw.SpinRow({
@@ -475,6 +554,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             }),
         });
         settings.bind('toast-duration', toastDurRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        toastDurRow.add_suffix(_resetButton(settings, 'toast-duration'));
         advanced.add(toastDurRow);
 
         const spinnerRow = new Adw.SpinRow({
@@ -485,11 +565,48 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             }),
         });
         settings.bind('toast-min-spinner', spinnerRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        spinnerRow.add_suffix(_resetButton(settings, 'toast-min-spinner'));
         advanced.add(spinnerRow);
 
         const binaryRow = new Adw.EntryRow({ title: _('tailscale binary') });
         settings.bind('tailscale-binary', binaryRow, 'text', Gio.SettingsBindFlags.DEFAULT);
+        binaryRow.add_suffix(_resetButton(settings, 'tailscale-binary'));
         advanced.add(binaryRow);
+
+        /* ----------------------------- Reset all ------------------------ */
+        // Global "reset everything" lives in its own group so it gets a
+        // visual break from the dense list of settings above.
+        const resetGroup = new Adw.PreferencesGroup();
+        const resetAllRow = new Adw.ActionRow({
+            title: _('Reset all settings'),
+            subtitle: _('Restore every setting on this page to its default.'),
+        });
+        const resetAllBtn = new Gtk.Button({
+            label: _('Reset all'),
+            valign: Gtk.Align.CENTER,
+            css_classes: ['destructive-action'],
+        });
+        resetAllBtn.connect('clicked', () => {
+            // Skip cache/saved-state keys: resetting those would orphan
+            // the prior tailscale state the user expects to come back.
+            const skip = new Set([
+                'feature-taildrop-available', 'feature-funnels-available',
+                'feature-exit-nodes-saved', 'feature-dns-saved',
+                'feature-routes-saved', 'feature-shields-up-saved',
+                'feature-ssh-server-saved',
+            ]);
+            for (const k of settings.list_keys()) {
+                if (skip.has(k)) continue;
+                settings.reset(k);
+            }
+            window.add_toast?.(new Adw.Toast({
+                title: _('All settings reset to defaults'),
+                timeout: 3,
+            }));
+        });
+        resetAllRow.add_suffix(resetAllBtn);
+        resetGroup.add(resetAllRow);
+        page.add(resetGroup);
 
     }
 }
