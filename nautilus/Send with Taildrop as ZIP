@@ -1,51 +1,48 @@
 #!/usr/bin/env bash
-# Nautilus right-click action: zip the selection and send the archive via
-# Taildrop. Useful for folders or many files.
+# Nautilus right-click action: zip the selection, then hand the archive off
+# to the Tailscale GNOME extension via DBus (same native picker as the
+# Quick Settings "Send file" entry).
 
 set -eu
 
+LOG_TAG="tailscale-taildrop"
+
+notify_ok()   { notify-send -a "Tailscale" -i tailscale-symbolic           "Tailscale" "$1" || true; }
+notify_err()  { notify-send -a "Tailscale" -i tailscale-symbolic -u critical "Tailscale" "$1" || true; }
+log_err()     { logger -t "$LOG_TAG" -p user.err -- "$1" || true; }
+
 if [ "$#" -eq 0 ]; then
-    zenity --error --text="No files selected." --no-wrap
+    notify_err "Send with Taildrop (ZIP): no files selected."
     exit 1
 fi
-
-mapfile -t TARGETS < <(
-    tailscale file cp --targets 2>/dev/null \
-        | awk -F'\t' '$3 !~ /offline/ {printf "%s\n%s\n", $2, $1}'
-)
-if [ "${#TARGETS[@]}" -eq 0 ]; then
-    zenity --error --text="No online Tailscale peers available." --no-wrap
-    exit 1
-fi
-
-PEER=$(printf '%s\n' "${TARGETS[@]}" \
-    | zenity --list \
-        --title="Send via Taildrop (ZIP)" \
-        --column="Peer" --column="IP" \
-        --print-column=2 --hide-column=2 \
-        --width=380 --height=320)
-[ -z "${PEER:-}" ] && exit 0
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
-# Name the archive after the first selected item to give the receiver a hint.
+# Archive name = first selection + timestamp, so the receiver gets a hint.
 FIRST_NAME=$(basename -- "$1")
 ZIP_NAME="${FIRST_NAME%.*}-$(date +%Y%m%d-%H%M%S).zip"
 ZIP_PATH="$TMPDIR/$ZIP_NAME"
 
-# zip wants paths relative to its CWD for clean entry names. We cd into each
-# parent and add the basename so the archive doesn't bake in absolute paths.
-(
-    for f in "$@"; do
-        dir=$(dirname -- "$f")
-        base=$(basename -- "$f")
-        ( cd "$dir" && zip -qr "$ZIP_PATH" "$base" )
-    done
-)
+# Add each item with its basename only (clean entry names in the archive).
+for f in "$@"; do
+    dir=$(dirname -- "$f")
+    base=$(basename -- "$f")
+    if ! err=$( ( cd "$dir" && zip -qr "$ZIP_PATH" "$base" ) 2>&1 ); then
+        log_err "zip failed for $base: $err"
+        notify_err "Failed to create archive ($base)."
+        exit 1
+    fi
+done
 
-if tailscale file cp "$ZIP_PATH" "${PEER}:"; then
-    zenity --notification --text="Sent $ZIP_NAME via Taildrop"
-else
-    zenity --error --text="Taildrop send failed." --no-wrap
+esc=${ZIP_PATH//\\/\\\\}
+esc=${esc//\"/\\\"}
+if ! err=$(gdbus call --session \
+        --dest fr.diskmth.TailscaleGnome \
+        --object-path /fr/diskmth/TailscaleGnome \
+        --method fr.diskmth.TailscaleGnome.SendFiles \
+        "[\"$esc\"]" 2>&1); then
+    log_err "DBus SendFiles failed: $err"
+    notify_err "Tailscale GNOME extension is not running or DBus call failed."
+    exit 1
 fi

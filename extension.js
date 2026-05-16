@@ -12,6 +12,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
+import { ToastManager } from './lib/toast.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
 // one accelerators (e.g. ["<Super>t"]). Empty array = unbound.
@@ -26,9 +27,25 @@ const SHORTCUT_KEYS = [
 
 const ADMIN_URL = 'https://login.tailscale.com/admin/machines';
 
+// Session-bus interface exposed for the Nautilus right-click scripts so they
+// can hand off file paths to the in-shell picker instead of running their own
+// (Zenity-based) UI. Kept tiny on purpose: one method, no signals.
+const DBUS_NAME = 'fr.diskmth.TailscaleGnome';
+const DBUS_PATH = '/fr/diskmth/TailscaleGnome';
+const DBUS_XML = `
+<node>
+  <interface name="fr.diskmth.TailscaleGnome">
+    <method name="SendFiles">
+      <arg type="as" name="paths" direction="in"/>
+    </method>
+  </interface>
+</node>`;
+
 export default class TailscaleGnomeExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
+
+        ToastManager.init(this._settings);
 
         this._client = new TailscaleClient({
             binary:      this._settings.get_string('tailscale-binary') || 'tailscale',
@@ -153,9 +170,50 @@ export default class TailscaleGnomeExtension extends Extension {
                     ensureFeatureCompliance),
             );
         }
+
+        this._exportDbus();
+    }
+
+    /* ------------------------------- DBus ------------------------------- */
+
+    _exportDbus() {
+        try {
+            this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(DBUS_XML, {
+                SendFiles: (paths) => {
+                    const files = (paths || []).filter((p) => p);
+                    if (files.length === 0) return;
+                    this._indicator?._toggle?._runSendFlow?.(files);
+                },
+            });
+            this._dbusImpl.export(Gio.DBus.session, DBUS_PATH);
+            this._dbusOwnerId = Gio.bus_own_name(
+                Gio.BusType.SESSION,
+                DBUS_NAME,
+                Gio.BusNameOwnerFlags.NONE,
+                null, null, null,
+            );
+        } catch (e) {
+            // Non-fatal: a name collision (another instance, stale name) just
+            // means the Nautilus scripts can't hand off; the shortcut and
+            // menu entry still work.
+            console.warn(`tailscale-gnome: DBus export failed: ${e.message}`);
+        }
+    }
+
+    _unexportDbus() {
+        if (this._dbusOwnerId) {
+            Gio.bus_unown_name(this._dbusOwnerId);
+            this._dbusOwnerId = 0;
+        }
+        if (this._dbusImpl) {
+            try { this._dbusImpl.unexport(); } catch (_) {}
+            this._dbusImpl = null;
+        }
     }
 
     disable() {
+        this._unexportDbus();
+
         for (const id of this._settingIds ?? [])
             this._settings.disconnect(id);
         this._settingIds = [];
@@ -178,6 +236,8 @@ export default class TailscaleGnomeExtension extends Extension {
 
         this._client?.destroy();
         this._client = null;
+
+        ToastManager.destroy();
 
         this._settings = null;
     }
@@ -217,16 +277,41 @@ export default class TailscaleGnomeExtension extends Extension {
                     snap.backendState !== 'NoState';
                 if (!ready) {
                     if (!snap.canControl) this._client.setOperator();
-                    else Main.notify('Tailscale', 'Login required');
+                    else ToastManager.show({ level: 'info', message: 'Login required' });
                     return;
                 }
-                if (snap.running) this._client.down();
-                else this._client.up();
+                const toggle = this._indicator?._toggle;
+                if (snap.running) {
+                    toggle?._withFeedback(
+                        'Disconnecting Tailscale',
+                        'Tailscale disconnected',
+                        () => this._client.down(),
+                    );
+                } else {
+                    toggle?._withFeedback(
+                        'Connecting Tailscale',
+                        'Tailscale connected',
+                        () => this._client.up(),
+                    );
+                }
             };
         case 'shortcut-toggle-exit-node':
             return () => {
                 const snap = this._client.snapshot;
-                this._client.setExitNode(snap.exitNodeID ? '' : 'auto:any');
+                const toggle = this._indicator?._toggle;
+                if (snap.exitNodeID) {
+                    toggle?._withFeedback(
+                        'Clearing exit node',
+                        'Exit node cleared',
+                        () => this._client.setExitNode(''),
+                    );
+                } else {
+                    toggle?._withFeedback(
+                        'Selecting an exit node',
+                        'Exit node: auto',
+                        () => this._client.setExitNode('auto:any'),
+                    );
+                }
             };
         case 'shortcut-show-menu':
             return () => this._indicator?.openMenu();
@@ -234,11 +319,14 @@ export default class TailscaleGnomeExtension extends Extension {
             return () => {
                 const ip = this._client.snapshot?.selfIps?.[0];
                 if (!ip) {
-                    Main.notify('Tailscale', 'No Tailscale IP yet');
+                    ToastManager.show({ level: 'info', message: 'No Tailscale IP yet' });
                     return;
                 }
                 St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, ip);
-                Main.notify('Tailscale', `Copied ${ip} to clipboard`);
+                ToastManager.show({
+                    level: 'success',
+                    message: `Copied ${ip} to clipboard`,
+                });
             };
         case 'shortcut-open-admin-panel':
             return () => openAdminPanel();
@@ -254,6 +342,9 @@ export function openAdminPanel() {
     try {
         Gio.AppInfo.launch_default_for_uri(ADMIN_URL, null);
     } catch (e) {
-        Main.notify('Tailscale', `Could not open ${ADMIN_URL}`);
+        ToastManager.show({
+            level: 'error',
+            message: `Could not open ${ADMIN_URL}`,
+        });
     }
 }

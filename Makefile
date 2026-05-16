@@ -16,6 +16,7 @@ SOURCES := \
     lib/tailscale.js \
     lib/indicator.js \
     lib/menu.js \
+    lib/toast.js \
     icons/tailscale-symbolic.svg \
     icons/tailscale-disabled-symbolic.svg \
     $(SCHEMA) \

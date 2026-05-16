@@ -113,5 +113,21 @@
                 not enabled; flipped back to true when a Funnel call succeeds.</description>
         </key>
 
+        <key name="toast-duration" type="u">
+            <default>3</default>
+            <range min="1" max="10"/>
+            <summary>Toast display duration (seconds)</summary>
+            <description>How long success / error / info toasts stay on
+                screen after the action completes.</description>
+        </key>
+        <key name="toast-min-spinner" type="u">
+            <default>1000</default>
+            <range min="0" max="3000"/>
+            <summary>Minimum spinner duration (milliseconds)</summary>
+            <description>Floor the pending-state spinner stays visible
+                before transitioning to the result, so instant operations
+                don't flash. 0 disables the floor.</description>
+        </key>
+
     </schema>
 </schemalist>
