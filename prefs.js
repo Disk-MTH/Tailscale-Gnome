@@ -466,17 +466,21 @@ const FEATURE_DEFS = [
         key: 'feature-taildrop',
         title: () => _('Taildrop'),
         availabilityKey: 'feature-taildrop-available',
-        adminUrl: 'https://login.tailscale.com/admin/acls',
+        adminUrl: 'https://login.tailscale.com/admin/settings/general',
         unavailableHint: () =>
-            _('Disabled by the tailnet ACL. Add a "node-attrs" rule for "filesharing".'),
+            _('Taildrop is disabled for this tailnet.'),
+        infoTooltip: () => _(
+            'Taildrop requires the feature to be enabled for the tailnet and the source and destination devices to be owned by the same user. Devices owned by a tag or by different users are not eligible.\n\nLearn more: https://tailscale.com/docs/features/taildrop'),
     },
     {
         key: 'feature-funnels',
         title: () => _('Funnel'),
         availabilityKey: 'feature-funnels-available',
-        adminUrl: 'https://login.tailscale.com/admin/funnel',
+        adminUrl: 'https://login.tailscale.com/admin/acls',
         unavailableHint: () =>
-            _('Funnel is not enabled for this tailnet. Enable it in the admin console.'),
+            _('Funnel is not enabled for this tailnet.'),
+        infoTooltip: () => _(
+            'Funnel requires HTTPS certificates to be enabled tailnet-wide and the "funnel" node attribute granted to the current user.\n\nLearn more: https://tailscale.com/docs/features/tailscale-funnel'),
     },
 ];
 
@@ -499,42 +503,82 @@ function _resetButton(settings, key) {
     return btn;
 }
 
+// Build a single Features row. Rows with an availabilityKey use a manual
+// ActionRow + Gtk.Switch so we can:
+//   - render the switch visually OFF when the daemon reports the feature
+//     as unavailable (Adw.SwitchRow ties active to the bound setting and
+//     stays ON when greyed, which read as confusing),
+//   - keep the "Open admin" button clickable while the switch is greyed
+//     (row.sensitive=false would propagate to all children, including the
+//     button — so we only flip the switch's sensitivity).
+function _makeFeatureRow(settings, def) {
+    if (!def.availabilityKey) {
+        const row = new Adw.SwitchRow({ title: def.title() });
+        settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
+        row.add_suffix(_resetButton(settings, def.key));
+        return row;
+    }
+
+    const row = new Adw.ActionRow({ title: def.title() });
+
+    if (def.infoTooltip) {
+        const info = new Gtk.Image({
+            icon_name: 'dialog-information-symbolic',
+            valign: Gtk.Align.CENTER,
+            tooltip_text: def.infoTooltip(),
+            css_classes: ['dim-label'],
+        });
+        row.add_prefix(info);
+    }
+
+    const switchWidget = new Gtk.Switch({
+        valign: Gtk.Align.CENTER,
+    });
+
+    const adminBtn = new Gtk.Button({
+        label: _('Open admin'),
+        valign: Gtk.Align.CENTER,
+        css_classes: ['suggested-action'],
+    });
+    adminBtn.connect('clicked', () => _openUrl(def.adminUrl));
+
+    row.set_activatable_widget(switchWidget);
+    row.add_suffix(switchWidget);
+    row.add_suffix(adminBtn);
+    row.add_suffix(_resetButton(settings, def.key));
+
+    let guard = false;
+    const sync = () => {
+        guard = true;
+        const available = settings.get_boolean(def.availabilityKey);
+        const saved = settings.get_boolean(def.key);
+        switchWidget.sensitive = available;
+        switchWidget.active = available && saved;
+        row.subtitle = available ? '' : def.unavailableHint();
+        adminBtn.visible = !available;
+        guard = false;
+    };
+    const ids = [
+        settings.connect(`changed::${def.availabilityKey}`, sync),
+        settings.connect(`changed::${def.key}`, sync),
+    ];
+    switchWidget.connect('notify::active', () => {
+        if (guard) return;
+        if (!settings.get_boolean(def.availabilityKey)) return;
+        settings.set_boolean(def.key, switchWidget.active);
+    });
+    row.connect('destroy', () => ids.forEach((id) => settings.disconnect(id)));
+    sync();
+    return row;
+}
+
 function _makeFeaturesGroup(settings) {
     const group = new Adw.PreferencesGroup({
         title: _('Features'),
         description: _('Enable or disable specific Tailscale features. Disabled features are hidden from the Quick Settings menu.'),
     });
-
-    for (const def of FEATURE_DEFS) {
-        const row = new Adw.SwitchRow({ title: def.title() });
-        settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
-
-        if (def.availabilityKey) {
-            // suggested-action so the button reads as a clear call-to-action
-            // when it shows up (flat would have looked like a label).
-            const adminBtn = new Gtk.Button({
-                label: _('Open admin'),
-                valign: Gtk.Align.CENTER,
-                css_classes: ['suggested-action'],
-            });
-            adminBtn.connect('clicked', () => _openUrl(def.adminUrl));
-            row.add_suffix(adminBtn);
-
-            const refresh = () => {
-                const available = settings.get_boolean(def.availabilityKey);
-                row.sensitive = available;
-                row.subtitle = available ? '' : def.unavailableHint();
-                adminBtn.visible = !available;
-            };
-            const id = settings.connect(`changed::${def.availabilityKey}`, refresh);
-            row.connect('destroy', () => settings.disconnect(id));
-            refresh();
-        }
-
-        row.add_suffix(_resetButton(settings, def.key));
-        group.add(row);
-    }
-
+    for (const def of FEATURE_DEFS)
+        group.add(_makeFeatureRow(settings, def));
     return group;
 }
 

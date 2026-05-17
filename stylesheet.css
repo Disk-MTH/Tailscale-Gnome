@@ -66,6 +66,8 @@
 .tailscale-header-btn StIcon {
     icon-size: 16px;
     opacity: 1;
+    -st-icon-style: symbolic;
+    color: white;
 }
 
 /* Taildrop send dialog (in-shell ModalDialog). Mirrors the look of the
