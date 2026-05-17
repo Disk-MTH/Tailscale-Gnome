@@ -114,6 +114,7 @@
    short labels don't leave dead space inside the bubble. */
 .tailscale-osd {
     spacing: 8px;
+    margin: 0;
 }
 .tailscale-osd-label {
     font-weight: bold;
