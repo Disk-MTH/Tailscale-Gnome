@@ -122,3 +122,10 @@
 .tailscale-osd-icon-error   { color: #e07b7b; }
 .tailscale-osd-icon-warning { color: #e6b800; }
 .tailscale-osd-icon-info    { color: #8ab4f8; }
+
+/* Warning glyph next to the exit-node pill when the selected node is
+   unreachable. Same amber tone as the toast warning icon. */
+.tailscale-exit-warn-icon {
+    color: #e6b800;
+    margin-right: 4px;
+}
