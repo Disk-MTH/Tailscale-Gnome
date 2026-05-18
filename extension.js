@@ -12,6 +12,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
 import { ToastManager } from './lib/toast.js';
+import { PerAccountFeatureState } from './lib/per-account.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
 // one accelerators (e.g. ["<Super>t"]). Empty array = unbound.
@@ -79,6 +80,12 @@ export default class TailscaleGnomeExtension extends Extension {
             this._rebindShortcut(key);
 
         this._client.start();
+
+        // Per-tailnet feature-state persistence. Constructed after
+        // start() so it can seed itself from the first snapshot the
+        // client buffers, and before the availability probe so the
+        // probe's writes land in the active slot.
+        this._perAccount = new PerAccountFeatureState(this._settings, this._client);
 
         // One-shot Taildrop/Funnel availability probe at startup, then
         // again whenever the active tailnet changes — admin ACLs differ
@@ -414,6 +421,9 @@ export default class TailscaleGnomeExtension extends Extension {
         for (const key of this._boundShortcuts ?? [])
             Main.wm.removeKeybinding(key);
         this._boundShortcuts = null;
+
+        this._perAccount?.destroy();
+        this._perAccount = null;
 
         this._indicator?.destroy();
         this._indicator = null;
