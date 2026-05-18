@@ -119,5 +119,6 @@
 .tailscale-osd-label {
     font-weight: bold;
 }
-.tailscale-osd-icon-error { color: #e07b7b; }
-.tailscale-osd-icon-info  { color: #8ab4f8; }
+.tailscale-osd-icon-error   { color: #e07b7b; }
+.tailscale-osd-icon-warning { color: #e6b800; }
+.tailscale-osd-icon-info    { color: #8ab4f8; }

@@ -206,7 +206,10 @@ function _makeTaildropGroup(settings, extensionDir) {
             settings.get_boolean("feature-taildrop") &&
             settings.get_boolean("feature-taildrop-available");
     };
-    const sensId = settings.connect("changed::feature-taildrop", syncSensitivity);
+    const sensId = settings.connect(
+        "changed::feature-taildrop",
+        syncSensitivity,
+    );
     const sensId2 = settings.connect(
         "changed::feature-taildrop-available",
         syncSensitivity,
@@ -668,7 +671,7 @@ function _makeFeatureRow(settings, def, window) {
     adminBtn.connect("clicked", () => _openUrl(def.adminUrl));
 
     const checkBtn = new Gtk.Button({
-        icon_name: "update-symbolic",
+        icon_name: "rotation-allowed-symbolic",
         valign: Gtk.Align.CENTER,
         css_classes: ["flat"],
         tooltip_text: _("Check availability"),
@@ -698,11 +701,13 @@ function _makeFeatureRow(settings, def, window) {
         }
     });
 
+    const resetBtn = _resetButton(settings, def.key);
+
     row.set_activatable_widget(switchWidget);
     row.add_suffix(switchWidget);
     row.add_suffix(checkBtn);
     row.add_suffix(adminBtn);
-    row.add_suffix(_resetButton(settings, def.key));
+    row.add_suffix(resetBtn);
 
     let guard = false;
     const sync = () => {
@@ -713,6 +718,9 @@ function _makeFeatureRow(settings, def, window) {
         switchWidget.active = available && saved;
         row.subtitle = available ? "" : def.unavailableHint();
         adminBtn.visible = !available;
+        // Reset makes no sense when admin has disabled the feature — the
+        // switch is forced off regardless, so the stored pref is irrelevant.
+        resetBtn.visible = available;
         guard = false;
     };
     const ids = [
@@ -819,9 +827,9 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
 
         const pollRow = new Adw.SpinRow({
             title: _("Poll interval"),
-            subtitle: _("Seconds between status refreshes (2 to 60)."),
+            subtitle: _("Seconds between status refreshes (1 to 60)."),
             adjustment: new Gtk.Adjustment({
-                lower: 2,
+                lower: 1,
                 upper: 60,
                 step_increment: 1,
                 page_increment: 5,
@@ -899,22 +907,28 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             valign: Gtk.Align.CENTER,
             css_classes: ["destructive-action"],
         });
-        resetAllBtn.connect("clicked", () => {
-            // Skip cache/saved-state keys: resetting those would orphan
-            // the prior tailscale state the user expects to come back.
-            const skip = new Set([
-                "feature-taildrop-available",
-                "feature-funnels-available",
-                "feature-exit-nodes-saved",
-                "feature-dns-saved",
-                "feature-routes-saved",
-                "feature-shields-up-saved",
-                "feature-ssh-server-saved",
-            ]);
-            for (const k of settings.list_keys()) {
-                if (skip.has(k)) continue;
+        resetAllBtn.connect("clicked", async () => {
+            // Reset all GSettings keys to their schema defaults.
+            for (const k of settings.list_keys())
                 settings.reset(k);
+
+            // Also apply the corresponding defaults to the Tailscale daemon
+            // so the Quick Settings menu reflects the reset state:
+            //   Magic DNS off, accept routes off, shields up off,
+            //   SSH server off, exit node cleared.
+            const bin = settings.get_string("tailscale-binary") || "tailscale";
+            try {
+                await _spawn([bin, "set",
+                    "--accept-dns=false",
+                    "--accept-routes=false",
+                    "--shields-up=false",
+                    "--ssh=false",
+                    "--exit-node=",
+                ]);
+            } catch (_) {
+                // Non-fatal: GSettings were reset regardless.
             }
+
             window.add_toast?.(
                 new Adw.Toast({
                     title: _("All settings reset to defaults"),

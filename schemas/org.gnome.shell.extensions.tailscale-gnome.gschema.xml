@@ -4,8 +4,8 @@
             path="/org/gnome/shell/extensions/tailscale-gnome/">
 
         <key name="poll-interval" type="i">
-            <default>5</default>
-            <range min="2" max="60"/>
+            <default>3</default>
+            <range min="1" max="60"/>
             <summary>Status poll interval (seconds)</summary>
             <description>How often the extension calls `tailscale status --json`
                 to refresh its UI. Lower values feel snappier but slightly
