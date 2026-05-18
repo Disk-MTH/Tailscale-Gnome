@@ -915,7 +915,8 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             // Also apply the corresponding defaults to the Tailscale daemon
             // so the Quick Settings menu reflects the reset state:
             //   Magic DNS off, accept routes off, shields up off,
-            //   SSH server off, exit node cleared.
+            //   SSH server off, exit node cleared, any active funnels
+            //   torn down.
             const bin = settings.get_string("tailscale-binary") || "tailscale";
             try {
                 await _spawn([bin, "set",
@@ -928,6 +929,9 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             } catch (_) {
                 // Non-fatal: GSettings were reset regardless.
             }
+            // `funnel reset` is its own subcommand; ignore failures (most
+            // likely "no funnels to reset", which is exactly what we want).
+            try { await _spawn([bin, "funnel", "reset"]); } catch (_) {}
 
             window.add_toast?.(
                 new Adw.Toast({

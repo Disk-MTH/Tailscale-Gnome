@@ -80,6 +80,32 @@ export default class TailscaleGnomeExtension extends Extension {
 
         this._client.start();
 
+        // One-shot Taildrop/Funnel availability probe at startup, then
+        // again whenever the active tailnet changes — admin ACLs differ
+        // per tailnet, so the cached availability flags can't be assumed
+        // to carry over. Delayed slightly so the initial daemon refresh
+        // has time to settle (probeAvailability runs CLI subprocesses
+        // that race with the first poll otherwise).
+        this._availabilityProbeId = GLib.timeout_add_seconds(
+            GLib.PRIORITY_DEFAULT, 1, () => {
+                this._availabilityProbeId = 0;
+                this._client.probeAvailability().catch(() => {});
+                return GLib.SOURCE_REMOVE;
+            });
+        this._lastAccountName = null;
+        this._availabilityAccountListener = this._client.connect(
+            'state-changed',
+            (_c, snap) => {
+                const name = snap?.accountName || null;
+                if (name === this._lastAccountName) return;
+                // Skip the first state-changed (covered by the startup
+                // timeout above); only re-probe on a genuine switch.
+                if (this._lastAccountName !== null && name)
+                    this._client.probeAvailability().catch(() => {});
+                this._lastAccountName = name;
+            },
+        );
+
         // Restore Taildrop receiver state. The setting is the source of
         // truth across reloads; the receiver subprocess is owned by the
         // client and gets killed on `disable()` via client.destroy().
@@ -374,6 +400,15 @@ export default class TailscaleGnomeExtension extends Extension {
         if (this._startupCheckId) {
             GLib.source_remove(this._startupCheckId);
             this._startupCheckId = 0;
+        }
+
+        if (this._availabilityProbeId) {
+            GLib.source_remove(this._availabilityProbeId);
+            this._availabilityProbeId = 0;
+        }
+        if (this._availabilityAccountListener) {
+            this._client?.disconnect(this._availabilityAccountListener);
+            this._availabilityAccountListener = 0;
         }
 
         for (const key of this._boundShortcuts ?? [])
