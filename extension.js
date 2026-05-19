@@ -179,7 +179,7 @@ export default class TailscaleGnomeExtension extends Extension {
 
         /* -------------------- feature enforcement -------------------- */
         // A Feature toggled OFF in prefs must also disable the underlying
-        // tailscale setting -hiding the menu UI alone leaves the feature
+        // tailscale setting — hiding the menu UI alone leaves the feature
         // active (e.g. accept-routes still letting traffic through). We
         // also remember the prior state so re-enabling the feature can
         // restore it without forcing the user to re-flip everything.
