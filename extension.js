@@ -84,8 +84,26 @@ export default class TailscaleGnomeExtension extends Extension {
         // Per-tailnet feature-state persistence. Constructed after
         // start() so it can seed itself from the first snapshot the
         // client buffers, and before the availability probe so the
-        // probe's writes land in the active slot.
-        this._perAccount = new PerAccountFeatureState(this._settings, this._client);
+        // probe's writes land in the active slot. The callback turns
+        // a bulk apply (multiple feature-* writes) into a single
+        // summary toast — the per-feature handlers below check
+        // perAccount.isLoadingSlot and stay quiet during the apply.
+        this._perAccount = new PerAccountFeatureState(
+            this._settings,
+            this._client,
+            (accountName) => {
+                ToastManager.show({
+                    level: 'success',
+                    message: `${_('Profile preferences applied')} (${accountName})`,
+                });
+                // Daemon side-effects (drift correction for OFF
+                // toggles) are normally driven by handleFeatureToggled,
+                // which we suppressed during the apply. Trigger them
+                // silently here via ensureFeatureCompliance on the
+                // next snapshot.
+                this._client.refresh().catch(() => {});
+            },
+        );
 
         // One-shot Taildrop/Funnel availability probe at startup, then
         // again whenever the active tailnet changes — admin ACLs differ
@@ -271,6 +289,11 @@ export default class TailscaleGnomeExtension extends Extension {
         const handleFeatureToggled = (key) => {
             const meta = FEATURE_META[key];
             if (!meta) return;
+            // PerAccountFeatureState is bulk-applying a tailnet slot:
+            // skip individual toasts and daemon writes. The callback
+            // emits one summary toast and a final refresh that lets
+            // ensureFeatureCompliance reconcile the daemon side.
+            if (this._perAccount?.isLoadingSlot) return;
             const enabled = this._settings.get_boolean(key);
             const snap = this._client?.snapshot;
             if (!snap || !snap.canControl || snap.loggedOut ||
@@ -343,6 +366,7 @@ export default class TailscaleGnomeExtension extends Extension {
         ]) {
             this._settingIds.push(
                 this._settings.connect(`changed::${key}`, () => {
+                    if (this._perAccount?.isLoadingSlot) return;
                     const on = this._settings.get_boolean(key);
                     ToastManager.show({
                         level: 'success',

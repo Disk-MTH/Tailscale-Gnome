@@ -933,6 +933,20 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             // likely "no funnels to reset", which is exactly what we want).
             try { await _spawn([bin, "funnel", "reset"]); } catch (_) {}
 
+            // Re-probe Taildrop / Funnel admin availability now that the
+            // gsettings flags were just reset to "assume disabled". Same
+            // mechanism the manual Check buttons use; mirrors the startup
+            // probe in extension.js so a fresh reset lands in a coherent
+            // state without forcing the user to click Check.
+            try {
+                const taildropOk = await _checkTaildrop(bin);
+                settings.set_boolean("feature-taildrop-available", taildropOk);
+            } catch (_) {}
+            try {
+                const funnelOk = await _checkFunnel(bin);
+                settings.set_boolean("feature-funnels-available", funnelOk);
+            } catch (_) {}
+
             window.add_toast?.(
                 new Adw.Toast({
                     title: _("All settings reset to defaults"),
