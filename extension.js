@@ -64,9 +64,9 @@ export default class TailscaleGnomeExtension extends Extension {
         ];
 
         for (const key of SHORTCUT_KEYS) {
-            this._settingIds.push(
-                this._settings.connect(`changed::${key}`, () => this._rebindShortcut(key)),
-            );
+            const id = this._settings.connect(
+                `changed::${key}`, () => this._rebindShortcut(key));
+            this._settingIds.push(id);
         }
 
         this._indicator = new TailscaleIndicator({

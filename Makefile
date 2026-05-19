@@ -78,11 +78,15 @@ test-syntax:
 	    fi; \
 	done
 
-pack: schemas
+# Build the publishable zip. GNOME Shell 45+ compiles schemas itself on
+# extension load, so we ship only the raw XML — shipping gschemas.compiled
+# is flagged by the EGO review tooling as an unnecessary build artifact.
+pack:
 	@rm -f "$(ZIPNAME)"
 	@cd "$(CURDIR)" && zip -qr "$(ZIPNAME)" \
 	    metadata.json extension.js prefs.js stylesheet.css \
-	    lib icons schemas nautilus \
+	    lib icons nautilus \
+	    schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml \
 	    LICENSE README.md CHANGELOG.md
 	@printf "Built %s\n" "$(ZIPNAME)"
 
