@@ -36,8 +36,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   prompt: instead of re-granting the operator itself, it leaves that
   to the next login's `--operator` flag, and the menu keeps the Login
   entry reachable while logged out even without operator (the startup
-  operator prompt is also skipped in that state). All privileged
-  commands are documented in README under "Privileged operations".
+  operator prompt is also skipped in that state). For multi-account
+  users the Account submenu shows a one-click "Set operator" row while
+  control is denied, so switching to another profile after a logout
+  stays one user-initiated prompt away. All privileged commands are
+  documented in README under "Privileged operations".
 - zenity is no longer used: the Funnel port prompt is an in-shell
   dialog and the Taildrop send flow picks files through the XDG
   Desktop Portal FileChooser (plain D-Bus, no subprocess).
