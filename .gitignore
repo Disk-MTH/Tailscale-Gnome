@@ -22,3 +22,6 @@ dist/
 
 # Node / misc
 node_modules/
+
+# Shell extension checker
+.shexli
