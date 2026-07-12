@@ -37,7 +37,10 @@ send/receive files with Taildrop — no terminal required.
   to a configurable inbox) and send via a file picker → peer picker
   flow.
 - **Nautilus integration** (optional): right-click any file or folder
-  for "Send with Taildrop" / "Send with Taildrop as ZIP".
+  for "Send with Taildrop" / "Send with Taildrop as ZIP". The scripts
+  hand the selection to the extension over D-Bus
+  (`org.gnome.Shell.Extensions.TailscaleGnome` on the `org.gnome.Shell`
+  bus name) and the native in-shell peer picker takes over.
 - **Keyboard shortcuts**: toggle Tailscale, toggle exit node, open menu,
   open admin console, send file via Taildrop. All unbound by default —
   bind what you use.
@@ -46,9 +49,42 @@ send/receive files with Taildrop — no terminal required.
 
 - GNOME Shell 49 → 50.
 - `tailscale` 1.70+ on `PATH`.
-- `zenity` for the send-file flow (already installed on most GNOME
-  systems).
-- `pkexec` (polkit) for the privileged calls.
+- `pkexec` (polkit) for the privileged calls listed below.
+
+File pickers use the XDG Desktop Portal (`org.freedesktop.portal.
+FileChooser`), which ships with every GNOME session — no external
+dialog tool is spawned.
+
+## Privileged operations
+
+On Linux the Tailscale daemon only accepts state-changing commands from
+root or from the Unix user named in its `OperatorUser` pref. The
+extension therefore runs a **small, fixed set** of commands through
+`pkexec`, each behind an interactive polkit password prompt:
+
+| Command | When it runs |
+| ------- | ------------ |
+| `pkexec tailscale set --operator=$USER` | Once at session startup if the operator pref is missing, when you click **Set operator** in the menu, and right after a logout (see below). Makes every later command work unprivileged. |
+| `pkexec tailscale login --operator=$USER` | When you click **Login**. Tailscale denies plain `tailscale login` on operator-set profiles ("checkprefs access denied"), and `--operator` keeps the pref on the new profile. |
+| `pkexec tailscale logout` | When you click **Logout**. Logging out wipes the operator pref, so the `set --operator` command above follows immediately — two password prompts, but each command stays a fixed, reviewable argument vector (no shell string). |
+| `pkexec systemctl enable/disable --now tailscaled.service` | Only from the **Start Tailscale at boot** toggle in the preferences window. |
+
+Safeguards:
+
+- Every elevated command is a **literal argument vector**, readable
+  as-is in the source — nothing typed by a user, read from a file or
+  built at runtime is ever concatenated into it (no `sh -c`).
+- Elevated calls hardcode the `tailscale` program name; `pkexec`
+  resolves it in its own trusted root `PATH`. The **Advanced →
+  tailscale binary** setting is deliberately ignored for privileged
+  calls, so a user-writable path can never be elevated.
+
+Prefer to avoid polkit prompts entirely? Run this once in a terminal
+and the extension will never need to elevate for day-to-day use:
+
+```bash
+sudo tailscale set --operator=$USER
+```
 
 ## Install
 
@@ -112,7 +148,8 @@ lib/
 ├── indicator.js        # panel icon
 ├── menu.js             # Quick Settings toggle + submenus
 ├── toast.js            # OSD-style feedback toasts
-└── per-account.js      # per-tailnet feature-state persistence
+├── per-account.js      # per-tailnet feature-state persistence
+└── util.js             # helpers shared by shell and prefs processes
 nautilus/               # right-click scripts (installed on demand)
 icons/  schemas/  stylesheet.css
 ```
