@@ -64,11 +64,14 @@ test-syntax:
 # Build the publishable zip. GNOME Shell 45+ compiles schemas itself on
 # extension load, so we ship only the raw XML — shipping gschemas.compiled
 # is flagged by the EGO review tooling as an unnecessary build artifact.
+# store-icon.png stays out: the listing icon is uploaded on the EGO
+# website, shipping it in the zip is just an unnecessary file.
 pack:
 	@rm -f "$(ZIPNAME)"
 	@cd "$(CURDIR)" && zip -qr "$(ZIPNAME)" \
 	    metadata.json extension.js prefs.js stylesheet.css \
-	    lib icons nautilus \
+	    lib nautilus \
+	    icons/tailscale-symbolic.svg icons/tailscale-disabled-symbolic.svg \
 	    schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml \
 	    LICENSE README.md CHANGELOG.md
 	@printf "Built %s\n" "$(ZIPNAME)"
