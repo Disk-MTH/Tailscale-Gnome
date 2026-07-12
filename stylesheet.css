@@ -116,6 +116,25 @@
     margin: 0 4px 4px 4px;
 }
 
+/* Public-port radio pills in the Add funnel dialog. Used ports are kept
+   visible but dimmed so it's obvious the slot exists and is taken. */
+.tailscale-port-choices {
+    spacing: 8px;
+    padding: 0 4px 4px 4px;
+}
+.tailscale-port-choice {
+    border-radius: 8px;
+    padding: 6px 14px;
+}
+.tailscale-port-choice-selected {
+    background-color: rgba(102, 214, 138, 0.25);
+    color: #66d68a;
+    font-weight: bold;
+}
+.tailscale-port-choice-used {
+    opacity: 0.4;
+}
+
 /* Toast feedback widgets inherit the native .osd-window look (theme-aware
    background, radius, font weight). Single-line horizontal layout: icon on
    the left, label on the right. Width follows content — no min-width so

@@ -44,6 +44,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   getters) and unnecessary optional chaining / try-catch wrappers.
 
 ### Added
+- Funnel public-port picker: the Add funnel dialog now offers the three
+  ports Tailscale allows (443, 8443, 10000 — read from the daemon's
+  CapMap, with a hardcoded fallback), greys out ports that already
+  carry a funnel, and the client refuses to overwrite an occupied port
+  (remove the existing funnel first). Up to three funnels can now run
+  side by side from the menu; add/remove toasts name the public port.
 - Spontaneous connection-progress toast: when the daemon enters the
   `Starting` state outside of a user-initiated action (typically while
   tailscaled is still establishing the session right after boot or
