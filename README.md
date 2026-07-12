@@ -66,7 +66,8 @@ extension therefore runs a **small, fixed set** of commands through
 | ------- | ------------ |
 | `pkexec tailscale set --operator=$USER` | Once at session startup if the operator pref is missing while logged in, and when you click **Set operator** in the menu. Makes every later command work unprivileged. |
 | `pkexec tailscale login --operator=$USER` | When you click **Login**. Tailscale denies plain `tailscale login` on operator-set profiles ("checkprefs access denied"), and `--operator` keeps the pref on the new profile — including after a logout, so logging back in never needs an extra elevation. |
-| `pkexec tailscale logout` | When you click **Logout**. One prompt only: the operator pref disappears with the discarded profile and the next **Login** restores it via its `--operator` flag; the menu keeps the Login entry reachable meanwhile. |
+| `pkexec tailscale logout` | When you click **Logout**. One prompt only: the operator pref disappears with the discarded profile and the next **Login** restores it via its `--operator` flag; the menu keeps the Login entry and the account list reachable meanwhile (see the `switch` row below). |
+| `pkexec tailscale switch <profile-id>` | When you pick another account while control is denied (typically right after a logout). The profile id comes from the daemon's own `switch --list` output and is validated as a plain token; once on the target profile its own operator pref applies, so no further prompt follows. |
 | `pkexec systemctl enable/disable --now tailscaled.service` | Only from the **Start Tailscale at boot** toggle in the preferences window. |
 
 Safeguards:
