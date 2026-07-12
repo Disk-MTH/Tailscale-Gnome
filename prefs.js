@@ -12,7 +12,14 @@ import {
     gettext as _,
 } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+import { fmt as _fmt } from './lib/util.js';
+
 const TAILSCALED_UNIT = 'tailscaled.service';
+
+// Node capability published by the daemon in `status --json` Self.CapMap
+// when the tailnet allows Taildrop for this device. Must match
+// CAP_FILE_SHARING in lib/tailscale.js.
+const CAP_FILE_SHARING = 'https://tailscale.com/cap/file-sharing';
 
 /* -------------------------------------------------------------------------- */
 /*                            Subprocess helpers                              */
@@ -306,8 +313,16 @@ function _makeTaildropGroup(settings, extensionDir) {
             return;
         }
         if (v !== inboxRow.text) inboxRow.text = v;
-        if (v !== settings.get_string('taildrop-inbox'))
+        if (v !== settings.get_string('taildrop-inbox')) {
             settings.set_string('taildrop-inbox', v);
+            // Confirm the change — commitInbox also fires on focus-out
+            // with an unchanged value, so the toast is gated on an actual
+            // write to keep it from nagging.
+            group.get_root().add_toast(new Adw.Toast({
+                title: _fmt(_('Taildrop inbox set to %s'), v),
+                timeout: 3,
+            }));
+        }
         updateValidity();
     };
     inboxRow.connect('apply', commitInbox);
@@ -417,14 +432,14 @@ function _makeTaildropGroup(settings, extensionDir) {
     };
 
     const toast = (title) => {
-        group.get_root()?.add_toast?.(new Adw.Toast({ title, timeout: 4 }));
+        group.get_root().add_toast(new Adw.Toast({ title, timeout: 4 }));
     };
 
     installBtn.connect('clicked', () => {
         try {
             Gio.File.new_for_path(scriptsDir).make_directory_with_parents(null);
         } catch (e) {
-            if (!e.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS)) {
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS)) {
                 toast(`Error: ${e.message}`);
                 return;
             }
@@ -460,7 +475,9 @@ function _makeTaildropGroup(settings, extensionDir) {
             );
             try {
                 f.delete(null);
-            } catch (_) {}
+            } catch (_) {
+                // Already gone: nothing to remove.
+            }
         }
         refreshNautilus();
         toast(_('Removed.'));
@@ -497,6 +514,9 @@ function _makeServiceRow() {
     };
 
     const toggle = async (enable) => {
+        // Fixed argument vector of system binaries only — no user-writable
+        // path is ever elevated. Listed in README under "Privileged
+        // operations".
         const argv = [
             'pkexec',
             'systemctl',
@@ -509,15 +529,12 @@ function _makeServiceRow() {
             guard = true;
             row.active = !enable;
             guard = false;
-            const root = row.get_root();
-            if (root && root.add_toast) {
-                root.add_toast(
-                    new Adw.Toast({
-                        title: _('Could not change service state'),
-                        timeout: 4,
-                    }),
-                );
-            }
+            row.get_root().add_toast(
+                new Adw.Toast({
+                    title: _('Could not change service state'),
+                    timeout: 4,
+                }),
+            );
         }
         refresh();
     };
@@ -573,44 +590,36 @@ const FEATURE_DEFS = [
     },
 ];
 
-// Probe Taildrop availability via the CLI. Mirrors fileTargets() in
-// lib/tailscale.js: the "filesharing disabled" string only appears on
-// stderr when an admin turned the feature off tailnet-wide, so we infer
-// availability from the absence of that specific failure mode (success
-// or "no peers" both mean "allowed").
-async function _checkTaildrop(bin) {
-    const r = await _spawn([bin, 'file', 'cp', '--targets']);
-    const combined = `${r.stderr || ''}\n${r.stdout || ''}`;
-    if (
-        !r.ok &&
-        /taildrop|file sharing|filesharing/i.test(combined) &&
-        /disabled|not enabled|not allowed|forbidden|no access|does not have/i.test(
-            combined,
-        )
-    )
-        return false;
-    return true;
-}
-
-// Probe Funnel availability by reading Self.CapMap from `status --json`.
-// Matches _buildSnapshot()'s passive check so the manual button agrees
-// with whatever the daemon would have reported before.
-async function _checkFunnel(bin) {
+// Availability probes read the node capability map the daemon publishes
+// in `status --json` (Self.CapMap) — the same source probeAvailability()
+// uses in lib/tailscale.js, so the manual Check buttons always agree
+// with the startup probe.
+async function _checkCap(bin, cap) {
     const r = await _spawn([bin, 'status', '--json']);
     if (!r.ok) return false;
     try {
-        const j = JSON.parse(r.stdout);
-        const capMap = j?.Self?.CapMap || {};
-        return Object.prototype.hasOwnProperty.call(capMap, 'funnel');
+        const capMap = JSON.parse(r.stdout).Self?.CapMap ?? {};
+        return Object.prototype.hasOwnProperty.call(capMap, cap);
     } catch (_) {
         return false;
     }
 }
 
+function _checkTaildrop(bin) {
+    return _checkCap(bin, CAP_FILE_SHARING);
+}
+
+function _checkFunnel(bin) {
+    return _checkCap(bin, 'funnel');
+}
+
 function _openUrl(url) {
     try {
         Gio.AppInfo.launch_default_for_uri(url, null);
-    } catch (_) {}
+    } catch (_) {
+        // Best-effort: no browser configured. The URL is also shown in
+        // the row tooltip, so the user can still reach it.
+    }
 }
 
 // Per-row reset suffix: restores the GSettings key to its schema default.
@@ -688,17 +697,15 @@ function _makeFeatureRow(settings, def, window) {
         }
         settings.set_boolean(def.availabilityKey, available);
         checkBtn.sensitive = true;
-        if (window?.add_toast) {
-            const title = def.title();
-            window.add_toast(
-                new Adw.Toast({
-                    title: available
-                        ? _fmt(_('%s is available'), title)
-                        : _fmt(_('%s is not available on this tailnet'), title),
-                    timeout: 3,
-                }),
-            );
-        }
+        const title = def.title();
+        window.add_toast(
+            new Adw.Toast({
+                title: available
+                    ? _fmt(_('%s is available'), title)
+                    : _fmt(_('%s is not available on this tailnet'), title),
+                timeout: 3,
+            }),
+        );
     });
 
     const resetBtn = _resetButton(settings, def.key);
@@ -752,11 +759,6 @@ function _makeFeaturesGroup(settings, window) {
 /* -------------------------------------------------------------------------- */
 /*                                  Page                                      */
 /* -------------------------------------------------------------------------- */
-
-function _fmt(template, ...args) {
-    let i = 0;
-    return template.replace(/%[sd]/g, () => String(args[i++] ?? ''));
-}
 
 export default class TailscaleGnomePrefs extends ExtensionPreferences {
     fillPreferencesWindow(window) {
@@ -947,7 +949,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
                 settings.set_boolean('feature-funnels-available', funnelOk);
             } catch (_) {}
 
-            window.add_toast?.(
+            window.add_toast(
                 new Adw.Toast({
                     title: _('All settings reset to defaults'),
                     timeout: 3,

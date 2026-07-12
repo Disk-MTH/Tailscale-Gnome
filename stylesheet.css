@@ -108,6 +108,14 @@
     background-color: rgba(255, 255, 255, 0.08);
 }
 
+/* Funnel port entry inside the in-shell Add funnel dialog. */
+.tailscale-port-entry {
+    min-width: 280px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin: 0 4px 4px 4px;
+}
+
 /* Toast feedback widgets inherit the native .osd-window look (theme-aware
    background, radius, font weight). Single-line horizontal layout: icon on
    the left, label on the right. Width follows content — no min-width so

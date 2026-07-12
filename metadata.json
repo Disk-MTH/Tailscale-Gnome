@@ -6,5 +6,5 @@
     "url": "https://github.com/Disk-MTH/Tailscale-Gnome",
     "settings-schema": "org.gnome.shell.extensions.tailscale-gnome",
     "gettext-domain": "tailscale-gnome",
-    "version-name": "0.1.0"
+    "version-name": "0.2.0"
 }
