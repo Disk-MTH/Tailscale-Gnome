@@ -162,18 +162,20 @@ export default class TailscaleGnomeExtension extends Extension {
 
         // One-shot startup check: if the operator pref is missing once the
         // first poll has landed, fire a single polkit prompt. We avoid a
-        // state-changed handler because logout/login transiently flip
-        // canControl=false during the privileged sequence (the daemon
-        // clears the pref before the follow-up `set --operator=$USER`
-        // lands), and a listener would race the pkexec child with its own
-        // prompt. After
-        // startup, the user's own actions (clicking the toggle, the menu
-        // "Set operator" button, etc.) handle every re-prompt explicitly.
+        // state-changed handler because login transiently flips
+        // canControl=false while the pkexec child runs, and a listener
+        // would race it with its own prompt. Skipped while logged out:
+        // login restores the operator by itself (--operator flag), so
+        // prompting before a login would just double the elevations.
+        // After startup, the user's own actions (clicking the toggle, the
+        // menu "Set operator" button, etc.) handle every re-prompt
+        // explicitly.
         this._startupCheckId = GLib.timeout_add_seconds(
             GLib.PRIORITY_DEFAULT, 2, () => {
                 this._startupCheckId = 0;
                 const snap = this._client.snapshot;
-                if (!snap.error && !snap.canControl)
+                if (!snap.error && !snap.canControl &&
+                    !snap.loggedOut && snap.backendState !== 'NeedsLogin')
                     this._client.setOperator();
                 return GLib.SOURCE_REMOVE;
             },
@@ -448,8 +450,15 @@ export default class TailscaleGnomeExtension extends Extension {
                     snap.backendState !== 'NeedsLogin' &&
                     snap.backendState !== 'NoState';
                 if (!ready) {
-                    if (!snap.canControl) this._client.setOperator();
-                    else ToastManager.show({ level: 'info', message: _('Login required') });
+                    // Same priority as the toggle click: logged out beats
+                    // operator-missing, since login restores the operator
+                    // by itself.
+                    if (snap.loggedOut || snap.backendState === 'NeedsLogin')
+                        ToastManager.show({ level: 'info', message: _('Login required') });
+                    else if (!snap.canControl)
+                        this._client.setOperator();
+                    else
+                        ToastManager.show({ level: 'info', message: _('Tailscale is not ready yet') });
                     return;
                 }
                 if (snap.running) {

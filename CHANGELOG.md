@@ -31,9 +31,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reviewer's requirement that the complete command be readable at
   review time: the `tailscale` program name is hardcoded (resolved by
   pkexec's trusted root PATH; the configurable binary setting is
-  deliberately ignored when elevating) and the single-prompt
-  `sh -c 'logout && set --operator'` chain is replaced by two separate
-  fixed commands — logout now shows two polkit prompts. All privileged
+  deliberately ignored when elevating) and the `sh -c 'logout && set
+  --operator'` chain is gone. Logout still costs a single polkit
+  prompt: instead of re-granting the operator itself, it leaves that
+  to the next login's `--operator` flag, and the menu keeps the Login
+  entry reachable while logged out even without operator (the startup
+  operator prompt is also skipped in that state). All privileged
   commands are documented in README under "Privileged operations".
 - zenity is no longer used: the Funnel port prompt is an in-shell
   dialog and the Taildrop send flow picks files through the XDG
