@@ -8,23 +8,6 @@ SCHEMA      := schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml
 COMPILED    := schemas/gschemas.compiled
 ZIPNAME     := $(UUID).shell-extension.zip
 
-SOURCES := \
-    metadata.json \
-    extension.js \
-    prefs.js \
-    stylesheet.css \
-    lib/tailscale.js \
-    lib/indicator.js \
-    lib/menu.js \
-    lib/toast.js \
-    icons/tailscale-symbolic.svg \
-    icons/tailscale-disabled-symbolic.svg \
-    $(SCHEMA) \
-    $(COMPILED) \
-    LICENSE \
-    README.md \
-    CHANGELOG.md
-
 .PHONY: all schemas install uninstall enable disable reset pack clean test-syntax help
 
 all: schemas
@@ -53,7 +36,7 @@ install: schemas
 	@cp -r LICENSE README.md CHANGELOG.md "$(USER_EXTDIR)/" 2>/dev/null || true
 	@printf "Installed to %s\n" "$(USER_EXTDIR)"
 	@printf "Restart GNOME Shell (Xorg: Alt+F2 r ; Wayland: log out / log in)\n"
-	@printf "or test in a nested session:  dbus-run-session -- gnome-shell --nested --wayland\n"
+	@printf "or test in a nested session:  dbus-run-session -- gnome-shell --devkit\n"
 
 uninstall:
 	@rm -rf "$(USER_EXTDIR)"

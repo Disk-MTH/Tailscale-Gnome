@@ -5,6 +5,54 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — extensions.gnome.org review compliance
+- D-Bus interface renamed `fr.diskmth.TailscaleGnome` →
+  `org.gnome.Shell.Extensions.TailscaleGnome` (path
+  `/org/gnome/Shell/Extensions/TailscaleGnome`). The object is now
+  exported on GNOME Shell's own session connection — no bus name is
+  owned anymore; clients call through `org.gnome.Shell`. The Nautilus
+  scripts were updated accordingly.
+- All signal connections in the shell process now go through
+  `connectObject()` / `disconnectObject()`. This also fixes a latent
+  bug where the toggle's own `clicked` handler id was disconnected
+  from the client object instead of the toggle.
+- Every main-loop source is now tracked and removed in `disable()`:
+  the spinner-floor waits (shared `ToastManager.withFeedback`), the
+  prefs-window raise delay, the 10 s Funnel watchdog (also removed as
+  soon as the command settles) and the toast reposition idle.
+- Taildrop availability probes (startup, account switch, prefs Check
+  button) now read the `https://tailscale.com/cap/file-sharing`
+  capability from `tailscale status --json` Self.CapMap instead of
+  spawning `tailscale file cp --targets`.
+- Removed the `this._destroyed` guard flags. The client relies on its
+  `Gio.Cancellable` and source removal; toasts use their live-list
+  membership as the dismiss latch.
+- Privileged calls are now fully literal argument vectors, per the
+  reviewer's requirement that the complete command be readable at
+  review time: the `tailscale` program name is hardcoded (resolved by
+  pkexec's trusted root PATH; the configurable binary setting is
+  deliberately ignored when elevating) and the single-prompt
+  `sh -c 'logout && set --operator'` chain is replaced by two separate
+  fixed commands — logout now shows two polkit prompts. All privileged
+  commands are documented in README under "Privileged operations".
+- zenity is no longer used: the Funnel port prompt is an in-shell
+  dialog and the Taildrop send flow picks files through the XDG
+  Desktop Portal FileChooser (plain D-Bus, no subprocess).
+- Deduplicated helpers (`withFeedback`, `fmt`, `gicon`,
+  `openAdminPanel`) into shared modules; dropped dead code (spinner
+  fallback for pre-49 shells, unused `stdinText` plumbing, unused
+  getters) and unnecessary optional chaining / try-catch wrappers.
+
+### Added
+- Spontaneous connection-progress toast: when the daemon enters the
+  `Starting` state outside of a user-initiated action (typically while
+  tailscaled is still establishing the session right after boot or
+  login), a sticky spinner toast says the connection is in progress
+  and resolves in place to "Tailscale connected" — or to the current
+  status wording if the daemon lands elsewhere.
+- Confirmation toast in the preferences window whenever the Taildrop
+  inbox folder is actually changed (typed, browsed or reset).
+
 ### Fixed
 - **Critical.** Selecting any exit node (Automatic or a specific peer)
   crashed gnome-shell and logged the user out. Root cause: the persistent

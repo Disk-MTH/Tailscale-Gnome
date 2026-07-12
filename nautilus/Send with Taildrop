@@ -32,9 +32,9 @@ for f in "$@"; do
 done
 
 if ! err=$(gdbus call --session \
-        --dest fr.diskmth.TailscaleGnome \
-        --object-path /fr/diskmth/TailscaleGnome \
-        --method fr.diskmth.TailscaleGnome.SendFiles \
+        --dest org.gnome.Shell \
+        --object-path /org/gnome/Shell/Extensions/TailscaleGnome \
+        --method org.gnome.Shell.Extensions.TailscaleGnome.SendFiles \
         "[$ARGS]" 2>&1); then
     log_err "DBus SendFiles failed: $err"
     notify_err "Tailscale GNOME extension is not running or DBus call failed."
