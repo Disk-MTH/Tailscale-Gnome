@@ -3,7 +3,7 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.2.1] - 2026-07-14
 
 ### Changed — extensions.gnome.org review compliance
 - D-Bus interface renamed `fr.diskmth.TailscaleGnome` →
@@ -16,10 +16,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `connectObject()` / `disconnectObject()`. This also fixes a latent
   bug where the toggle's own `clicked` handler id was disconnected
   from the client object instead of the toggle.
-- Every main-loop source is now tracked and removed in `disable()`:
-  the spinner-floor waits (shared `ToastManager.withFeedback`), the
-  prefs-window raise delay, the 10 s Funnel watchdog (also removed as
-  soon as the command settles) and the toast reposition idle.
+- Every main-loop source is now tracked, removed in `disable()` **and**
+  cleared before a replacement is armed: the spinner-floor waits (shared
+  `ToastManager.withFeedback`), the prefs-window raise delay, the 10 s
+  Funnel watchdog (also removed as soon as the command settles), the
+  toast reposition idle and the Taildrop receiver restart delay.
+  The receiver restart delay only cleared on destroy: a receiver
+  respawned while an earlier restart was still pending overwrote the
+  source id and orphaned it, so it survived teardown and could spawn a
+  `tailscale file get --loop` subprocess after `disable()`. It is now
+  cleared through `_clearReceiverRestart()` on both paths.
 - Taildrop availability probes (startup, account switch, prefs Check
   button) now read the `https://tailscale.com/cap/file-sharing`
   capability from `tailscale status --json` Self.CapMap instead of
