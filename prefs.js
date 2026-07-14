@@ -12,47 +12,19 @@ import {
     gettext as _,
 } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import { fmt as _fmt } from './lib/util.js';
+import {
+    CAP_FILE_SHARING,
+    CAP_FUNNEL,
+    fmt as _fmt,
+    hasCapability as _hasCapability,
+    spawn as _spawn,
+} from './lib/util.js';
 
 const TAILSCALED_UNIT = 'tailscaled.service';
-
-// Node capability published by the daemon in `status --json` Self.CapMap
-// when the tailnet allows Taildrop for this device. Must match
-// CAP_FILE_SHARING in lib/tailscale.js.
-const CAP_FILE_SHARING = 'https://tailscale.com/cap/file-sharing';
 
 /* -------------------------------------------------------------------------- */
 /*                            Subprocess helpers                              */
 /* -------------------------------------------------------------------------- */
-
-function _spawn(argv) {
-    return new Promise((resolve, reject) => {
-        let proc;
-        try {
-            proc = Gio.Subprocess.new(
-                argv,
-                Gio.SubprocessFlags.STDOUT_PIPE |
-                    Gio.SubprocessFlags.STDERR_PIPE,
-            );
-        } catch (e) {
-            reject(e);
-            return;
-        }
-        proc.communicate_utf8_async(null, null, (p, res) => {
-            try {
-                const [, stdout, stderr] = p.communicate_utf8_finish(res);
-                resolve({
-                    ok: p.get_successful(),
-                    code: p.get_exit_status(),
-                    stdout: stdout ?? '',
-                    stderr: stderr ?? '',
-                });
-            } catch (e) {
-                reject(e);
-            }
-        });
-    });
-}
 
 async function _serviceEnabled() {
     const r = await _spawn(['systemctl', 'is-enabled', TAILSCALED_UNIT]);
@@ -80,7 +52,7 @@ function _isPathSafe(p) {
             null,
         );
         return info.get_attribute_boolean('access::can-write');
-    } catch (_) {
+    } catch {
         return false;
     }
 }
@@ -361,7 +333,7 @@ function _makeTaildropGroup(settings, extensionDir) {
                     inboxRow.text = f.get_path();
                     commitInbox();
                 }
-            } catch (_) {
+            } catch {
                 /* cancelled */
             }
         });
@@ -475,7 +447,7 @@ function _makeTaildropGroup(settings, extensionDir) {
             );
             try {
                 f.delete(null);
-            } catch (_) {
+            } catch {
                 // Already gone: nothing to remove.
             }
         }
@@ -590,33 +562,21 @@ const FEATURE_DEFS = [
     },
 ];
 
-// Availability probes read the node capability map the daemon publishes
-// in `status --json` (Self.CapMap) — the same source probeAvailability()
-// uses in lib/tailscale.js, so the manual Check buttons always agree
-// with the startup probe.
-async function _checkCap(bin, cap) {
-    const r = await _spawn([bin, 'status', '--json']);
-    if (!r.ok) return false;
-    try {
-        const capMap = JSON.parse(r.stdout).Self?.CapMap ?? {};
-        return Object.prototype.hasOwnProperty.call(capMap, cap);
-    } catch (_) {
-        return false;
-    }
-}
-
+// Availability probes go through the shared capability lookup in
+// lib/util.js — the same helper the shell-side startup probe uses, so the
+// manual Check buttons can never disagree with the automatic probe.
 function _checkTaildrop(bin) {
-    return _checkCap(bin, CAP_FILE_SHARING);
+    return _hasCapability(bin, CAP_FILE_SHARING);
 }
 
 function _checkFunnel(bin) {
-    return _checkCap(bin, 'funnel');
+    return _hasCapability(bin, CAP_FUNNEL);
 }
 
 function _openUrl(url) {
     try {
         Gio.AppInfo.launch_default_for_uri(url, null);
-    } catch (_) {
+    } catch {
         // Best-effort: no browser configured. The URL is also shown in
         // the row tooltip, so the user can still reach it.
     }
@@ -692,7 +652,7 @@ function _makeFeatureRow(settings, def, window) {
         let available;
         try {
             available = await def.checker(bin);
-        } catch (_) {
+        } catch {
             available = false;
         }
         settings.set_boolean(def.availabilityKey, available);
@@ -928,12 +888,12 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
                     '--ssh=false',
                     '--exit-node=',
                 ]);
-            } catch (_) {
+            } catch {
                 // Non-fatal: GSettings were reset regardless.
             }
             // `funnel reset` is its own subcommand; ignore failures (most
             // likely "no funnels to reset", which is exactly what we want).
-            try { await _spawn([bin, 'funnel', 'reset']); } catch (_) {}
+            try { await _spawn([bin, 'funnel', 'reset']); } catch {}
 
             // Re-probe Taildrop / Funnel admin availability now that the
             // gsettings flags were just reset to "assume disabled". Same
@@ -943,11 +903,11 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             try {
                 const taildropOk = await _checkTaildrop(bin);
                 settings.set_boolean('feature-taildrop-available', taildropOk);
-            } catch (_) {}
+            } catch {}
             try {
                 const funnelOk = await _checkFunnel(bin);
                 settings.set_boolean('feature-funnels-available', funnelOk);
-            } catch (_) {}
+            } catch {}
 
             window.add_toast(
                 new Adw.Toast({

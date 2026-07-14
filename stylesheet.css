@@ -1,10 +1,5 @@
 /* Tailscale GNOME: Quick Settings styling */
 
-/* Panel indicator: dim when "always visible" but Tailscale is stopped. */
-.tailscale-indicator-stopped StIcon {
-    opacity: 0.55;
-}
-
 /* Header status pill inside the toggle menu. */
 .tailscale-status-pill {
     background-color: rgba(255, 255, 255, 0.06);
@@ -22,6 +17,19 @@
 .tailscale-status-pill.offline {
     background-color: rgba(220, 80, 80, 0.18);
     color: #e07b7b;
+}
+
+/* Online / offline dot on peer rows. Same palette as the status pill. */
+.tailscale-peer-dot {
+    margin-left: 6px;
+}
+
+.tailscale-peer-dot.online {
+    color: #66d68a;
+}
+
+.tailscale-peer-dot.offline {
+    color: #888888;
 }
 
 /* Sub-menu node items: tag the active exit node. */

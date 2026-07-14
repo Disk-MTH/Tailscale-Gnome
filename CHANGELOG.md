@@ -58,6 +58,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   fallback for pre-49 shells, unused `stdinText` plumbing, unused
   getters) and unnecessary optional chaining / try-catch wrappers.
 
+### Changed — codebase audit (consistency, dead code, redundancy)
+- The subprocess runner and the daemon capability lookup are now shared:
+  `spawn()`, `hasCapability()` and the `CAP_*` keys live in
+  `lib/util.js`, used by both the shell process and the preferences
+  process. `prefs.js` no longer carries its own copy of `_spawn` nor a
+  duplicated `CAP_FILE_SHARING` that a comment had to keep "in sync by
+  hand" — the prefs Check buttons and the startup probe now call the
+  same code path.
+- Dropped snapshot fields that nothing ever read: `tailnetName` (a
+  verbatim duplicate of `accountName`), `prefs` (the whole raw
+  `debug prefs` JSON, re-stored on every poll), `version`, `dnsName`,
+  `health` and `operatorUser`, plus the unused `acceptingFiles` getter.
+  The JSDoc `Snapshot` typedef had drifted from the real object and now
+  describes exactly what the client emits.
+- `switchAccount()` reuses `_fetchStatus()` / `_fetchPrefs()` instead of
+  re-spawning and re-parsing `status --json` and `debug prefs` inline.
+- The Taildrop accept toggle no longer drives the receiver twice: the
+  menu writes the gsetting and `extension.js` starts/stops the receiver
+  from it, which is also what applies the Taildrop feature gate that the
+  direct call was bypassing.
+- One factory each for the status pill and the online/offline dot;
+  `RoutesSubToggle` no longer re-implements `_decorateWithPill`. The dot
+  colours moved from an inline hardcoded style into the stylesheet, and
+  the unused `.tailscale-indicator-stopped` rule is gone.
+- Uniform `catch` style. `catch (_)` shadowed the `_` gettext alias in
+  `prefs.js`, so any translated string added inside one of those blocks
+  would have crashed; every catch that ignores its error now uses an
+  optional binding.
+
 ### Added
 - Funnel public-port picker: the Add funnel dialog now offers the three
   ports Tailscale allows (443, 8443, 10000 — read from the daemon's
