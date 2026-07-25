@@ -1388,7 +1388,7 @@ zero notifications, and re-banners updates via the acknowledged transition."
 
 ---
 
-### Task 6: Reduce the toast module to a backend
+### Task 6: Add the toast render backend
 
 **Files:**
 - Modify: `lib/toast.js`
@@ -1399,9 +1399,15 @@ zero notifications, and re-banners updates via the acknowledged transition."
 
 `ToastManager` is kept exported and working for now so the extension still loads; Task 8 removes it once the call sites have moved.
 
+This task is **purely additive**. `ToastManager` and the module state it uses
+stay exactly as they are so the extension keeps loading; Task 8 deletes them
+once no call site imports them. Do not remove anything here.
+
 - [ ] **Step 1: Add the backend class**
 
-In `lib/toast.js`, replace the whole `export const ToastManager = { … };` block (currently lines 238-360) with:
+In `lib/toast.js`, insert the following **immediately above** the existing
+`export const ToastManager = { … };` block (currently line 238). Leave that
+block untouched — the two coexist until Task 8.
 
 ```js
 // Transient on-screen backend. Reduced to pure rendering: the policy layer
@@ -1449,51 +1455,38 @@ export class ToastBackend {
 }
 ```
 
-- [ ] **Step 2: Drop the now-unused module state**
-
-In `lib/toast.js`, delete the two module-level declarations that only `ToastManager` used (currently lines 43-44):
-
-```js
-let _activeOps = 0;
-const _floorTimeoutIds = new Set();
-```
-
-Then update the `_settings` object comment (line 34-37) to read:
-
-```js
-// Pushed in by notify.js via ToastBackend.configure(); this module never
-// reads GSettings itself.
-const _settings = {
-    durationMs: 3000,
-};
-```
-
-and delete the `minSpinnerMs` property — the pending floor now lives in `notify.js`.
-
-- [ ] **Step 3: Verify the syntax**
+- [ ] **Step 2: Verify the syntax**
 
 Run: `make test-syntax`
 Expected: every file prints `OK`
 
-- [ ] **Step 4: Confirm the removed symbols are gone**
+- [ ] **Step 3: Confirm both APIs coexist**
 
-Run: `grep -n "_activeOps\|_floorTimeoutIds\|minSpinnerMs\|ToastManager" lib/toast.js`
-Expected: no output.
+Run: `grep -c "ToastBackend\|ToastManager" lib/toast.js`
+Expected: a non-zero count for each — run
+`grep -n "^export" lib/toast.js` and confirm both `export class ToastBackend`
+and `export const ToastManager` are present.
 
-At this point `extension.js` and `menu.js` still import `ToastManager` and the extension will not load. That is expected and resolved in Task 8 — do not attempt to run the extension between here and there.
+- [ ] **Step 4: Verify the extension still loads**
+
+Run:
+```bash
+make install
+dbus-run-session -- gnome-shell --devkit
+```
+Expected: the Quick Settings tile still works and toasts still appear, exactly
+as before this task. Nothing consumes `ToastBackend` yet.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add lib/toast.js
-git commit -m "refactor(toast): reduce the module to a render backend
+git commit -m "feat(toast): add a render-backend API alongside ToastManager
 
-Drops the GSettings subscription, the active-operation counter and
-withFeedback, all of which move up into the policy layer. The Toast actor,
-container and repositioning are unchanged.
-
-Call sites are migrated in a following commit; the extension does not load
-in between."
+ToastBackend exposes the configure/show/destroy contract shared with the
+persistent backend, reusing the existing Toast actor and container.
+ToastManager stays until the call sites move, so the extension keeps
+loading at every commit."
 ```
 
 ---
@@ -1933,17 +1926,40 @@ In `enable()`, after the client is constructed and before `this._client.start();
 
 In `disable()`, add `this._connHandle = null;` and `this._watcher = null;` alongside the other teardown.
 
-- [ ] **Step 7: Verify nothing still references the old API**
+- [ ] **Step 7: Delete the superseded toast API**
 
-Run: `grep -rn "ToastManager\|hasActiveOp\|_maybeToast\|spontaneous(" --include="*.js" .`
+No call site imports `ToastManager` any more, so remove from `lib/toast.js`:
+
+- the whole `export const ToastManager = { … };` block;
+- the two module-level declarations only it used:
+
+```js
+let _activeOps = 0;
+const _floorTimeoutIds = new Set();
+```
+
+- the `minSpinnerMs` property of `_settings`, whose floor now lives in
+  `notify.js`. Update the surviving declaration to read:
+
+```js
+// Pushed in by notify.js via ToastBackend.configure(); this module never
+// reads GSettings itself.
+const _settings = {
+    durationMs: 3000,
+};
+```
+
+- [ ] **Step 8: Verify nothing still references the old API**
+
+Run: `grep -rn "ToastManager\|hasActiveOp\|_maybeToast\|_activeOps\|_floorTimeoutIds\|minSpinnerMs\|spontaneous(" --include="*.js" .`
 Expected: no output.
 
-- [ ] **Step 8: Verify the syntax and tests**
+- [ ] **Step 9: Verify the syntax and tests**
 
 Run: `make test-syntax && make test`
 Expected: every file `OK`, then `ok — 30 tests passed`
 
-- [ ] **Step 9: Verify the extension loads**
+- [ ] **Step 10: Verify the extension loads**
 
 Run:
 ```bash
@@ -1952,7 +1968,7 @@ dbus-run-session -- gnome-shell --devkit
 ```
 Expected: the Quick Settings tile appears; toggling Magic DNS produces one notification under a **Tailscale** group in the notification list. Watch the log for `JS ERROR` — there must be none.
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 11: Commit**
 
 ```bash
 git add extension.js lib/menu.js lib/toast.js
