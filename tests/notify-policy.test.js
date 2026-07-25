@@ -7,8 +7,25 @@ const show = (policy, opts) => policy.shouldShow({
 
 suite('NotifyPolicy', () => {
     test('every category maps to a GSettings key', () => {
-        for (const category of Object.values(Category))
-            assertEq(typeof CATEGORY_KEY[category], 'string', `key for ${category}`);
+        const expected = {
+            'connection': 'notify-connection',
+            'account': 'notify-account',
+            'profile-switch': 'notify-profile-switch',
+            'exit-node': 'notify-exit-node',
+            'network': 'notify-network',
+            'taildrop': 'notify-taildrop',
+            'funnel': 'notify-funnel',
+            'errors': 'notify-errors',
+            'misc': 'notify-misc',
+        };
+
+        const seenKeys = new Set();
+        for (const category of Object.values(Category)) {
+            const key = CATEGORY_KEY[category];
+            assertEq(key, expected[category], `${category} maps to correct key`);
+            assertFalse(seenKeys.has(key), `${key} is unique (not shared with another category)`);
+            seenKeys.add(key);
+        }
     });
 
     test('categories default to enabled', () => {
