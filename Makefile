@@ -8,7 +8,7 @@ SCHEMA      := schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml
 COMPILED    := schemas/gschemas.compiled
 ZIPNAME     := $(UUID).shell-extension.zip
 
-.PHONY: all schemas install uninstall enable disable reset pack clean test-syntax help
+.PHONY: all schemas install uninstall enable disable reset pack clean test test-syntax help
 
 all: schemas
 
@@ -22,6 +22,7 @@ help:
 	@printf "  reset        Reset all preferences (dconf)\n"
 	@printf "  pack         Build a publishable .shell-extension.zip\n"
 	@printf "  test-syntax  Quick syntax check on every JS file via gjs\n"
+	@printf "  test         Run the unit tests for the pure modules via gjs\n"
 	@printf "  clean        Remove generated files\n"
 
 $(COMPILED): $(SCHEMA)
@@ -60,6 +61,12 @@ test-syntax:
 	        node --check "$$f" >/dev/null 2>&1 && printf "OK\n" || { printf "FAIL\n"; node --check "$$f"; exit 1; }; \
 	    fi; \
 	done
+
+# Unit tests for the modules that carry no Shell imports (notify-policy,
+# watchers). Anything importing resource:///org/gnome/shell/… cannot run
+# outside a live session and is covered by the manual checklist instead.
+test:
+	@gjs -m tests/run.js
 
 # Build the publishable zip. GNOME Shell 45+ compiles schemas itself on
 # extension load, so we ship only the raw XML — shipping gschemas.compiled
