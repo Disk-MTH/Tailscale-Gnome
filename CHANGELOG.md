@@ -3,6 +3,24 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Added
+- Two notification modes, selectable in a new Notifications preferences page.
+  Persistent mode (the default) posts native GNOME notifications that stack
+  into a browsable history under a single Tailscale entry, capped at a
+  configurable 1–10 entries. Toast mode keeps the previous transient bubble.
+- Nine per-category switches controlling which events may notify, plus a
+  failures override that lets errors through even when their category is off.
+
+### Fixed
+- Switching accounts produced a burst of notifications, one per setting that
+  flipped. It now reports once, when the new profile has been applied.
+
+### Changed
+- Toast duration and minimum pending duration moved from the General page to
+  the new Notifications page.
+
 ## [0.2.1] - 2026-07-14
 
 ### Changed — extensions.gnome.org review compliance
