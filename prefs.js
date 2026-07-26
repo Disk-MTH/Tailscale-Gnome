@@ -869,10 +869,11 @@ function _makeNotificationsPage(settings) {
         durationRow.visible = !persistent;
     };
     syncModeRows();
-    settings.connect('changed::notification-mode', () => {
+    const modeId = settings.connect('changed::notification-mode', () => {
         modeRow.selected = Math.max(0, MODES.indexOf(settings.get_string('notification-mode')));
         syncModeRows();
     });
+    modeRow.connect('destroy', () => settings.disconnect(modeId));
 
     /* ------------------------------ Events ------------------------------- */
     const eventsGroup = new Adw.PreferencesGroup({
