@@ -200,12 +200,26 @@ export default class TailscaleGnomeExtension extends Extension {
                     armQuietDebounce();
                 },
                 onSlotLoaded: (accountName) => {
-                    Notifier.notify({
-                        category: Category.PROFILE_SWITCH,
-                        level: 'success',
-                        force: true,
-                        message: `${_('Profile applied')} (${accountName})`,
-                    });
+                    // The quiet window opens from inside the switch it is
+                    // meant to cover, so it structurally cannot silence the
+                    // withFeedback that started that switch (see menu.js's
+                    // PROFILE_SWITCH row handler): beginQuiet(ALL) only runs
+                    // once onSlotLoading fires, partway through fn(). When
+                    // that withFeedback is still in flight, it is already
+                    // going to report the outcome itself once switchAccount()
+                    // resolves — emitting the summary here too would double
+                    // it. An externally-initiated switch (`tailscale switch`
+                    // on the command line) has no withFeedback watching it,
+                    // so there this summary is the only report and must
+                    // still fire.
+                    if (!Notifier.isCategoryBusy(Category.PROFILE_SWITCH)) {
+                        Notifier.notify({
+                            category: Category.PROFILE_SWITCH,
+                            level: 'success',
+                            force: true,
+                            message: `${_('Profile applied')} (${accountName})`,
+                        });
+                    }
                     // Daemon side-effects (drift correction for OFF toggles)
                     // are normally driven by handleFeatureToggled, which the
                     // quiet window suppresses. Trigger them here.
