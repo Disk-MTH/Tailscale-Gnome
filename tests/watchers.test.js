@@ -53,6 +53,13 @@ suite('computeEvents — connection', () => {
         const { events } = computeEvents(t, snapshot());
         assertDeepEq(types(events), []);
     });
+
+    test('unchanged backendState while pending does not block later resolution', () => {
+        const t1 = computeEvents(EMPTY_TRACK, snapshot({ backendState: 'Starting' })).track;
+        const t2 = computeEvents(t1, snapshot({ backendState: 'Starting' })).track;
+        const { events } = computeEvents(t2, snapshot({ backendState: 'Running' }));
+        assertDeepEq(types(events), ['connection-established']);
+    });
 });
 
 suite('computeEvents — exit node, auto mode', () => {
@@ -135,6 +142,12 @@ suite('computeEvents — exit node, pinned mode', () => {
         const t = seed(pinned({ currentExitNode: node() }));
         const { events } = computeEvents(t, pinned({ currentExitNode: node({ online: false }) }));
         assertEq(events[0].spontaneous, true);
+    });
+
+    test('a pinned peer that vanishes from the netmap (currentExitNode: null) does not crash', () => {
+        const t = seed(pinned({ currentExitNode: node() }));
+        const { events } = computeEvents(t, pinned({ currentExitNode: null }));
+        assertDeepEq(types(events), []);
     });
 });
 
