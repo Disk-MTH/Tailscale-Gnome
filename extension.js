@@ -11,10 +11,11 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
-import { openAdminPanel } from './lib/menu.js';
+import { openAdminPanel, statusText } from './lib/menu.js';
 import { Notifier, Category } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
 import { PerAccountFeatureState } from './lib/per-account.js';
+import { fmt as _fmt } from './lib/util.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
 // one accelerators (e.g. ["<Super>t"]). Empty array = unbound.
@@ -85,14 +86,18 @@ export default class TailscaleGnomeExtension extends Extension {
         const WATCHER_COPY = {
             'connection-starting':   () => _('Connecting Tailscale — this may take a moment'),
             'connection-established': () => _('Tailscale connected'),
-            'connection-ended':      () => _('Tailscale disconnected'),
+            // A Starting phase that resolved to anything other than Running:
+            // reuse the pill's status vocabulary (Login required / Logged
+            // out / Tailscale unavailable / …) off the live snapshot, rather
+            // than a single generic string that ignores why it ended.
+            'connection-ended':      () => statusText(this._client.snapshot),
             'exit-node-lost':        () => _('Auto exit node lost'),
-            'exit-node-acquired':    (d) => `${_('Auto exit node')}: ${d.name}`,
-            'exit-node-switched':    (d) => `${_('Auto exit node switched to')} ${d.name}`,
-            'exit-node-offline':     (d) => `${_('Exit node went offline')}: ${d.name}`,
-            'exit-node-online':      (d) => `${_('Exit node is back online')}: ${d.name}`,
-            'exit-node-disabled':    (d) => `${_('Exit node was disabled')}: ${d.name}`,
-            'exit-node-reenabled':   (d) => `${_('Exit node was re-enabled')}: ${d.name}`,
+            'exit-node-acquired':    (d) => _fmt(_('Auto exit node: %s'), d.name),
+            'exit-node-switched':    (d) => _fmt(_('Auto exit node switched to %s'), d.name),
+            'exit-node-offline':     (d) => _fmt(_('Exit node %s went offline'), d.name),
+            'exit-node-online':      (d) => _fmt(_('Exit node %s is back online'), d.name),
+            'exit-node-disabled':    (d) => _fmt(_('Exit node %s was disabled'), d.name),
+            'exit-node-reenabled':   (d) => _fmt(_('Exit node %s was re-enabled'), d.name),
         };
 
         this._watcher = new SnapshotWatcher();
