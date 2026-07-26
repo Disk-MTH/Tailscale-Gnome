@@ -12,7 +12,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
 import { openAdminPanel, statusText } from './lib/menu.js';
-import { Notifier, Category } from './lib/notify.js';
+import { Notifier, Category, QuietScope } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
 import { PerAccountFeatureState } from './lib/per-account.js';
 import { fmt as _fmt } from './lib/util.js';
@@ -137,27 +137,88 @@ export default class TailscaleGnomeExtension extends Extension {
         // Per-tailnet feature-state persistence. Constructed after
         // start() so it can seed itself from the first snapshot the
         // client buffers, and before the availability probe so the
-        // probe's writes land in the active slot. The callback turns
-        // a bulk apply (multiple feature-* writes) into a single
-        // summary toast — the per-feature handlers below check
-        // perAccount.isLoadingSlot and stay quiet during the apply.
+        // probe's writes land in the active slot. The per-feature
+        // handlers below check perAccount.isLoadingSlot and stay quiet
+        // during the bulk apply.
+        //
+        // Mute the burst an account switch produces — the bulk feature-*
+        // apply, the daemon churn that follows, and the exit-node and
+        // backend-state transitions the new tailnet brings with it — and
+        // report the outcome once.
+        //
+        // The window is closed by a debounce re-armed on every snapshot, so
+        // it survives a slow daemon, and by a hard ceiling so a daemon that
+        // never settles cannot leave the extension permanently silent. Both
+        // sources are cleared before re-arming and removed in disable().
+        this._quietToken = 0;
+        this._quietDebounceId = 0;
+        this._quietCeilingId = 0;
+
+        const closeQuiet = () => {
+            if (this._quietDebounceId) {
+                GLib.source_remove(this._quietDebounceId);
+                this._quietDebounceId = 0;
+            }
+            if (this._quietCeilingId) {
+                GLib.source_remove(this._quietCeilingId);
+                this._quietCeilingId = 0;
+            }
+            if (this._quietToken) {
+                Notifier.endQuiet(this._quietToken);
+                this._quietToken = 0;
+            }
+        };
+
+        const armQuietDebounce = () => {
+            if (!this._quietToken) return;
+            if (this._quietDebounceId) {
+                GLib.source_remove(this._quietDebounceId);
+                this._quietDebounceId = 0;
+            }
+            const settleMs = this._settings.get_int('poll-interval') * 2000;
+            this._quietDebounceId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT, settleMs, () => {
+                    this._quietDebounceId = 0;
+                    closeQuiet();
+                    return GLib.SOURCE_REMOVE;
+                });
+        };
+
         this._perAccount = new PerAccountFeatureState(
             this._settings,
             this._client,
-            (accountName) => {
-                Notifier.notify({
-                    category: Category.PROFILE_SWITCH,
-                    level: 'success',
-                    force: true,
-                    message: `${_('Profile preferences applied')} (${accountName})`,
-                });
-                // Daemon side-effects (drift correction for OFF
-                // toggles) are normally driven by handleFeatureToggled,
-                // which we suppressed during the apply. Trigger them
-                // silently here via ensureFeatureCompliance on the
-                // next snapshot.
-                this._client.refresh().catch(() => {});
+            {
+                onSlotLoading: () => {
+                    closeQuiet();   // a switch during a switch restarts the window
+                    this._quietToken = Notifier.beginQuiet(QuietScope.ALL);
+                    this._quietCeilingId = GLib.timeout_add_seconds(
+                        GLib.PRIORITY_DEFAULT, 30, () => {
+                            this._quietCeilingId = 0;
+                            closeQuiet();
+                            return GLib.SOURCE_REMOVE;
+                        });
+                    armQuietDebounce();
+                },
+                onSlotLoaded: (accountName) => {
+                    Notifier.notify({
+                        category: Category.PROFILE_SWITCH,
+                        level: 'success',
+                        force: true,
+                        message: `${_('Profile applied')} (${accountName})`,
+                    });
+                    // Daemon side-effects (drift correction for OFF toggles)
+                    // are normally driven by handleFeatureToggled, which the
+                    // quiet window suppresses. Trigger them here.
+                    this._client.refresh().catch(() => {});
+                },
             },
+        );
+
+        // Every snapshot during the window pushes the close back, so the
+        // window lasts as long as the daemon keeps changing its mind.
+        this._client.connectObject(
+            'state-changed', () => armQuietDebounce(),
+            this,
         );
 
         // One-shot Taildrop/Funnel availability probe at startup, then
@@ -475,6 +536,16 @@ export default class TailscaleGnomeExtension extends Extension {
 
         this._connHandle = null;
         this._watcher = null;
+
+        if (this._quietDebounceId) {
+            GLib.source_remove(this._quietDebounceId);
+            this._quietDebounceId = 0;
+        }
+        if (this._quietCeilingId) {
+            GLib.source_remove(this._quietCeilingId);
+            this._quietCeilingId = 0;
+        }
+        this._quietToken = 0;
 
         Notifier.destroy();
 
