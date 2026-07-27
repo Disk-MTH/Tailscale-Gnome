@@ -11,6 +11,7 @@ const snapshot = (over = {}) => ({
     exitNodeID: null,
     autoExitNode: false,
     currentExitNode: null,
+    accountName: null,
     ...over,
 });
 
@@ -168,5 +169,56 @@ suite('SnapshotWatcher', () => {
     test('a null snapshot is ignored', () => {
         const w = new SnapshotWatcher();
         assertDeepEq(types(w.feed(null)), []);
+    });
+});
+
+suite('computeEvents — account', () => {
+    test('the first named account is silent', () => {
+        const { events } = computeEvents(EMPTY_TRACK, snapshot({ accountName: 'alice@example.com' }));
+        assertDeepEq(types(events), []);
+    });
+
+    test('an unchanged account emits nothing', () => {
+        const t = seed(snapshot({ accountName: 'alice@example.com' }));
+        const { events } = computeEvents(t, snapshot({ accountName: 'alice@example.com' }));
+        assertDeepEq(types(events), []);
+    });
+
+    test('a genuine switch emits one non-spontaneous event', () => {
+        const t = seed(snapshot({ accountName: 'alice@example.com' }));
+        const { events } = computeEvents(t, snapshot({ accountName: 'bob@example.com' }));
+        assertDeepEq(types(events), ['account-switched']);
+        assertEq(events[0].category, 'profile-switch');
+        assertEq(events[0].level, 'success');
+        assertEq(events[0].spontaneous, false);
+        assertEq(events[0].data.name, 'bob@example.com');
+    });
+
+    // A logged-out snapshot names no tailnet. Treating that as a switch would
+    // fire on every logout, and forgetting the name would fire again on the
+    // way back in.
+    test('an empty account name is not a switch and is not remembered', () => {
+        const t1 = seed(snapshot({ accountName: 'alice@example.com' }));
+        const { events: out, track: t2 } = computeEvents(t1, snapshot({ accountName: null }));
+        assertDeepEq(types(out), [], 'logging out is not a switch');
+        const { events: back } = computeEvents(t2, snapshot({ accountName: 'alice@example.com' }));
+        assertDeepEq(types(back), [], 'coming back to the same account is not a switch');
+    });
+
+    // extension.js opens the quiet window while handling this event, so
+    // everything the switch churns up must come after it in the batch.
+    test('the account event leads its batch', () => {
+        const withNode = (over = {}) => snapshot({
+            autoExitNode: true,
+            currentExitNode: node(),
+            accountName: 'alice@example.com',
+            ...over,
+        });
+        const t = seed(withNode());
+        const { events } = computeEvents(t, withNode({
+            accountName: 'bob@example.com',
+            currentExitNode: node({ online: false }),
+        }));
+        assertDeepEq(types(events), ['account-switched', 'exit-node-lost']);
     });
 });
