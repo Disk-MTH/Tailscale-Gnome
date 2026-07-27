@@ -267,174 +267,100 @@ export default class TailscaleGnomeExtension extends Extension {
             },
         );
 
-        /* -------------------- feature enforcement -------------------- */
-        // A Feature toggled OFF in prefs must also disable the underlying
-        // tailscale setting — hiding the menu UI alone leaves the feature
-        // active (e.g. accept-routes still letting traffic through). We
-        // also remember the prior state so re-enabling the feature can
-        // restore it without forcing the user to re-flip everything.
+        /* -------------------- feature reset on disable -------------------- */
+        // A feature toggled OFF in prefs must also switch the underlying
+        // tailscale setting off — hiding the menu alone would leave it active
+        // (accept-routes still letting traffic through, for instance). That
+        // happens once, at click time.
         //
-        // Each entry describes one feature: how to read it from the
-        // snapshot, the setter on the client, the GSettings key holding
-        // the saved value, and a UI label used in toast messages.
+        // Nothing is saved: tailscaled persists these per profile and restores
+        // them itself on `tailscale switch`, so re-enabling a feature simply
+        // shows whatever the daemon has. The extension keeps no shadow copy to
+        // disagree with.
         const FEATURE_META = {
             'feature-exit-nodes': {
                 label: _('Exit nodes'),
-                savedKey: 'feature-exit-nodes-saved',
-                type: 'string',
-                snapKey: 'exitNodeID',
-                set: (c, v) => c.setExitNode(v),
+                // Auto mode routes without an explicit exitNodeID, so both have
+                // to be clear before the reset can be skipped.
+                isSet: (snap) => !!(snap.exitNodeID || snap.autoExitNode),
+                reset: (c) => c.setExitNode(''),
             },
             'feature-dns': {
                 label: _('Magic DNS'),
-                savedKey: 'feature-dns-saved',
-                type: 'bool',
-                snapKey: 'acceptDNS',
-                set: (c, v) => c.setAcceptDNS(v),
+                isSet: (snap) => !!snap.acceptDNS,
+                reset: (c) => c.setAcceptDNS(false),
             },
             'feature-routes': {
                 label: _('Subnet routes'),
-                savedKey: 'feature-routes-saved',
-                type: 'bool',
-                snapKey: 'acceptRoutes',
-                set: (c, v) => c.setAcceptRoutes(v),
+                isSet: (snap) => !!snap.acceptRoutes,
+                reset: (c) => c.setAcceptRoutes(false),
             },
             'feature-shields-up': {
                 label: _('Shields up'),
-                savedKey: 'feature-shields-up-saved',
-                type: 'bool',
-                snapKey: 'shieldsUp',
-                set: (c, v) => c.setShieldsUp(v),
+                isSet: (snap) => !!snap.shieldsUp,
+                reset: (c) => c.setShieldsUp(false),
             },
             'feature-ssh-server': {
                 label: _('Tailscale SSH'),
-                savedKey: 'feature-ssh-server-saved',
-                type: 'bool',
-                snapKey: 'runSSH',
-                set: (c, v) => c.setRunSSH(v),
+                isSet: (snap) => !!snap.runSSH,
+                reset: (c) => c.setRunSSH(false),
+            },
+            'feature-funnels': {
+                label: _('Funnel'),
+                isSet: (snap) => (snap.funnels?.length ?? 0) > 0,
+                reset: (c) => c.resetFunnels(),
+            },
+            'feature-taildrop': {
+                label: _('Taildrop'),
+                // No daemon state of its own: syncTaildrop already stops the
+                // receiver when this key goes false.
+                isSet: () => false,
+                reset: null,
             },
         };
 
-        // Drift correction: if the daemon state diverges from a feature
-        // pref that's OFF, force the daemon back. Runs on every snapshot
-        // (cheap; each branch is gated on "off in prefs but on in snap").
-        const ensureFeatureCompliance = () => {
-            const snap = this._client.snapshot;
-            if (!snap.canControl || snap.loggedOut ||
-                snap.backendState === 'NeedsLogin' ||
-                snap.backendState === 'NoState')
-                return;
-            const off = (k) => !this._settings.get_boolean(k);
-            for (const [key, meta] of Object.entries(FEATURE_META)) {
-                if (!off(key)) continue;
-                const cur = snap[meta.snapKey];
-                if (meta.type === 'bool' && cur) meta.set(this._client, false);
-                else if (meta.type === 'string' && cur) meta.set(this._client, '');
-            }
-            if (off('feature-exit-nodes') && snap.autoExitNode)
-                this._client.setExitNode('');
-            if (off('feature-funnels') && snap.funnels.length > 0)
-                this._client.resetFunnels();
-        };
-
-        this._client.connectObject(
-            'state-changed', ensureFeatureCompliance,
-            this,
-        );
-
-        // Per-feature handler with toast feedback and state save/restore.
-        // The sync "disabled"/"enabled" toast fires immediately; the
-        // underlying tailscale CLI call (if needed) runs behind a spinner
-        // toast that resolves to success or error in place.
+        // One notification for the flip itself, then — only when switching a
+        // feature off — a single daemon reset behind a pending notification.
         const handleFeatureToggled = (key) => {
             const meta = FEATURE_META[key];
             const enabled = this._settings.get_boolean(key);
+            Notifier.notify({
+                category: Category.NETWORK,
+                level: 'success',
+                message: `${meta.label}: ${enabled ? _('enabled') : _('disabled')}`,
+            });
+            if (enabled || !meta.reset)
+                return;
+
             const snap = this._client.snapshot;
             if (!snap.canControl || snap.loggedOut ||
                 snap.backendState === 'NeedsLogin' ||
                 snap.backendState === 'NoState') {
-                // Daemon not ready: still toast the sync feature flip; the
-                // drift-correction pass will reconcile once it's back.
+                // Say so rather than fail quietly: nothing reconciles this
+                // later by design, so the user has to know the daemon side did
+                // not happen and that re-clicking is what fixes it.
                 Notifier.notify({
-                    category: Category.NETWORK,
-                    level: 'success',
-                    message: `${meta.label}: ${enabled ? _('enabled') : _('disabled')}`,
+                    category: Category.ERRORS,
+                    level: 'warning',
+                    message: `${meta.label}: ${_('not applied, daemon unavailable')}`,
                 });
                 return;
             }
-            const current = snap[meta.snapKey];
+            if (!meta.isSet(snap))
+                return;
 
-            if (enabled) {
-                Notifier.notify({
-                    category: Category.NETWORK,
-                    level: 'success',
-                    message: `${meta.label}: ${_('enabled')}`,
-                });
-                const saved = meta.type === 'bool'
-                    ? this._settings.get_boolean(meta.savedKey)
-                    : this._settings.get_string(meta.savedKey);
-                const needRestore = meta.type === 'bool'
-                    ? (saved && !current)
-                    : (saved && current !== saved);
-                if (needRestore) {
-                    Notifier.withFeedback(
-                        Category.NETWORK,
-                        `${meta.label}: ${_('turning on')}`,
-                        `${meta.label}: ${_('on')}`,
-                        () => meta.set(this._client, saved),
-                    );
-                }
-            } else {
-                // Snapshot the current daemon state before flipping it off
-                // so the next re-enable can restore it.
-                if (meta.type === 'bool')
-                    this._settings.set_boolean(meta.savedKey, !!current);
-                else
-                    this._settings.set_string(meta.savedKey, current || '');
-
-                Notifier.notify({
-                    category: Category.NETWORK,
-                    level: 'success',
-                    message: `${meta.label}: ${_('disabled')}`,
-                });
-                if (current) {
-                    const off = meta.type === 'bool' ? false : '';
-                    Notifier.withFeedback(
-                        Category.NETWORK,
-                        `${meta.label}: ${_('turning off')}`,
-                        `${meta.label}: ${_('off')}`,
-                        () => meta.set(this._client, off),
-                    );
-                }
-            }
+            Notifier.withFeedback(
+                Category.NETWORK,
+                `${meta.label}: ${_('turning off')}`,
+                `${meta.label}: ${_('off')}`,
+                () => meta.reset(this._client),
+            );
         };
 
         this._settings.connectObject(
             ...Object.keys(FEATURE_META).flatMap((key) => [
                 `changed::${key}`,
                 () => handleFeatureToggled(key),
-            ]),
-            this,
-        );
-
-        // Taildrop & funnels: no daemon state to save/restore; just toast
-        // the feature flip. Funnels still gets its destructive reset via
-        // ensureFeatureCompliance when turned off.
-        this._settings.connectObject(
-            ...[
-                ['feature-taildrop', _('Taildrop')],
-                ['feature-funnels',  _('Funnel')],
-            ].flatMap(([key, label]) => [
-                `changed::${key}`,
-                () => {
-                    const on = this._settings.get_boolean(key);
-                    Notifier.notify({
-                        category: Category.NETWORK,
-                        level: 'success',
-                        message: `${label}: ${on ? _('enabled') : _('disabled')}`,
-                    });
-                    ensureFeatureCompliance();
-                },
             ]),
             this,
         );
