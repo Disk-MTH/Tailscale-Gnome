@@ -20,6 +20,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - Toast duration and minimum pending duration moved from the General page to
   the new Notifications page.
+- Keyboard shortcuts moved from the General page to their own page.
+- Feature toggles are now global rather than per-tailnet. Switching a feature
+  off still switches the matching tailscale setting off, once, at that moment;
+  switching it back on no longer restores a remembered value — the menu shows
+  whatever the daemon has. Existing per-tailnet toggles collapse to the values
+  of whichever account was active at upgrade time.
+
+### Removed
+- Per-tailnet feature-state persistence. tailscaled already stores exit node,
+  Magic DNS, accepted routes, shields, SSH and LAN access per profile and
+  restores them on `tailscale switch`; the extension's copy duplicated that and
+  could overwrite what the daemon had just restored.
 
 ## [0.2.1] - 2026-07-14
 

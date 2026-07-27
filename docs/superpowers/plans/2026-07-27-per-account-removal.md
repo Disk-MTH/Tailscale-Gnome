@@ -637,7 +637,7 @@ Delete `_hasScope` entirely, and reduce `shouldShow`:
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `rtk make test`
-Expected: PASS — 37 tests.
+Expected: PASS — 36 tests.
 
 - [ ] **Step 5: Propagate through `lib/notify.js`**
 
@@ -720,7 +720,7 @@ rtk make test
 rg -n 'QuietScope|\bforce\b' extension.js lib/ tests/ prefs.js
 ```
 
-Expected: syntax OK, 37 tests pass, `rg` returns **no match**. Read the output rather than assuming: `force` is a common word, and a hit inside prose is a hit to look at, not to ignore.
+Expected: syntax OK, 36 tests pass, `rg` returns **no match**. Read the output rather than assuming: `force` is a common word, and a hit inside prose is a hit to look at, not to ignore.
 
 - [ ] **Step 8: Commit**
 
@@ -809,7 +809,7 @@ rtk make test-syntax
 rtk make pack && shexli tailscale-gnome@diskmth.fr.shell-extension.zip
 ```
 
-Expected: 37 tests pass, syntax OK on every file, and shexli reports **0 errors, 0 warnings** with a single `manual_review` for clipboard access.
+Expected: 36 tests pass, syntax OK on every file, and shexli reports **0 errors, 0 warnings** with a single `manual_review` for clipboard access.
 
 - [ ] **Step 5: Commit**
 

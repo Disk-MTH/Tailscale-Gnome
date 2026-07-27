@@ -1,5 +1,5 @@
 import { suite, test, assertTrue, assertFalse, assertEq } from './harness.js';
-import { Category, CATEGORY_KEY, QuietScope, NotifyPolicy } from '../lib/notify-policy.js';
+import { Category, CATEGORY_KEY, NotifyPolicy } from '../lib/notify-policy.js';
 
 const show = (policy, opts) => policy.shouldShow({
     category: Category.TAILDROP, level: 'info', ...opts,
@@ -59,37 +59,32 @@ suite('NotifyPolicy', () => {
         assertTrue(show(p, { level: 'error' }), 'own category still wins');
     });
 
-    test('a spontaneous window mutes only spontaneous notifications', () => {
+    test('a quiet window mutes only spontaneous notifications', () => {
         const p = new NotifyPolicy();
-        p.beginQuiet(QuietScope.SPONTANEOUS);
+        p.beginQuiet();
         assertFalse(show(p, { spontaneous: true }), 'spontaneous is muted');
         assertTrue(show(p, { spontaneous: false }), 'user action still passes');
     });
 
-    test('an all window mutes everything', () => {
+    // What `force` used to guarantee, now carried by spontaneous: false — and
+    // it still stops at the category filter, which is the whole point of an
+    // off switch that means it.
+    test('a quiet window never overrides the category filter', () => {
         const p = new NotifyPolicy();
-        p.beginQuiet(QuietScope.ALL);
-        assertFalse(show(p, { spontaneous: false }), 'user action is muted too');
-        assertFalse(show(p, { spontaneous: true }), 'spontaneous is muted');
-    });
-
-    test('force bypasses quiet but never the category filter', () => {
-        const p = new NotifyPolicy();
-        p.beginQuiet(QuietScope.ALL);
-        assertTrue(show(p, { force: true }), 'force escapes the quiet window');
+        p.beginQuiet();
         p.setCategoryEnabled(Category.TAILDROP, false);
-        assertFalse(show(p, { force: true }), 'force does not override a muted category');
+        assertFalse(show(p, { spontaneous: false }), 'a muted category stays muted');
     });
 
     test('quiet windows nest and release by token', () => {
         const p = new NotifyPolicy();
-        const a = p.beginQuiet(QuietScope.ALL);
-        const b = p.beginQuiet(QuietScope.ALL);
+        const a = p.beginQuiet();
+        const b = p.beginQuiet();
         assertEq(p.quietCount, 2, 'two windows open');
         p.endQuiet(a);
-        assertFalse(show(p, {}), 'still muted while the second window is open');
+        assertFalse(show(p, { spontaneous: true }), 'still muted while the second window is open');
         p.endQuiet(b);
-        assertTrue(show(p, {}), 'released once the last window closes');
+        assertTrue(show(p, { spontaneous: true }), 'released once the last window closes');
         assertEq(p.quietCount, 0, 'stack drained');
     });
 
@@ -101,8 +96,8 @@ suite('NotifyPolicy', () => {
 
     test('clearQuiet drains the stack', () => {
         const p = new NotifyPolicy();
-        p.beginQuiet(QuietScope.ALL);
-        p.beginQuiet(QuietScope.SPONTANEOUS);
+        p.beginQuiet();
+        p.beginQuiet();
         p.clearQuiet();
         assertEq(p.quietCount, 0, 'drained');
         assertTrue(show(p, { spontaneous: true }), 'nothing muted after a clear');

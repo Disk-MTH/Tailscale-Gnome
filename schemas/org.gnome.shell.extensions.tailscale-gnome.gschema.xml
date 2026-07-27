@@ -105,30 +105,6 @@
                 availability has been confirmed.</description>
         </key>
 
-        <key name="feature-exit-nodes-saved" type="s">
-            <default>''</default>
-            <summary>Saved exit-node target while the Exit-nodes feature is off</summary>
-            <description>Holds the exit node that was active when the user
-                disabled the Exit-nodes feature in prefs. Re-enabling the
-                feature restores it.</description>
-        </key>
-        <key name="feature-dns-saved" type="b">
-            <default>false</default>
-            <summary>Saved Magic-DNS state while the Magic-DNS feature is off</summary>
-        </key>
-        <key name="feature-routes-saved" type="b">
-            <default>false</default>
-            <summary>Saved accept-routes state while the Subnet-routes feature is off</summary>
-        </key>
-        <key name="feature-shields-up-saved" type="b">
-            <default>false</default>
-            <summary>Saved shields-up state while the Shields-up feature is off</summary>
-        </key>
-        <key name="feature-ssh-server-saved" type="b">
-            <default>false</default>
-            <summary>Saved SSH-server state while the SSH-server feature is off</summary>
-        </key>
-
         <key name="feature-taildrop-available" type="b">
             <default>false</default>
             <summary>Cached: Taildrop usable on this tailnet</summary>
@@ -144,17 +120,6 @@
                 extension probes once at startup and on account changes;
                 the "Check availability" button in prefs reruns the
                 probe on demand.</description>
-        </key>
-
-        <key name="feature-state-per-account" type="s">
-            <default>'{}'</default>
-            <summary>Per-tailnet snapshots of feature-* settings</summary>
-            <description>JSON-encoded dict keyed by tailnet name. Each
-                slot holds the feature toggles, saved-state backups, and
-                availability cache that were active the last time the
-                user was logged into that tailnet, so account switches
-                restore the right state instead of bleeding settings
-                across tailnets.</description>
         </key>
 
         <key name="notification-mode"
