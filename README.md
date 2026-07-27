@@ -106,24 +106,28 @@ Pack a release zip with `make pack`. Upload the resulting `.zip` to
 Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 **Extension settings** in the menu.
 
-| Group        | Setting                            | Default       |
-| ------------ | ---------------------------------- | ------------- |
-| Features     | Exit nodes / DNS / Routes / etc.   | on            |
-| Features     | Taildrop                           | off           |
-| Features     | Funnel                             | off           |
-| Taildrop     | Inbox folder                       | `~/Downloads/Taildrop` |
-| Taildrop     | Nautilus right-click scripts       | not installed |
-| Shortcuts    | Connect / disconnect               | unbound       |
-| Shortcuts    | Toggle automatic exit node         | unbound       |
-| Shortcuts    | Open the Tailscale menu            | unbound       |
-| Shortcuts    | Open the admin console             | unbound       |
-| Shortcuts    | Send a file via Taildrop           | unbound       |
-| Advanced     | Start Tailscale at boot            | system        |
-| Advanced     | Show panel indicator               | on            |
-| Advanced     | Poll interval                      | 3s            |
-| Advanced     | Toast duration                     | 3s            |
-| Advanced     | Minimum spinner duration           | 1000ms        |
-| Advanced     | tailscale binary                   | `tailscale`   |
+| Page          | Setting                            | Default       |
+| ------------- | ---------------------------------- | ------------- |
+| General       | Features: exit nodes / DNS / routes / etc. | on    |
+| General       | Features: Taildrop                 | off           |
+| General       | Features: Funnel                   | off           |
+| General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
+| General       | Taildrop Nautilus right-click scripts | not installed |
+| General       | Start Tailscale at boot            | system        |
+| General       | Show panel indicator               | on            |
+| General       | Poll interval                      | 3s            |
+| General       | tailscale binary                   | `tailscale`   |
+| Notifications | Presentation                       | persistent    |
+| Notifications | History size                       | 5             |
+| Notifications | Toast duration                     | 3s            |
+| Notifications | Minimum pending duration           | 1000ms        |
+| Notifications | Per-event switches                 | all on        |
+| Notifications | Always report failures             | on            |
+| Shortcuts     | Connect / disconnect               | unbound       |
+| Shortcuts     | Toggle automatic exit node         | unbound       |
+| Shortcuts     | Open the Tailscale menu            | unbound       |
+| Shortcuts     | Open the admin console             | unbound       |
+| Shortcuts     | Send a file via Taildrop           | unbound       |
 
 ## Debugging
 

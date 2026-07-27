@@ -915,6 +915,55 @@ function _makeNotificationsPage(settings) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                              Shortcuts page                                */
+/* -------------------------------------------------------------------------- */
+
+// Titles are thunks for the same reason NOTIFY_DEFS uses them: the module
+// body runs before gettext is initialised.
+const SHORTCUT_DEFS = [
+    {
+        key: 'shortcut-toggle-tailscale',
+        title: () => _('Connect / disconnect Tailscale'),
+    },
+    {
+        key: 'shortcut-toggle-exit-node',
+        title: () => _('Toggle automatic exit node'),
+    },
+    {
+        key: 'shortcut-show-menu',
+        title: () => _('Open the Tailscale menu'),
+    },
+    {
+        key: 'shortcut-open-admin-panel',
+        title: () => _('Open the Tailscale admin console'),
+    },
+    {
+        key: 'shortcut-send-file',
+        title: () => _('Send a file via Taildrop'),
+    },
+];
+
+function _makeShortcutsPage(settings) {
+    const page = new Adw.PreferencesPage({
+        title: _('Shortcuts'),
+        iconName: 'preferences-desktop-keyboard-symbolic',
+    });
+
+    const group = new Adw.PreferencesGroup({
+        title: _('Keyboard shortcuts'),
+        description: _(
+            'Click a row to capture a key combination. Backspace to clear.',
+        ),
+    });
+    page.add(group);
+
+    for (const def of SHORTCUT_DEFS)
+        group.add(new ShortcutRow({ key: def.key, title: def.title(), settings }));
+
+    return page;
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                  Page                                      */
 /* -------------------------------------------------------------------------- */
 
@@ -928,40 +977,13 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         });
         window.add(page);
         window.add(_makeNotificationsPage(settings));
+        window.add(_makeShortcutsPage(settings));
 
         /* ----------------------------- Features ------------------------- */
         page.add(_makeFeaturesGroup(settings, window));
 
         /* ----------------------------- Taildrop ------------------------- */
         page.add(_makeTaildropGroup(settings, this.dir));
-
-        /* ---------------------------- Shortcuts ------------------------- */
-        const shortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Shortcuts'),
-            description: _(
-                'Click a row to capture a key combination. Backspace to clear.',
-            ),
-        });
-        page.add(shortcutsGroup);
-
-        for (const def of [
-            {
-                key: 'shortcut-toggle-tailscale',
-                title: _('Connect / disconnect Tailscale'),
-            },
-            {
-                key: 'shortcut-toggle-exit-node',
-                title: _('Toggle automatic exit node'),
-            },
-            { key: 'shortcut-show-menu', title: _('Open the Tailscale menu') },
-            {
-                key: 'shortcut-open-admin-panel',
-                title: _('Open the Tailscale admin console'),
-            },
-            { key: 'shortcut-send-file', title: _('Send a file via Taildrop') },
-        ]) {
-            shortcutsGroup.add(new ShortcutRow({ ...def, settings }));
-        }
 
         /* ---------------------------- Advanced -------------------------- */
         const advanced = new Adw.PreferencesGroup({
@@ -1021,7 +1043,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         const resetGroup = new Adw.PreferencesGroup();
         const resetAllRow = new Adw.ActionRow({
             title: _('Reset all settings'),
-            subtitle: _('Restore every setting on this page to its default.'),
+            subtitle: _('Restore every setting to its default, on all pages.'),
         });
         const resetAllBtn = new Gtk.Button({
             label: _('Reset all'),
