@@ -12,7 +12,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
 import { openAdminPanel, statusText } from './lib/menu.js';
-import { Notifier, Category, QuietScope } from './lib/notify.js';
+import { Notifier, Category } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
 import { fmt as _fmt } from './lib/util.js';
 
@@ -141,7 +141,7 @@ export default class TailscaleGnomeExtension extends Extension {
         // settles cannot leave the extension permanently silent.
         const openQuietWindow = () => {
             closeQuiet();   // a switch during a switch restarts the window
-            this._quietToken = Notifier.beginQuiet(QuietScope.SPONTANEOUS);
+            this._quietToken = Notifier.beginQuiet();
             this._quietCeilingId = GLib.timeout_add_seconds(
                 GLib.PRIORITY_DEFAULT, 30, () => {
                     this._quietCeilingId = 0;
