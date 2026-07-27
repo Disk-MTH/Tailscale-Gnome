@@ -205,6 +205,16 @@ suite('computeEvents — account', () => {
         assertDeepEq(types(back), [], 'coming back to the same account is not a switch');
     });
 
+    // A logged-out or failed-status first snapshot still sets `seeded: true`
+    // with no accountName. The next snapshot that names a tailnet — e.g. the
+    // user's first login of the session — must not read as a switch away
+    // from "no account".
+    test('a nameless first snapshot then the first login is silent', () => {
+        const t = computeEvents(EMPTY_TRACK, snapshot({ accountName: null })).track;
+        const { events } = computeEvents(t, snapshot({ accountName: 'alice@example.com' }));
+        assertDeepEq(types(events), []);
+    });
+
     // extension.js opens the quiet window while handling this event, so
     // everything the switch churns up must come after it in the batch.
     test('the account event leads its batch', () => {

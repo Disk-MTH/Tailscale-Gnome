@@ -267,11 +267,12 @@ export default class TailscaleGnomeExtension extends Extension {
             },
         );
 
-        /* -------------------- feature reset on disable -------------------- */
+        /* -------------------- feature reset on toggle-off -------------------- */
         // A feature toggled OFF in prefs must also switch the underlying
-        // tailscale setting off — hiding the menu alone would leave it active
-        // (accept-routes still letting traffic through, for instance). That
-        // happens once, at click time.
+        // tailscale setting off — hiding the menu alone would leave it active.
+        // This reset applies once, to this click; it says nothing about what
+        // the daemon restores later (e.g. on `tailscale switch`), which the
+        // extension does not correct or reflect in the menu.
         //
         // Nothing is saved: tailscaled persists these per profile and restores
         // them itself on `tailscale switch`, so re-enabling a feature simply
@@ -329,6 +330,8 @@ export default class TailscaleGnomeExtension extends Extension {
                 level: 'success',
                 message: `${meta.label}: ${enabled ? _('enabled') : _('disabled')}`,
             });
+            // !meta.reset is only true for feature-taildrop — see its
+            // FEATURE_META entry above for why it has no daemon-side reset.
             if (enabled || !meta.reset)
                 return;
 
