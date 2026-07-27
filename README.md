@@ -29,7 +29,7 @@ send/receive files with Taildrop — no terminal required.
 - **Exit node** picker (None / Auto / per-peer) with a status pill that
   reflects offline or unavailable nodes truthfully, plus a panel warning
   glyph when the selected node can no longer route.
-- **Prefs toggles** for Magic DNS, Accept routes, Shields up, SSH
+- **Menu toggles** for Magic DNS, Accept routes, Shields up, SSH
   server, Allow LAN access.
 - **Funnel** management from the menu: add a port, copy each public
   URL, remove. If the tailnet hasn't approved Funnel yet, the admin
@@ -109,9 +109,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 
 | Page          | Setting                            | Default       |
 | ------------- | ---------------------------------- | ------------- |
-| General       | Features: exit nodes / DNS / routes / etc. | on    |
-| General       | Features: Taildrop                 | off           |
-| General       | Features: Funnel                   | off           |
+| General       | Availability: Taildrop / Funnel    | probed        |
 | General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
 | General       | Taildrop Nautilus right-click scripts | not installed |
 | General       | Start Tailscale at boot            | system        |

@@ -220,24 +220,25 @@ export default class TailscaleGnomeExtension extends Extension {
         // Restore Taildrop receiver state. The setting is the source of
         // truth across reloads; the receiver subprocess is owned by the
         // client and gets killed on `disable()` via client.destroy().
-        // The receiver only runs when BOTH the user-facing accept toggle
-        // is on AND the Taildrop feature itself is enabled in prefs.
+        // The receiver only runs when the user-facing accept toggle is on
+        // AND the tailnet actually allows Taildrop — a receiver on a tailnet
+        // that forbids it would never receive anything.
         const syncTaildrop = () => {
-            const featureOn = this._settings.get_boolean('feature-taildrop');
-            const acceptOn  = this._settings.get_boolean('taildrop-accept');
-            const inbox     = this._settings.get_string('taildrop-inbox');
-            this._client.setAcceptFiles(featureOn && acceptOn, inbox);
+            const availableOn = this._settings.get_boolean('feature-taildrop-available');
+            const acceptOn    = this._settings.get_boolean('taildrop-accept');
+            const inbox       = this._settings.get_string('taildrop-inbox');
+            this._client.setAcceptFiles(availableOn && acceptOn, inbox);
         };
         syncTaildrop();
         this._settings.connectObject(
-            'changed::taildrop-accept',  syncTaildrop,
-            'changed::feature-taildrop', syncTaildrop,
+            'changed::taildrop-accept', syncTaildrop,
+            'changed::feature-taildrop-available', syncTaildrop,
             'changed::taildrop-inbox', () => {
                 // Inbox path changed: bounce the receiver if it's running so
                 // the new directory takes effect.
-                const featureOn = this._settings.get_boolean('feature-taildrop');
-                const acceptOn  = this._settings.get_boolean('taildrop-accept');
-                if (featureOn && acceptOn) {
+                const availableOn = this._settings.get_boolean('feature-taildrop-available');
+                const acceptOn    = this._settings.get_boolean('taildrop-accept');
+                if (availableOn && acceptOn) {
                     this._client.setAcceptFiles(false);
                     this._client.setAcceptFiles(true,
                         this._settings.get_string('taildrop-inbox'));
@@ -265,107 +266,6 @@ export default class TailscaleGnomeExtension extends Extension {
                     this._client.setOperator();
                 return GLib.SOURCE_REMOVE;
             },
-        );
-
-        /* -------------------- feature reset on toggle-off -------------------- */
-        // A feature toggled OFF in prefs must also switch the underlying
-        // tailscale setting off — hiding the menu alone would leave it active.
-        // This reset applies once, to this click; it says nothing about what
-        // the daemon restores later (e.g. on `tailscale switch`), which the
-        // extension does not correct or reflect in the menu.
-        //
-        // Nothing is saved: tailscaled persists these per profile and restores
-        // them itself on `tailscale switch`, so re-enabling a feature simply
-        // shows whatever the daemon has. The extension keeps no shadow copy to
-        // disagree with.
-        const FEATURE_META = {
-            'feature-exit-nodes': {
-                label: _('Exit nodes'),
-                // Auto mode routes without an explicit exitNodeID, so both have
-                // to be clear before the reset can be skipped.
-                isSet: (snap) => !!(snap.exitNodeID || snap.autoExitNode),
-                reset: (c) => c.setExitNode(''),
-            },
-            'feature-dns': {
-                label: _('Magic DNS'),
-                isSet: (snap) => !!snap.acceptDNS,
-                reset: (c) => c.setAcceptDNS(false),
-            },
-            'feature-routes': {
-                label: _('Subnet routes'),
-                isSet: (snap) => !!snap.acceptRoutes,
-                reset: (c) => c.setAcceptRoutes(false),
-            },
-            'feature-shields-up': {
-                label: _('Shields up'),
-                isSet: (snap) => !!snap.shieldsUp,
-                reset: (c) => c.setShieldsUp(false),
-            },
-            'feature-ssh-server': {
-                label: _('Tailscale SSH'),
-                isSet: (snap) => !!snap.runSSH,
-                reset: (c) => c.setRunSSH(false),
-            },
-            'feature-funnels': {
-                label: _('Funnel'),
-                isSet: (snap) => (snap.funnels?.length ?? 0) > 0,
-                reset: (c) => c.resetFunnels(),
-            },
-            'feature-taildrop': {
-                label: _('Taildrop'),
-                // No daemon state of its own: syncTaildrop already stops the
-                // receiver when this key goes false.
-                isSet: () => false,
-                reset: null,
-            },
-        };
-
-        // One notification for the flip itself, then — only when switching a
-        // feature off — a single daemon reset behind a pending notification.
-        const handleFeatureToggled = (key) => {
-            const meta = FEATURE_META[key];
-            const enabled = this._settings.get_boolean(key);
-            Notifier.notify({
-                category: Category.NETWORK,
-                level: 'success',
-                message: `${meta.label}: ${enabled ? _('enabled') : _('disabled')}`,
-            });
-            // !meta.reset is only true for feature-taildrop — see its
-            // FEATURE_META entry above for why it has no daemon-side reset.
-            if (enabled || !meta.reset)
-                return;
-
-            const snap = this._client.snapshot;
-            if (!snap.canControl || snap.loggedOut ||
-                snap.backendState === 'NeedsLogin' ||
-                snap.backendState === 'NoState') {
-                // Say so rather than fail quietly: nothing reconciles this
-                // later by design, so the user has to know the daemon side did
-                // not happen and that re-clicking is what fixes it.
-                Notifier.notify({
-                    category: Category.ERRORS,
-                    level: 'warning',
-                    message: `${meta.label}: ${_('not applied, daemon unavailable')}`,
-                });
-                return;
-            }
-            if (!meta.isSet(snap))
-                return;
-
-            Notifier.withFeedback(
-                Category.NETWORK,
-                `${meta.label}: ${_('turning off')}`,
-                `${meta.label}: ${_('off')}`,
-                () => meta.reset(this._client),
-            );
-        };
-
-        this._settings.connectObject(
-            ...Object.keys(FEATURE_META).flatMap((key) => [
-                `changed::${key}`,
-                () => handleFeatureToggled(key),
-            ]),
-            this,
         );
 
         this._exportDbus();

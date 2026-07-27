@@ -47,9 +47,11 @@ agir ; l'utilisateur ne peut rien pour une ACL. Elle devient un **état affiché
 | le `Gtk.Switch`, son `guard`, son handler et le bouton reset de la ligne | `prefs:631-634`, `:671-702` |
 
 Ce bloc emporte avec lui la dernière écriture daemon non sollicitée de l'extension :
-`Notifier.withFeedback(…, () => meta.reset(this._client))`. Après ce changement,
-`extension.js` n'appelle plus aucun setter du client en dehors du démarrage du receveur
-Taildrop.
+`Notifier.withFeedback(…, () => meta.reset(this._client))`. Les setters qui subsistent dans
+`extension.js` répondent tous à une demande explicite — `setOperator()` derrière son invite
+polkit, `setExitNode()` derrière un raccourci clavier, `setAcceptFiles()` derrière la case
+« accepter les fichiers ». Aucun setter d'état démon ne part d'un `changed::` que
+l'utilisateur n'a pas provoqué.
 
 **Conséquence assumée** : masquer Funnel ne démonte plus les funnels actifs. Ce n'était pas
 un service rendu mais un effet de bord destructeur — un tailnet dont l'utilisateur n'avait
@@ -113,14 +115,22 @@ Le sous-titre d'indisponibilité (`unavailableHint`) et la visibilité condition
 
 ### 4.3 Sonde à l'ouverture
 
-`fillPreferencesWindow` lance les deux vérificateurs en tâche de fond et écrit les deux clés.
-Un état affiché doit être frais sans qu'on ait à cliquer ; le bouton par ligne devient un
-rafraîchissement manuel plutôt que la source principale.
+`fillPreferencesWindow` lance les deux vérificateurs en tâche de fond. Un état affiché doit
+être frais sans qu'on ait à cliquer ; le bouton par ligne devient un rafraîchissement manuel
+plutôt que la source principale.
 
 La sonde est asynchrone et sans attente : la fenêtre s'ouvre immédiatement sur la dernière
 valeur connue et l'icône se met à jour quand la réponse arrive, par le `changed::` auquel la
-ligne est déjà abonnée. Un échec est silencieux — c'est déjà le comportement de la sonde du
-démarrage et de celle de « Reset all ».
+ligne est déjà abonnée.
+
+**Elle n'écrit que quand elle a une réponse.** `hasCapability` distingue trois états : oui,
+non, et « je n'ai pas pu savoir » — daemon arrêté, sortie illisible, daemon trop ancien pour
+publier `CapMap`. Le troisième ne touche pas au cache, sans quoi ouvrir les préférences
+pendant que tailscaled redémarre couperait le receveur Taildrop, masquerait trois entrées du
+menu et afficherait « Taildrop is disabled for this tailnet » — une affirmation fausse sur le
+tailnet. C'est la politique que `TailscaleClient.probeAvailability` applique déjà côté shell
+(`lib/tailscale.js:356-370`) ; les trois écritures côté prefs — sonde d'ouverture, bouton de
+vérification, re-sonde de « Reset all » — s'y alignent.
 
 ---
 
