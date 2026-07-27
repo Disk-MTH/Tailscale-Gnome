@@ -177,26 +177,16 @@ function _makeTaildropGroup(settings, extensionDir) {
         title: _('Taildrop'),
         description: _('Send and receive files between Tailscale nodes.'),
     });
-    // Mirror the feature switch: when Taildrop is disabled in Features
-    // (either user-toggled or admin-blocked), these rows are greyed so
-    // it's clear they have no effect.
+    // Grey these rows out when the tailnet forbids Taildrop: they would have
+    // no effect, and the Availability group above says why.
     const syncSensitivity = () => {
-        group.sensitive =
-            settings.get_boolean('feature-taildrop') &&
-            settings.get_boolean('feature-taildrop-available');
+        group.sensitive = settings.get_boolean('feature-taildrop-available');
     };
     const sensId = settings.connect(
-        'changed::feature-taildrop',
-        syncSensitivity,
-    );
-    const sensId2 = settings.connect(
         'changed::feature-taildrop-available',
         syncSensitivity,
     );
-    group.connect('destroy', () => {
-        settings.disconnect(sensId);
-        settings.disconnect(sensId2);
-    });
+    group.connect('destroy', () => settings.disconnect(sensId));
     syncSensitivity();
 
     // Default inbox: must match TailscaleClient._resolveInbox in lib/tailscale.js.
@@ -524,19 +514,14 @@ function _makeServiceRow() {
 /*                              Features group                                */
 /* -------------------------------------------------------------------------- */
 
-// Each entry can mark itself optional + give an availability cache key.
-// When the cache says the tailnet doesn't allow the feature, the toggle is
-// greyed out and a "Open admin" button + hint subtitle appear.
-const FEATURE_DEFS = [
-    { key: 'feature-exit-nodes', title: () => _('Exit nodes') },
-    { key: 'feature-dns', title: () => _('Magic DNS') },
-    { key: 'feature-routes', title: () => _('Subnet routes') },
-    { key: 'feature-shields-up', title: () => _('Shields up') },
-    { key: 'feature-ssh-server', title: () => _('Tailscale SSH server') },
+// Taildrop and Funnel can be forbidden tailnet-wide by an administrator.
+// That is a fact to report, not a setting: each row shows the cached probe
+// result, offers a re-check, and points at the admin page when the answer
+// is no.
+const AVAILABILITY_DEFS = [
     {
-        key: 'feature-taildrop',
-        title: () => _('Taildrop'),
         availabilityKey: 'feature-taildrop-available',
+        title: () => _('Taildrop'),
         adminUrl: 'https://login.tailscale.com/admin/settings/general',
         docUrl: 'https://tailscale.com/docs/features/taildrop',
         unavailableHint: () => _('Taildrop is disabled for this tailnet.'),
@@ -547,9 +532,8 @@ const FEATURE_DEFS = [
         checker: _checkTaildrop,
     },
     {
-        key: 'feature-funnels',
-        title: () => _('Funnel'),
         availabilityKey: 'feature-funnels-available',
+        title: () => _('Funnel'),
         adminUrl:
             'https://login.tailscale.com/admin/acls/visual/node-attributes',
         docUrl: 'https://tailscale.com/docs/features/tailscale-funnel',
@@ -597,47 +581,25 @@ function _resetButton(settings, key) {
     return btn;
 }
 
-// Build a single Features row. Rows with an availabilityKey use a manual
-// ActionRow + Gtk.Switch so we can:
-//   - render the switch visually OFF when the daemon reports the feature
-//     as unavailable (Adw.SwitchRow ties active to the bound setting and
-//     stays ON when greyed, which read as confusing),
-//   - keep the "Open admin" button clickable while the switch is greyed
-//     (row.sensitive=false would propagate to all children, including the
-//     button — so we only flip the switch's sensitivity).
-function _makeFeatureRow(settings, def, window) {
-    if (!def.availabilityKey) {
-        const row = new Adw.SwitchRow({ title: def.title() });
-        settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
-        row.add_suffix(_resetButton(settings, def.key));
-        return row;
-    }
-
+// Build one availability row: an explanation, a status icon, a re-check
+// button, and — only when the answer is no — a link to the admin page that
+// can change it. No switch: the user cannot grant themselves an ACL, and a
+// control that cannot honour a click is a lie.
+function _makeAvailabilityRow(settings, def, window) {
     const row = new Adw.ActionRow({ title: def.title() });
 
-    if (def.infoText) {
-        const infoBtn = new Gtk.Button({
-            icon_name: 'info-outline-symbolic',
-            valign: Gtk.Align.CENTER,
-            css_classes: ['flat', 'circular'],
-            tooltip_text: def.docUrl
-                ? _fmt(_('%s\n\nClick to open: %s'), def.infoText(), def.docUrl)
-                : def.infoText(),
-        });
-        if (def.docUrl) infoBtn.connect('clicked', () => _openUrl(def.docUrl));
-        row.add_prefix(infoBtn);
-    }
-
-    const switchWidget = new Gtk.Switch({
+    const infoBtn = new Gtk.Button({
+        icon_name: 'info-outline-symbolic',
         valign: Gtk.Align.CENTER,
+        css_classes: ['flat', 'circular'],
+        tooltip_text: _fmt(_('%s\n\nClick to open: %s'), def.infoText(), def.docUrl),
     });
+    infoBtn.connect('clicked', () => _openUrl(def.docUrl));
+    row.add_prefix(infoBtn);
 
-    const adminBtn = new Gtk.Button({
-        label: _('Open admin'),
-        valign: Gtk.Align.CENTER,
-        css_classes: ['suggested-action'],
-    });
-    adminBtn.connect('clicked', () => _openUrl(def.adminUrl));
+    // libadwaita's success/error classes follow the user's light or dark
+    // theme; a hardcoded colour would not.
+    const statusIcon = new Gtk.Image({ valign: Gtk.Align.CENTER });
 
     const checkBtn = new Gtk.Button({
         icon_name: 'rotation-allowed-symbolic',
@@ -646,7 +608,6 @@ function _makeFeatureRow(settings, def, window) {
         tooltip_text: _('Check availability'),
     });
     checkBtn.connect('clicked', async () => {
-        if (!def.checker) return;
         checkBtn.sensitive = false;
         const bin = settings.get_string('tailscale-binary') || 'tailscale';
         let available;
@@ -668,51 +629,45 @@ function _makeFeatureRow(settings, def, window) {
         );
     });
 
-    const resetBtn = _resetButton(settings, def.key);
+    const adminBtn = new Gtk.Button({
+        label: _('Open admin'),
+        valign: Gtk.Align.CENTER,
+        css_classes: ['suggested-action'],
+    });
+    adminBtn.connect('clicked', () => _openUrl(def.adminUrl));
 
-    row.set_activatable_widget(switchWidget);
-    row.add_suffix(switchWidget);
+    row.add_suffix(statusIcon);
     row.add_suffix(checkBtn);
     row.add_suffix(adminBtn);
-    row.add_suffix(resetBtn);
 
-    let guard = false;
     const sync = () => {
-        guard = true;
         const available = settings.get_boolean(def.availabilityKey);
-        const saved = settings.get_boolean(def.key);
-        switchWidget.sensitive = available;
-        switchWidget.active = available && saved;
+        statusIcon.icon_name = available
+            ? 'emblem-ok-symbolic'
+            : 'window-close-symbolic';
+        statusIcon.css_classes = [available ? 'success' : 'error'];
+        // An icon alone is not readable by a screen reader.
+        statusIcon.tooltip_text = available
+            ? _('Available on this tailnet')
+            : _('Not available on this tailnet');
         row.subtitle = available ? '' : def.unavailableHint();
         adminBtn.visible = !available;
-        // Reset makes no sense when admin has disabled the feature — the
-        // switch is forced off regardless, so the stored pref is irrelevant.
-        resetBtn.visible = available;
-        guard = false;
     };
-    const ids = [
-        settings.connect(`changed::${def.availabilityKey}`, sync),
-        settings.connect(`changed::${def.key}`, sync),
-    ];
-    switchWidget.connect('notify::active', () => {
-        if (guard) return;
-        if (!settings.get_boolean(def.availabilityKey)) return;
-        settings.set_boolean(def.key, switchWidget.active);
-    });
-    row.connect('destroy', () => ids.forEach((id) => settings.disconnect(id)));
+    const id = settings.connect(`changed::${def.availabilityKey}`, sync);
+    row.connect('destroy', () => settings.disconnect(id));
     sync();
     return row;
 }
 
-function _makeFeaturesGroup(settings, window) {
+function _makeAvailabilityGroup(settings, window) {
     const group = new Adw.PreferencesGroup({
-        title: _('Features'),
+        title: _('Availability'),
         description: _(
-            'Enable or disable specific Tailscale features. Disabled features are hidden from the Quick Settings menu.',
+            "What this tailnet allows. Both depend on your tailnet's admin settings, not on anything you can change here.",
         ),
     });
-    for (const def of FEATURE_DEFS)
-        group.add(_makeFeatureRow(settings, def, window));
+    for (const def of AVAILABILITY_DEFS)
+        group.add(_makeAvailabilityRow(settings, def, window));
     return group;
 }
 
@@ -723,7 +678,7 @@ function _makeFeaturesGroup(settings, window) {
 // Every event the extension can report, in the order they appear in the
 // page. Keys match CATEGORY_KEY in lib/notify-policy.js.
 // Titles/subtitles are deferred behind a closure — same convention as
-// FEATURE_DEFS above — because this array is built at module-import time,
+// AVAILABILITY_DEFS above — because this array is built at module-import time,
 // before the sandboxed prefs loader has an extension context to resolve
 // gettext against. Calling _() here directly throws "gettext can only be
 // called from extensions"; def.title()/def.subtitle() are only invoked
@@ -979,8 +934,20 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         window.add(_makeNotificationsPage(settings));
         window.add(_makeShortcutsPage(settings));
 
-        /* ----------------------------- Features ------------------------- */
-        page.add(_makeFeaturesGroup(settings, window));
+        /* --------------------------- Availability ------------------------ */
+        page.add(_makeAvailabilityGroup(settings, window));
+
+        // Refresh the cache in the background so the status icons are current
+        // without the user having to click Check. The window opens immediately
+        // on the last known value and each row updates through the `changed::`
+        // it is already watching. Failures are silent, exactly as for the
+        // startup probe in extension.js: the last known value stays on screen.
+        const probeBin = settings.get_string('tailscale-binary') || 'tailscale';
+        for (const def of AVAILABILITY_DEFS) {
+            def.checker(probeBin)
+                .then((ok) => settings.set_boolean(def.availabilityKey, ok))
+                .catch(() => {});
+        }
 
         /* ----------------------------- Taildrop ------------------------- */
         page.add(_makeTaildropGroup(settings, this.dir));
