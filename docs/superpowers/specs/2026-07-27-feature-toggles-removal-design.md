@@ -47,9 +47,11 @@ agir ; l'utilisateur ne peut rien pour une ACL. Elle devient un **état affiché
 | le `Gtk.Switch`, son `guard`, son handler et le bouton reset de la ligne | `prefs:631-634`, `:671-702` |
 
 Ce bloc emporte avec lui la dernière écriture daemon non sollicitée de l'extension :
-`Notifier.withFeedback(…, () => meta.reset(this._client))`. Après ce changement,
-`extension.js` n'appelle plus aucun setter du client en dehors du démarrage du receveur
-Taildrop.
+`Notifier.withFeedback(…, () => meta.reset(this._client))`. Les setters qui subsistent dans
+`extension.js` répondent tous à une demande explicite — `setOperator()` derrière son invite
+polkit, `setExitNode()` derrière un raccourci clavier, `setAcceptFiles()` derrière la case
+« accepter les fichiers ». Aucun ne part d'un `changed::` que l'utilisateur n'a pas
+provoqué.
 
 **Conséquence assumée** : masquer Funnel ne démonte plus les funnels actifs. Ce n'était pas
 un service rendu mais un effet de bord destructeur — un tailnet dont l'utilisateur n'avait
