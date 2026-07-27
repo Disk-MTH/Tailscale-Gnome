@@ -717,6 +717,204 @@ function _makeFeaturesGroup(settings, window) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                             Notifications page                             */
+/* -------------------------------------------------------------------------- */
+
+// Every event the extension can report, in the order they appear in the
+// page. Keys match CATEGORY_KEY in lib/notify-policy.js.
+// Titles/subtitles are deferred behind a closure — same convention as
+// FEATURE_DEFS above — because this array is built at module-import time,
+// before the sandboxed prefs loader has an extension context to resolve
+// gettext against. Calling _() here directly throws "gettext can only be
+// called from extensions"; def.title()/def.subtitle() are only invoked
+// later, from inside _makeNotificationsPage().
+const NOTIFY_DEFS = [
+    {
+        key: 'notify-connection',
+        title: () => _('Tailscale connection'),
+        subtitle: () => _('Connecting, disconnecting, and daemon startup.'),
+    },
+    {
+        key: 'notify-account',
+        title: () => _('Login and logout'),
+        subtitle: () => _('Sign-in, sign-out, and operator changes.'),
+    },
+    {
+        key: 'notify-profile-switch',
+        title: () => _('Profile switch'),
+        subtitle: () =>
+            _('A single notification once the new profile is applied.'),
+    },
+    {
+        key: 'notify-exit-node',
+        title: () => _('Exit node'),
+        subtitle: () => _('Selection, going offline, and automatic switches.'),
+    },
+    {
+        key: 'notify-network',
+        title: () => _('Network settings'),
+        subtitle: () =>
+            _('Magic DNS, routes, shields up, SSH server, LAN access.'),
+    },
+    {
+        key: 'notify-taildrop',
+        title: () => _('Taildrop'),
+        subtitle: () =>
+            _('Files sent and received, receiver started and stopped.'),
+    },
+    {
+        key: 'notify-funnel',
+        title: () => _('Funnel'),
+        subtitle: () => _('Ports added and removed.'),
+    },
+    {
+        key: 'notify-misc',
+        title: () => _('Other'),
+        subtitle: () => _('Clipboard copies and manual refreshes.'),
+    },
+];
+
+function _makeNotificationsPage(settings) {
+    const page = new Adw.PreferencesPage({
+        title: _('Notifications'),
+        iconName: 'preferences-system-notifications-symbolic',
+    });
+
+    /* ------------------------------- Mode -------------------------------- */
+    const modeGroup = new Adw.PreferencesGroup({
+        title: _('Mode'),
+        description: _(
+            'Persistent mode posts native notifications that stack into a browsable history. Toast mode shows a transient bubble and keeps no history.',
+        ),
+    });
+    page.add(modeGroup);
+
+    const modeRow = new Adw.ComboRow({
+        title: _('Presentation'),
+        model: Gtk.StringList.new([_('Persistent'), _('Toast')]),
+    });
+    // The enum nicks in schema order; index maps 1:1 onto the StringList.
+    const MODES = ['persistent', 'toast'];
+    modeRow.selected = Math.max(0, MODES.indexOf(settings.get_string('notification-mode')));
+    modeRow.connect('notify::selected', () => {
+        settings.set_string('notification-mode', MODES[modeRow.selected]);
+    });
+    modeRow.add_suffix(_resetButton(settings, 'notification-mode'));
+    modeGroup.add(modeRow);
+
+    const historyRow = new Adw.SpinRow({
+        title: _('History size'),
+        subtitle: _('Entries kept before the oldest is dropped (1 to 10).'),
+        adjustment: new Gtk.Adjustment({
+            lower: 1,
+            upper: 10,
+            step_increment: 1,
+            page_increment: 1,
+        }),
+    });
+    settings.bind(
+        'notification-history-size',
+        historyRow,
+        'value',
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    historyRow.add_suffix(_resetButton(settings, 'notification-history-size'));
+    modeGroup.add(historyRow);
+
+    const durationRow = new Adw.SpinRow({
+        title: _('Toast duration'),
+        subtitle: _('Seconds the result toast stays on screen (1 to 10).'),
+        adjustment: new Gtk.Adjustment({
+            lower: 1,
+            upper: 10,
+            step_increment: 1,
+            page_increment: 1,
+        }),
+    });
+    settings.bind(
+        'toast-duration',
+        durationRow,
+        'value',
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    durationRow.add_suffix(_resetButton(settings, 'toast-duration'));
+    modeGroup.add(durationRow);
+
+    const spinnerRow = new Adw.SpinRow({
+        title: _('Minimum pending duration'),
+        subtitle: _(
+            'Milliseconds the pending state stays visible before showing the result (0 to 3000). Prevents flicker on instant actions.',
+        ),
+        adjustment: new Gtk.Adjustment({
+            lower: 0,
+            upper: 3000,
+            step_increment: 100,
+            page_increment: 500,
+        }),
+    });
+    settings.bind(
+        'toast-min-spinner',
+        spinnerRow,
+        'value',
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    spinnerRow.add_suffix(_resetButton(settings, 'toast-min-spinner'));
+    modeGroup.add(spinnerRow);
+
+    // Only the rows that apply to the active mode are shown. The minimum
+    // pending duration applies to both, so it always stays visible.
+    const syncModeRows = () => {
+        const persistent = settings.get_string('notification-mode') === 'persistent';
+        historyRow.visible = persistent;
+        durationRow.visible = !persistent;
+    };
+    syncModeRows();
+    const modeId = settings.connect('changed::notification-mode', () => {
+        modeRow.selected = Math.max(0, MODES.indexOf(settings.get_string('notification-mode')));
+        syncModeRows();
+    });
+    modeRow.connect('destroy', () => settings.disconnect(modeId));
+
+    /* ------------------------------ Events ------------------------------- */
+    const eventsGroup = new Adw.PreferencesGroup({
+        title: _('Events'),
+        description: _('Which actions are allowed to notify.'),
+    });
+    page.add(eventsGroup);
+
+    for (const def of NOTIFY_DEFS) {
+        const row = new Adw.SwitchRow({
+            title: def.title(),
+            subtitle: def.subtitle(),
+        });
+        settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
+        row.add_suffix(_resetButton(settings, def.key));
+        eventsGroup.add(row);
+    }
+
+    /* ------------------------------ Failures ----------------------------- */
+    // Separate group so it reads as an override rather than a ninth
+    // category: it lets failures through even when their own category is
+    // off, and turning it off is what produces total silence.
+    const errorsGroup = new Adw.PreferencesGroup({
+        title: _('Failures'),
+    });
+    page.add(errorsGroup);
+
+    const errorsRow = new Adw.SwitchRow({
+        title: _('Always report failures'),
+        subtitle: _(
+            'Let errors and warnings through even when the category above is off. Turn this off as well for complete silence.',
+        ),
+    });
+    settings.bind('notify-errors', errorsRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    errorsRow.add_suffix(_resetButton(settings, 'notify-errors'));
+    errorsGroup.add(errorsRow);
+
+    return page;
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                  Page                                      */
 /* -------------------------------------------------------------------------- */
 
@@ -729,6 +927,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             iconName: 'preferences-system-symbolic',
         });
         window.add(page);
+        window.add(_makeNotificationsPage(settings));
 
         /* ----------------------------- Features ------------------------- */
         page.add(_makeFeaturesGroup(settings, window));
@@ -805,46 +1004,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         );
         pollRow.add_suffix(_resetButton(settings, 'poll-interval'));
         advanced.add(pollRow);
-
-        const toastDurRow = new Adw.SpinRow({
-            title: _('Toast duration'),
-            subtitle: _('Seconds the result toast stays on screen (1 to 10).'),
-            adjustment: new Gtk.Adjustment({
-                lower: 1,
-                upper: 10,
-                step_increment: 1,
-                page_increment: 1,
-            }),
-        });
-        settings.bind(
-            'toast-duration',
-            toastDurRow,
-            'value',
-            Gio.SettingsBindFlags.DEFAULT,
-        );
-        toastDurRow.add_suffix(_resetButton(settings, 'toast-duration'));
-        advanced.add(toastDurRow);
-
-        const spinnerRow = new Adw.SpinRow({
-            title: _('Minimum spinner duration'),
-            subtitle: _(
-                'Milliseconds the spinner stays visible before showing the result (0 to 3000). Prevents flicker on instant actions.',
-            ),
-            adjustment: new Gtk.Adjustment({
-                lower: 0,
-                upper: 3000,
-                step_increment: 100,
-                page_increment: 500,
-            }),
-        });
-        settings.bind(
-            'toast-min-spinner',
-            spinnerRow,
-            'value',
-            Gio.SettingsBindFlags.DEFAULT,
-        );
-        spinnerRow.add_suffix(_resetButton(settings, 'toast-min-spinner'));
-        advanced.add(spinnerRow);
 
         const binaryRow = new Adw.EntryRow({ title: _('tailscale binary') });
         settings.bind(

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="tailscale-gnome">
+    <enum id="org.gnome.shell.extensions.tailscale-gnome.notification-mode">
+        <value nick="persistent" value="0"/>
+        <value nick="toast" value="1"/>
+    </enum>
+
     <schema id="org.gnome.shell.extensions.tailscale-gnome"
             path="/org/gnome/shell/extensions/tailscale-gnome/">
 
@@ -152,20 +157,83 @@
                 across tailnets.</description>
         </key>
 
+        <key name="notification-mode"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notification-mode">
+            <default>'persistent'</default>
+            <summary>How notifications are presented</summary>
+            <description>"persistent" posts native GNOME notifications that
+                stack into a browsable history under a single Tailscale
+                entry. "toast" shows the transient on-screen bubble and
+                keeps no history.</description>
+        </key>
+
+        <key name="notification-history-size" type="u">
+            <default>5</default>
+            <range min="1" max="10"/>
+            <summary>Entries kept in the notification history</summary>
+            <description>Persistent mode only. Once the history is full the
+                oldest entry is evicted. GNOME Shell caps a notification
+                source at 10, which is the hard ceiling here.</description>
+        </key>
+
         <key name="toast-duration" type="u">
             <default>3</default>
             <range min="1" max="10"/>
             <summary>Toast display duration (seconds)</summary>
-            <description>How long success / error / info toasts stay on
-                screen after the action completes.</description>
+            <description>Toast mode only. How long success / error / info
+                toasts stay on screen after the action completes. Persistent
+                mode uses GNOME's own banner timeout, which is not
+                configurable.</description>
         </key>
+
         <key name="toast-min-spinner" type="u">
             <default>1000</default>
             <range min="0" max="3000"/>
-            <summary>Minimum spinner duration (milliseconds)</summary>
-            <description>Floor the pending-state spinner stays visible
-                before transitioning to the result, so instant operations
-                don't flash. 0 disables the floor.</description>
+            <summary>Minimum pending duration (milliseconds)</summary>
+            <description>Floor the pending state stays visible before
+                transitioning to the result, so instant operations don't
+                flash. Applies to both modes. 0 disables the floor.</description>
+        </key>
+
+        <key name="notify-connection" type="b">
+            <default>true</default>
+            <summary>Notify about connecting and disconnecting</summary>
+        </key>
+        <key name="notify-account" type="b">
+            <default>true</default>
+            <summary>Notify about login, logout and operator changes</summary>
+        </key>
+        <key name="notify-profile-switch" type="b">
+            <default>true</default>
+            <summary>Notify when a different profile is applied</summary>
+        </key>
+        <key name="notify-exit-node" type="b">
+            <default>true</default>
+            <summary>Notify about exit-node selection and availability</summary>
+        </key>
+        <key name="notify-network" type="b">
+            <default>true</default>
+            <summary>Notify about Magic DNS, routes, shields, SSH and LAN access</summary>
+        </key>
+        <key name="notify-taildrop" type="b">
+            <default>true</default>
+            <summary>Notify about Taildrop transfers and the receiver</summary>
+        </key>
+        <key name="notify-funnel" type="b">
+            <default>true</default>
+            <summary>Notify about Funnel ports</summary>
+        </key>
+        <key name="notify-errors" type="b">
+            <default>true</default>
+            <summary>Let failures through even when their category is off</summary>
+            <description>Acts as a safety net rather than a category of its
+                own: muting Taildrop hides its successes but not its
+                failures. Turning this off as well produces total
+                silence.</description>
+        </key>
+        <key name="notify-misc" type="b">
+            <default>true</default>
+            <summary>Notify about clipboard copies and manual refreshes</summary>
         </key>
 
     </schema>

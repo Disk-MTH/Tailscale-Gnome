@@ -11,9 +11,11 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
-import { openAdminPanel } from './lib/menu.js';
-import { ToastManager } from './lib/toast.js';
+import { openAdminPanel, statusText } from './lib/menu.js';
+import { Notifier, Category, QuietScope } from './lib/notify.js';
+import { SnapshotWatcher } from './lib/watchers.js';
 import { PerAccountFeatureState } from './lib/per-account.js';
+import { fmt as _fmt } from './lib/util.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
 // one accelerators (e.g. ["<Super>t"]). Empty array = unbound.
@@ -44,7 +46,7 @@ export default class TailscaleGnomeExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
 
-        ToastManager.init(this._settings, { extension: this });
+        Notifier.init(this._settings, { extension: this });
 
         this._client = new TailscaleClient({
             binary:      this._settings.get_string('tailscale-binary') || 'tailscale',
@@ -78,30 +80,159 @@ export default class TailscaleGnomeExtension extends Extension {
         for (const key of SHORTCUT_KEYS)
             this._rebindShortcut(key);
 
+        // Snapshot-derived notifications. The watcher is a pure diff; this
+        // table is where its events become user-facing copy, which is why
+        // watchers.js carries no gettext import.
+        const WATCHER_COPY = {
+            'connection-starting':   () => _('Connecting Tailscale — this may take a moment'),
+            'connection-established': () => _('Tailscale connected'),
+            // A Starting phase that resolved to anything other than Running:
+            // reuse the pill's status vocabulary (Login required / Logged
+            // out / Tailscale unavailable / …) off the live snapshot, rather
+            // than a single generic string that ignores why it ended.
+            'connection-ended':      () => statusText(this._client.snapshot),
+            'exit-node-lost':        () => _('Auto exit node lost'),
+            'exit-node-acquired':    (d) => _fmt(_('Auto exit node: %s'), d.name),
+            'exit-node-switched':    (d) => _fmt(_('Auto exit node switched to %s'), d.name),
+            'exit-node-offline':     (d) => _fmt(_('Exit node %s went offline'), d.name),
+            'exit-node-online':      (d) => _fmt(_('Exit node %s is back online'), d.name),
+            'exit-node-disabled':    (d) => _fmt(_('Exit node %s was disabled'), d.name),
+            'exit-node-reenabled':   (d) => _fmt(_('Exit node %s was re-enabled'), d.name),
+        };
+
+        this._watcher = new SnapshotWatcher();
+        // A pending connection resolves in place, so its handle outlives the
+        // event that created it.
+        this._connHandle = null;
+        this._client.connectObject('state-changed', (_c, snap) => {
+            for (const ev of this._watcher.feed(snap)) {
+                const message = WATCHER_COPY[ev.type](ev.data);
+                if (ev.type === 'connection-starting') {
+                    this._connHandle = Notifier.notify({
+                        category: ev.category,
+                        level: ev.level,
+                        message,
+                        spontaneous: true,
+                        gicon: Notifier.icon,
+                    });
+                    continue;
+                }
+                if (this._connHandle && ev.type.startsWith('connection-')) {
+                    this._connHandle.update({ level: ev.level, message });
+                    this._connHandle = null;
+                    continue;
+                }
+                Notifier.notify({
+                    category: ev.category,
+                    level: ev.level,
+                    message,
+                    spontaneous: true,
+                    gicon: Notifier.icon,
+                });
+            }
+        }, this);
+
         this._client.start();
 
         // Per-tailnet feature-state persistence. Constructed after
         // start() so it can seed itself from the first snapshot the
         // client buffers, and before the availability probe so the
-        // probe's writes land in the active slot. The callback turns
-        // a bulk apply (multiple feature-* writes) into a single
-        // summary toast — the per-feature handlers below check
-        // perAccount.isLoadingSlot and stay quiet during the apply.
+        // probe's writes land in the active slot. The per-feature
+        // handlers below check perAccount.isLoadingSlot and stay quiet
+        // during the bulk apply.
+        //
+        // Mute the burst an account switch produces — the bulk feature-*
+        // apply, the daemon churn that follows, and the exit-node and
+        // backend-state transitions the new tailnet brings with it — and
+        // report the outcome once.
+        //
+        // The window is closed by a debounce re-armed on every snapshot, so
+        // it survives a slow daemon, and by a hard ceiling so a daemon that
+        // never settles cannot leave the extension permanently silent. Both
+        // sources are cleared before re-arming and removed in disable().
+        this._quietToken = 0;
+        this._quietDebounceId = 0;
+        this._quietCeilingId = 0;
+
+        const closeQuiet = () => {
+            if (this._quietDebounceId) {
+                GLib.source_remove(this._quietDebounceId);
+                this._quietDebounceId = 0;
+            }
+            if (this._quietCeilingId) {
+                GLib.source_remove(this._quietCeilingId);
+                this._quietCeilingId = 0;
+            }
+            if (this._quietToken) {
+                Notifier.endQuiet(this._quietToken);
+                this._quietToken = 0;
+            }
+        };
+
+        const armQuietDebounce = () => {
+            if (!this._quietToken) return;
+            if (this._quietDebounceId) {
+                GLib.source_remove(this._quietDebounceId);
+                this._quietDebounceId = 0;
+            }
+            const settleMs = this._settings.get_int('poll-interval') * 2000;
+            this._quietDebounceId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT, settleMs, () => {
+                    this._quietDebounceId = 0;
+                    closeQuiet();
+                    return GLib.SOURCE_REMOVE;
+                });
+        };
+
         this._perAccount = new PerAccountFeatureState(
             this._settings,
             this._client,
-            (accountName) => {
-                ToastManager.show({
-                    level: 'success',
-                    message: `${_('Profile preferences applied')} (${accountName})`,
-                });
-                // Daemon side-effects (drift correction for OFF
-                // toggles) are normally driven by handleFeatureToggled,
-                // which we suppressed during the apply. Trigger them
-                // silently here via ensureFeatureCompliance on the
-                // next snapshot.
-                this._client.refresh().catch(() => {});
+            {
+                onSlotLoading: () => {
+                    closeQuiet();   // a switch during a switch restarts the window
+                    this._quietToken = Notifier.beginQuiet(QuietScope.ALL);
+                    this._quietCeilingId = GLib.timeout_add_seconds(
+                        GLib.PRIORITY_DEFAULT, 30, () => {
+                            this._quietCeilingId = 0;
+                            closeQuiet();
+                            return GLib.SOURCE_REMOVE;
+                        });
+                    armQuietDebounce();
+                },
+                onSlotLoaded: (accountName) => {
+                    // The quiet window opens from inside the switch it is
+                    // meant to cover, so it structurally cannot silence the
+                    // withFeedback that started that switch (see menu.js's
+                    // PROFILE_SWITCH row handler): beginQuiet(ALL) only runs
+                    // once onSlotLoading fires, partway through fn(). When
+                    // that withFeedback is still in flight, it is already
+                    // going to report the outcome itself once switchAccount()
+                    // resolves — emitting the summary here too would double
+                    // it. An externally-initiated switch (`tailscale switch`
+                    // on the command line) has no withFeedback watching it,
+                    // so there this summary is the only report and must
+                    // still fire.
+                    if (!Notifier.isCategoryBusy(Category.PROFILE_SWITCH)) {
+                        Notifier.notify({
+                            category: Category.PROFILE_SWITCH,
+                            level: 'success',
+                            force: true,
+                            message: `${_('Profile applied')} (${accountName})`,
+                        });
+                    }
+                    // Daemon side-effects (drift correction for OFF toggles)
+                    // are normally driven by handleFeatureToggled, which the
+                    // quiet window suppresses. Trigger them here.
+                    this._client.refresh().catch(() => {});
+                },
             },
+        );
+
+        // Every snapshot during the window pushes the close back, so the
+        // window lasts as long as the daemon keeps changing its mind.
+        this._client.connectObject(
+            'state-changed', () => armQuietDebounce(),
+            this,
         );
 
         // One-shot Taildrop/Funnel availability probe at startup, then
@@ -274,7 +405,8 @@ export default class TailscaleGnomeExtension extends Extension {
                 snap.backendState === 'NoState') {
                 // Daemon not ready: still toast the sync feature flip; the
                 // drift-correction pass will reconcile once it's back.
-                ToastManager.show({
+                Notifier.notify({
+                    category: Category.NETWORK,
                     level: 'success',
                     message: `${meta.label}: ${enabled ? _('enabled') : _('disabled')}`,
                 });
@@ -283,7 +415,8 @@ export default class TailscaleGnomeExtension extends Extension {
             const current = snap[meta.snapKey];
 
             if (enabled) {
-                ToastManager.show({
+                Notifier.notify({
+                    category: Category.NETWORK,
                     level: 'success',
                     message: `${meta.label}: ${_('enabled')}`,
                 });
@@ -294,7 +427,8 @@ export default class TailscaleGnomeExtension extends Extension {
                     ? (saved && !current)
                     : (saved && current !== saved);
                 if (needRestore) {
-                    ToastManager.withFeedback(
+                    Notifier.withFeedback(
+                        Category.NETWORK,
                         `${meta.label}: ${_('turning on')}`,
                         `${meta.label}: ${_('on')}`,
                         () => meta.set(this._client, saved),
@@ -308,13 +442,15 @@ export default class TailscaleGnomeExtension extends Extension {
                 else
                     this._settings.set_string(meta.savedKey, current || '');
 
-                ToastManager.show({
+                Notifier.notify({
+                    category: Category.NETWORK,
                     level: 'success',
                     message: `${meta.label}: ${_('disabled')}`,
                 });
                 if (current) {
                     const off = meta.type === 'bool' ? false : '';
-                    ToastManager.withFeedback(
+                    Notifier.withFeedback(
+                        Category.NETWORK,
                         `${meta.label}: ${_('turning off')}`,
                         `${meta.label}: ${_('off')}`,
                         () => meta.set(this._client, off),
@@ -343,7 +479,8 @@ export default class TailscaleGnomeExtension extends Extension {
                 () => {
                     if (this._perAccount.isLoadingSlot) return;
                     const on = this._settings.get_boolean(key);
-                    ToastManager.show({
+                    Notifier.notify({
+                        category: Category.NETWORK,
                         level: 'success',
                         message: `${label}: ${on ? _('enabled') : _('disabled')}`,
                     });
@@ -411,7 +548,20 @@ export default class TailscaleGnomeExtension extends Extension {
         this._client.destroy();
         this._client = null;
 
-        ToastManager.destroy();
+        this._connHandle = null;
+        this._watcher = null;
+
+        if (this._quietDebounceId) {
+            GLib.source_remove(this._quietDebounceId);
+            this._quietDebounceId = 0;
+        }
+        if (this._quietCeilingId) {
+            GLib.source_remove(this._quietCeilingId);
+            this._quietCeilingId = 0;
+        }
+        this._quietToken = 0;
+
+        Notifier.destroy();
 
         this._settings = null;
     }
@@ -454,21 +604,23 @@ export default class TailscaleGnomeExtension extends Extension {
                     // operator-missing, since login restores the operator
                     // by itself.
                     if (snap.loggedOut || snap.backendState === 'NeedsLogin')
-                        ToastManager.show({ level: 'info', message: _('Login required') });
+                        Notifier.notify({ category: Category.CONNECTION, level: 'info', message: _('Login required') });
                     else if (!snap.canControl)
                         this._client.setOperator();
                     else
-                        ToastManager.show({ level: 'info', message: _('Tailscale is not ready yet') });
+                        Notifier.notify({ category: Category.CONNECTION, level: 'info', message: _('Tailscale is not ready yet') });
                     return;
                 }
                 if (snap.running) {
-                    ToastManager.withFeedback(
+                    Notifier.withFeedback(
+                        Category.CONNECTION,
                         _('Disconnecting Tailscale'),
                         _('Tailscale disconnected'),
                         () => this._client.down(),
                     );
                 } else {
-                    ToastManager.withFeedback(
+                    Notifier.withFeedback(
+                        Category.CONNECTION,
                         _('Connecting Tailscale'),
                         _('Tailscale connected'),
                         () => this._client.up(),
@@ -479,13 +631,15 @@ export default class TailscaleGnomeExtension extends Extension {
             return () => {
                 const snap = this._client.snapshot;
                 if (snap.exitNodeID) {
-                    ToastManager.withFeedback(
+                    Notifier.withFeedback(
+                        Category.EXIT_NODE,
                         _('Clearing exit node'),
                         _('Exit node cleared'),
                         () => this._client.setExitNode(''),
                     );
                 } else {
-                    ToastManager.withFeedback(
+                    Notifier.withFeedback(
+                        Category.EXIT_NODE,
                         _('Selecting an exit node'),
                         _('Exit node: auto'),
                         () => this._client.setExitNode('auto:any'),
