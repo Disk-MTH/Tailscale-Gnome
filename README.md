@@ -22,8 +22,9 @@ send/receive files with Taildrop — no terminal required.
 - **Operator setup** in one click. Polkit prompts for the `tailscale set
   --operator=$USER` step automatically when needed; login and logout
   are wrapped so the operator pref survives a profile switch.
-- **Account switcher** that always reconnects after a switch and
-  remembers per-tailnet feature preferences.
+- **Account switcher** that always reconnects after a switch. Per-profile
+  settings — exit node, Magic DNS, accepted routes — are restored by
+  tailscaled itself, so the extension keeps no copy of them.
 - **Peers** list with online state and copy-IP.
 - **Exit node** picker (None / Auto / per-peer) with a status pill that
   reflects offline or unavailable nodes truthfully, plus a panel warning
@@ -152,8 +153,11 @@ lib/
 ├── tailscale.js        # CLI wrapper + poller
 ├── indicator.js        # panel icon
 ├── menu.js             # Quick Settings toggle + submenus
-├── toast.js            # OSD-style feedback toasts
-├── per-account.js      # per-tailnet feature-state persistence
+├── watchers.js         # snapshot diffing into semantic events
+├── notify-policy.js    # category, level and quiet-window rules
+├── notify.js           # notification entry point, picks a backend
+├── tray.js             # persistent backend (MessageTray.Source)
+├── toast.js            # OSD-style transient backend
 └── util.js             # helpers shared by shell and prefs processes
 nautilus/               # right-click scripts (installed on demand)
 icons/  schemas/  stylesheet.css
