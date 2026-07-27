@@ -568,8 +568,8 @@ function _openUrl(url) {
 
 // Per-row reset suffix: restores the GSettings key to its schema default.
 // Uses the same `view-refresh-symbolic` as the Quick Settings refresh
-// glyph; the per-feature availability check uses `emblem-synchronizing-
-// symbolic` to stay visually distinct from a reset.
+// glyph; the availability check button uses `rotation-allowed-symbolic`
+// to stay visually distinct from a reset.
 function _resetButton(settings, key) {
     const btn = new Gtk.Button({
         icon_name: 'view-refresh-symbolic',

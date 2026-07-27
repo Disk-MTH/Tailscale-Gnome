@@ -70,41 +70,6 @@
                 first receipt).</description>
         </key>
 
-        <key name="feature-exit-nodes" type="b">
-            <default>true</default>
-            <summary>Show Exit-node UI</summary>
-        </key>
-        <key name="feature-dns" type="b">
-            <default>true</default>
-            <summary>Show Accept-DNS toggle</summary>
-        </key>
-        <key name="feature-routes" type="b">
-            <default>true</default>
-            <summary>Show Accept-routes toggle</summary>
-        </key>
-        <key name="feature-shields-up" type="b">
-            <default>true</default>
-            <summary>Show Shields-up toggle</summary>
-        </key>
-        <key name="feature-ssh-server" type="b">
-            <default>true</default>
-            <summary>Show SSH-server toggle</summary>
-        </key>
-        <key name="feature-taildrop" type="b">
-            <default>false</default>
-            <summary>Show Taildrop UI</summary>
-            <description>Default off: the tailnet usually has to be
-                granted Taildrop by an admin before it's useful. Users
-                opt in once availability has been confirmed.</description>
-        </key>
-        <key name="feature-funnels" type="b">
-            <default>false</default>
-            <summary>Show Funnel UI</summary>
-            <description>Default off: Funnel requires the "funnel"
-                nodeAttr to be granted in the ACL. Users opt in once
-                availability has been confirmed.</description>
-        </key>
-
         <key name="feature-taildrop-available" type="b">
             <default>false</default>
             <summary>Cached: Taildrop usable on this tailnet</summary>
