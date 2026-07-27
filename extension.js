@@ -14,7 +14,6 @@ import { TailscaleIndicator } from './lib/indicator.js';
 import { openAdminPanel, statusText } from './lib/menu.js';
 import { Notifier, Category, QuietScope } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
-import { PerAccountFeatureState } from './lib/per-account.js';
 import { fmt as _fmt } from './lib/util.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
@@ -98,58 +97,9 @@ export default class TailscaleGnomeExtension extends Extension {
             'exit-node-online':      (d) => _fmt(_('Exit node %s is back online'), d.name),
             'exit-node-disabled':    (d) => _fmt(_('Exit node %s was disabled'), d.name),
             'exit-node-reenabled':   (d) => _fmt(_('Exit node %s was re-enabled'), d.name),
+            'account-switched':      (d) => _fmt(_('Profile applied (%s)'), d.name),
         };
 
-        this._watcher = new SnapshotWatcher();
-        // A pending connection resolves in place, so its handle outlives the
-        // event that created it.
-        this._connHandle = null;
-        this._client.connectObject('state-changed', (_c, snap) => {
-            for (const ev of this._watcher.feed(snap)) {
-                const message = WATCHER_COPY[ev.type](ev.data);
-                if (ev.type === 'connection-starting') {
-                    this._connHandle = Notifier.notify({
-                        category: ev.category,
-                        level: ev.level,
-                        message,
-                        spontaneous: true,
-                        gicon: Notifier.icon,
-                    });
-                    continue;
-                }
-                if (this._connHandle && ev.type.startsWith('connection-')) {
-                    this._connHandle.update({ level: ev.level, message });
-                    this._connHandle = null;
-                    continue;
-                }
-                Notifier.notify({
-                    category: ev.category,
-                    level: ev.level,
-                    message,
-                    spontaneous: true,
-                    gicon: Notifier.icon,
-                });
-            }
-        }, this);
-
-        this._client.start();
-
-        // Per-tailnet feature-state persistence. Constructed after
-        // start() so it can seed itself from the first snapshot the
-        // client buffers, and before the availability probe so the
-        // probe's writes land in the active slot. The per-feature
-        // handlers below check perAccount.isLoadingSlot and stay quiet
-        // during the bulk apply.
-        //
-        // Mute the burst an account switch produces — the bulk feature-*
-        // apply, the daemon churn that follows, and the exit-node and
-        // backend-state transitions the new tailnet brings with it — and
-        // report the outcome once.
-        //
-        // The window is closed by a debounce re-armed on every snapshot, so
-        // it survives a slow daemon, and by a hard ceiling so a daemon that
-        // never settles cannot leave the extension permanently silent. Both
-        // sources are cleared before re-arming and removed in disable().
         this._quietToken = 0;
         this._quietDebounceId = 0;
         this._quietCeilingId = 0;
@@ -184,49 +134,68 @@ export default class TailscaleGnomeExtension extends Extension {
                 });
         };
 
-        this._perAccount = new PerAccountFeatureState(
-            this._settings,
-            this._client,
-            {
-                onSlotLoading: () => {
-                    closeQuiet();   // a switch during a switch restarts the window
-                    this._quietToken = Notifier.beginQuiet(QuietScope.ALL);
-                    this._quietCeilingId = GLib.timeout_add_seconds(
-                        GLib.PRIORITY_DEFAULT, 30, () => {
-                            this._quietCeilingId = 0;
-                            closeQuiet();
-                            return GLib.SOURCE_REMOVE;
-                        });
-                    armQuietDebounce();
-                },
-                onSlotLoaded: (accountName) => {
-                    // The quiet window opens from inside the switch it is
-                    // meant to cover, so it structurally cannot silence the
-                    // withFeedback that started that switch (see menu.js's
-                    // PROFILE_SWITCH row handler): beginQuiet(ALL) only runs
-                    // once onSlotLoading fires, partway through fn(). When
-                    // that withFeedback is still in flight, it is already
-                    // going to report the outcome itself once switchAccount()
-                    // resolves — emitting the summary here too would double
-                    // it. An externally-initiated switch (`tailscale switch`
-                    // on the command line) has no withFeedback watching it,
-                    // so there this summary is the only report and must
-                    // still fire.
-                    if (!Notifier.isCategoryBusy(Category.PROFILE_SWITCH)) {
-                        Notifier.notify({
-                            category: Category.PROFILE_SWITCH,
-                            level: 'success',
-                            force: true,
-                            message: `${_('Profile applied')} (${accountName})`,
-                        });
-                    }
-                    // Daemon side-effects (drift correction for OFF toggles)
-                    // are normally driven by handleFeatureToggled, which the
-                    // quiet window suppresses. Trigger them here.
-                    this._client.refresh().catch(() => {});
-                },
-            },
-        );
+        // Opened on an account switch: the daemon churns for a few seconds
+        // afterwards (exit node, backendState) and none of that noise is worth
+        // reporting. Closed by a debounce re-armed on every snapshot, so it
+        // survives a slow daemon, and by a hard ceiling so a daemon that never
+        // settles cannot leave the extension permanently silent.
+        const openQuietWindow = () => {
+            closeQuiet();   // a switch during a switch restarts the window
+            this._quietToken = Notifier.beginQuiet(QuietScope.SPONTANEOUS);
+            this._quietCeilingId = GLib.timeout_add_seconds(
+                GLib.PRIORITY_DEFAULT, 30, () => {
+                    this._quietCeilingId = 0;
+                    closeQuiet();
+                    return GLib.SOURCE_REMOVE;
+                });
+            armQuietDebounce();
+        };
+
+        this._watcher = new SnapshotWatcher();
+        // A pending connection resolves in place, so its handle outlives the
+        // event that created it.
+        this._connHandle = null;
+        this._client.connectObject('state-changed', (_c, snap) => {
+            for (const ev of this._watcher.feed(snap)) {
+                const message = WATCHER_COPY[ev.type](ev.data);
+                if (ev.type === 'account-switched') {
+                    // Unconditional: the daemon churns after a switch whoever
+                    // started it, and admin ACLs differ per tailnet so the
+                    // availability cache cannot be assumed to carry over.
+                    openQuietWindow();
+                    this._client.probeAvailability().catch(() => {});
+                    // A menu-driven switch is already reported by its own
+                    // withFeedback. An external `tailscale switch` has none, so
+                    // there this notification is the only account of it.
+                    if (Notifier.isCategoryBusy(Category.PROFILE_SWITCH))
+                        continue;
+                }
+                if (ev.type === 'connection-starting') {
+                    this._connHandle = Notifier.notify({
+                        category: ev.category,
+                        level: ev.level,
+                        message,
+                        spontaneous: ev.spontaneous,
+                        gicon: Notifier.icon,
+                    });
+                    continue;
+                }
+                if (this._connHandle && ev.type.startsWith('connection-')) {
+                    this._connHandle.update({ level: ev.level, message });
+                    this._connHandle = null;
+                    continue;
+                }
+                Notifier.notify({
+                    category: ev.category,
+                    level: ev.level,
+                    message,
+                    spontaneous: ev.spontaneous,
+                    gicon: Notifier.icon,
+                });
+            }
+        }, this);
+
+        this._client.start();
 
         // Every snapshot during the window pushes the close back, so the
         // window lasts as long as the daemon keeps changing its mind.
@@ -247,20 +216,6 @@ export default class TailscaleGnomeExtension extends Extension {
                 this._client.probeAvailability().catch(() => {});
                 return GLib.SOURCE_REMOVE;
             });
-        this._lastAccountName = null;
-        this._client.connectObject(
-            'state-changed',
-            (_c, snap) => {
-                const name = snap.accountName || null;
-                if (name === this._lastAccountName) return;
-                // Skip the first state-changed (covered by the startup
-                // timeout above); only re-probe on a genuine switch.
-                if (this._lastAccountName !== null && name)
-                    this._client.probeAvailability().catch(() => {});
-                this._lastAccountName = name;
-            },
-            this,
-        );
 
         // Restore Taildrop receiver state. The setting is the source of
         // truth across reloads; the receiver subprocess is owned by the
@@ -393,11 +348,6 @@ export default class TailscaleGnomeExtension extends Extension {
         // toast that resolves to success or error in place.
         const handleFeatureToggled = (key) => {
             const meta = FEATURE_META[key];
-            // PerAccountFeatureState is bulk-applying a tailnet slot:
-            // skip individual toasts and daemon writes. The callback
-            // emits one summary toast and a final refresh that lets
-            // ensureFeatureCompliance reconcile the daemon side.
-            if (this._perAccount.isLoadingSlot) return;
             const enabled = this._settings.get_boolean(key);
             const snap = this._client.snapshot;
             if (!snap.canControl || snap.loggedOut ||
@@ -477,7 +427,6 @@ export default class TailscaleGnomeExtension extends Extension {
             ].flatMap(([key, label]) => [
                 `changed::${key}`,
                 () => {
-                    if (this._perAccount.isLoadingSlot) return;
                     const on = this._settings.get_boolean(key);
                     Notifier.notify({
                         category: Category.NETWORK,
@@ -538,9 +487,6 @@ export default class TailscaleGnomeExtension extends Extension {
         for (const key of this._boundShortcuts)
             Main.wm.removeKeybinding(key);
         this._boundShortcuts.clear();
-
-        this._perAccount.destroy();
-        this._perAccount = null;
 
         this._indicator.destroy();
         this._indicator = null;

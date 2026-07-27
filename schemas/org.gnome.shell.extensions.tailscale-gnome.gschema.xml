@@ -146,17 +146,6 @@
                 probe on demand.</description>
         </key>
 
-        <key name="feature-state-per-account" type="s">
-            <default>'{}'</default>
-            <summary>Per-tailnet snapshots of feature-* settings</summary>
-            <description>JSON-encoded dict keyed by tailnet name. Each
-                slot holds the feature toggles, saved-state backups, and
-                availability cache that were active the last time the
-                user was logged into that tailnet, so account switches
-                restore the right state instead of bleeding settings
-                across tailnets.</description>
-        </key>
-
         <key name="notification-mode"
              enum="org.gnome.shell.extensions.tailscale-gnome.notification-mode">
             <default>'persistent'</default>
