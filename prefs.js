@@ -511,7 +511,7 @@ function _makeServiceRow() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              Features group                                */
+/*                             Availability group                             */
 /* -------------------------------------------------------------------------- */
 
 // Taildrop and Funnel can be forbidden tailnet-wide by an administrator.
@@ -614,18 +614,26 @@ function _makeAvailabilityRow(settings, def, window) {
         try {
             available = await def.checker(bin);
         } catch {
-            available = false;
+            // A missing binary, same as any other "could not answer": do
+            // not write the key, and say so rather than asserting a no.
+            available = null;
         }
-        settings.set_boolean(def.availabilityKey, available);
         checkBtn.sensitive = true;
         const title = def.title();
+        let toastTitle;
+        if (available === null) {
+            // The probe could not answer (daemon down, unparseable status,
+            // too old to publish CapMap, or a missing binary). Leave the
+            // cached key untouched rather than caching a false negative.
+            toastTitle = _fmt(_('Could not check %s: is Tailscale running?'), title);
+        } else {
+            settings.set_boolean(def.availabilityKey, available);
+            toastTitle = available
+                ? _fmt(_('%s is available'), title)
+                : _fmt(_('%s is not available on this tailnet'), title);
+        }
         window.add_toast(
-            new Adw.Toast({
-                title: available
-                    ? _fmt(_('%s is available'), title)
-                    : _fmt(_('%s is not available on this tailnet'), title),
-                timeout: 3,
-            }),
+            new Adw.Toast({ title: toastTitle, timeout: 3 }),
         );
     });
 
@@ -940,12 +948,16 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         // Refresh the cache in the background so the status icons are current
         // without the user having to click Check. The window opens immediately
         // on the last known value and each row updates through the `changed::`
-        // it is already watching. Failures are silent, exactly as for the
-        // startup probe in extension.js: the last known value stays on screen.
+        // it is already watching. A probe that could not answer (daemon down,
+        // unparseable status, too old to publish CapMap) resolves `null` and
+        // is skipped, exactly as for the startup probe in extension.js: the
+        // last known value stays on screen instead of being cached as "no".
         const probeBin = settings.get_string('tailscale-binary') || 'tailscale';
         for (const def of AVAILABILITY_DEFS) {
             def.checker(probeBin)
-                .then((ok) => settings.set_boolean(def.availabilityKey, ok))
+                .then((ok) => {
+                    if (ok !== null) settings.set_boolean(def.availabilityKey, ok);
+                })
                 .catch(() => {});
         }
 
@@ -1047,14 +1059,18 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             // gsettings flags were just reset to "assume disabled". Same
             // mechanism the manual Check buttons use; mirrors the startup
             // probe in extension.js so a fresh reset lands in a coherent
-            // state without forcing the user to click Check.
+            // state without forcing the user to click Check. A `null`
+            // result means the probe could not answer — leave the
+            // just-reset default in place rather than caching a guess.
             try {
                 const taildropOk = await _checkTaildrop(bin);
-                settings.set_boolean('feature-taildrop-available', taildropOk);
+                if (taildropOk !== null)
+                    settings.set_boolean('feature-taildrop-available', taildropOk);
             } catch {}
             try {
                 const funnelOk = await _checkFunnel(bin);
-                settings.set_boolean('feature-funnels-available', funnelOk);
+                if (funnelOk !== null)
+                    settings.set_boolean('feature-funnels-available', funnelOk);
             } catch {}
 
             window.add_toast(

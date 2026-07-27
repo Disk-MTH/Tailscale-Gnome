@@ -50,8 +50,8 @@ Ce bloc emporte avec lui la dernière écriture daemon non sollicitée de l'exte
 `Notifier.withFeedback(…, () => meta.reset(this._client))`. Les setters qui subsistent dans
 `extension.js` répondent tous à une demande explicite — `setOperator()` derrière son invite
 polkit, `setExitNode()` derrière un raccourci clavier, `setAcceptFiles()` derrière la case
-« accepter les fichiers ». Aucun ne part d'un `changed::` que l'utilisateur n'a pas
-provoqué.
+« accepter les fichiers ». Aucun setter d'état démon ne part d'un `changed::` que
+l'utilisateur n'a pas provoqué.
 
 **Conséquence assumée** : masquer Funnel ne démonte plus les funnels actifs. Ce n'était pas
 un service rendu mais un effet de bord destructeur — un tailnet dont l'utilisateur n'avait

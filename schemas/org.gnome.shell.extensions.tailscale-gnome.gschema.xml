@@ -75,16 +75,18 @@
             <summary>Cached: Taildrop usable on this tailnet</summary>
             <description>Default false ("assume admin-disabled"). The
                 extension probes once at startup and on account changes;
-                the "Check availability" button in prefs reruns the
-                probe on demand.</description>
+                the preferences window re-probes in the background each
+                time it opens; the "Check availability" button in prefs
+                reruns the probe on demand.</description>
         </key>
         <key name="feature-funnels-available" type="b">
             <default>false</default>
             <summary>Cached: Funnel enabled for this tailnet</summary>
             <description>Default false ("assume admin-disabled"). The
                 extension probes once at startup and on account changes;
-                the "Check availability" button in prefs reruns the
-                probe on demand.</description>
+                the preferences window re-probes in the background each
+                time it opens; the "Check availability" button in prefs
+                reruns the probe on demand.</description>
         </key>
 
         <key name="notification-mode"
