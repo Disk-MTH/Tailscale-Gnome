@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-    <path d="M 2.70 5.24 A 6.0 6.0 0 0 1 13.30 5.24" fill="none" stroke="#2e3436" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M 13.30 10.76 A 6.0 6.0 0 0 1 2.70 10.76" fill="none" stroke="#2e3436" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M 14.74 7.99 L 15.14 4.29 L 11.47 6.19 Z" fill="#2e3436"/>
-    <path d="M 1.26 8.01 L 0.86 11.71 L 4.53 9.81 Z" fill="#2e3436"/>
-</svg>

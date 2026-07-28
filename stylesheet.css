@@ -57,27 +57,6 @@
     padding: 4px 10px;
 }
 
-/* Compact icon-button injected into the QuickToggleMenu header
-   (right side of the title/subtitle area). Keeps the click target small
-   so it doesn't compete with the title visually. */
-.tailscale-header-btn {
-    min-width: 22px;
-    min-height: 22px;
-    padding: 2px 4px;
-    margin-left: 4px;
-    border-radius: 6px;
-    background-color: transparent;
-}
-.tailscale-header-btn:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-}
-.tailscale-header-btn StIcon {
-    icon-size: 16px;
-    opacity: 1;
-    -st-icon-style: symbolic;
-    color: white;
-}
-
 /* Small square icon buttons sitting inside rows (copy, remove). Without
    this they inherit the shell's full `.button` metrics, which puts a wide
    slab of padding around a 16px glyph. */

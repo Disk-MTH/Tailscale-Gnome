@@ -22,20 +22,6 @@ import {
 
 const TAILSCALED_UNIT = "tailscaled.service";
 
-// Make the extension's bundled symbolics resolvable by plain name, the way
-// a system icon is. Adw page and Gtk.Button `iconName` properties take a
-// theme name and nothing else, so a Gio.FileIcon is not an option for them.
-// icons/ follows the hicolor/<size>/<context> layout Gtk.IconTheme expects
-// of a search-path entry. This only ever touches the preferences process,
-// which exists solely to show this window.
-function _registerBundledIcons(dir) {
-    const display = Gdk.Display.get_default();
-    if (!display) return;
-    Gtk.IconTheme.get_for_display(display).add_search_path(
-        dir.get_child("icons").get_path(),
-    );
-}
-
 /* -------------------------------------------------------------------------- */
 /*                            Subprocess helpers                              */
 /* -------------------------------------------------------------------------- */
@@ -89,7 +75,7 @@ const ShortcutRow = GObject.registerClass(
             this.add_suffix(this._label);
 
             this._clearButton = new Gtk.Button({
-                icon_name: "action-clear-symbolic",
+                icon_name: "edit-clear-symbolic",
                 valign: Gtk.Align.CENTER,
                 tooltip_text: _("Clear shortcut"),
                 css_classes: ["flat"],
@@ -242,7 +228,7 @@ function _makeTaildropGroup(settings, extensionDir) {
     // Outline-style symbolic icon tinted with the Adwaita "warning" accent
     // (yellow/orange), matching the visual language of the rest of the app.
     const warningIcon = new Gtk.Image({
-        icon_name: "status-warning-symbolic",
+        icon_name: "dialog-warning-symbolic",
         valign: Gtk.Align.CENTER,
         tooltip_text: _(
             "Path is empty or not writable without admin privileges.",
@@ -322,7 +308,7 @@ function _makeTaildropGroup(settings, extensionDir) {
     updateValidity();
 
     const browseBtn = new Gtk.Button({
-        icon_name: "action-open-folder-symbolic",
+        icon_name: "document-open-symbolic",
         valign: Gtk.Align.CENTER,
         css_classes: ["flat"],
         tooltip_text: _("Browse"),
@@ -346,7 +332,7 @@ function _makeTaildropGroup(settings, extensionDir) {
     });
 
     const resetBtn = new Gtk.Button({
-        icon_name: "action-refresh-symbolic",
+        icon_name: "view-refresh-symbolic",
         valign: Gtk.Align.CENTER,
         css_classes: ["flat"],
         tooltip_text: _("Reset to default"),
@@ -583,12 +569,11 @@ function _openUrl(url) {
 }
 
 // Per-row reset suffix: restores the GSettings key to its schema default.
-// Uses the same `action-refresh-symbolic` as the Quick Settings refresh
-// glyph; the availability check button uses `availability-check-symbolic`
-// to stay visually distinct from a reset.
+// Uses `view-refresh-symbolic`; the availability check button uses
+// `rotation-allowed-symbolic` to stay visually distinct from a reset.
 function _resetButton(settings, key) {
     const btn = new Gtk.Button({
-        icon_name: "action-refresh-symbolic",
+        icon_name: "view-refresh-symbolic",
         valign: Gtk.Align.CENTER,
         css_classes: ["flat"],
         tooltip_text: _("Reset to default"),
@@ -605,7 +590,7 @@ function _makeAvailabilityRow(settings, def, window) {
     const row = new Adw.ActionRow({ title: def.title() });
 
     const infoBtn = new Gtk.Button({
-        icon_name: "status-info-symbolic",
+        icon_name: "info-outline-symbolic",
         valign: Gtk.Align.CENTER,
         css_classes: ["flat", "circular"],
         tooltip_text: _fmt(
@@ -622,7 +607,7 @@ function _makeAvailabilityRow(settings, def, window) {
     const statusIcon = new Gtk.Image({ valign: Gtk.Align.CENTER });
 
     const checkBtn = new Gtk.Button({
-        icon_name: "availability-check-symbolic",
+        icon_name: "rotation-allowed-symbolic",
         valign: Gtk.Align.CENTER,
         css_classes: ["flat"],
         tooltip_text: _("Check availability"),
@@ -671,9 +656,12 @@ function _makeAvailabilityRow(settings, def, window) {
 
     const sync = () => {
         const available = settings.get_boolean(def.availabilityKey);
+        // object-select-symbolic, not emblem-ok-symbolic: the latter is gone
+        // from current Adwaita, so the "available" tick silently rendered as
+        // nothing. Same glyph the toast success state uses.
         statusIcon.icon_name = available
-            ? "status-success-symbolic"
-            : "status-error-symbolic";
+            ? "object-select-symbolic"
+            : "window-close-symbolic";
         statusIcon.css_classes = [available ? "success" : "error"];
         // An icon alone is not readable by a screen reader.
         statusIcon.tooltip_text = available
@@ -761,7 +749,7 @@ const NOTIFY_DEFS = [
 function _makeNotificationsPage(settings) {
     const page = new Adw.PreferencesPage({
         title: _("Notifications"),
-        iconName: "prefs-notifications-symbolic",
+        iconName: "preferences-system-notifications-symbolic",
     });
 
     /* ------------------------------- Mode -------------------------------- */
@@ -942,7 +930,7 @@ const SHORTCUT_DEFS = [
 function _makeShortcutsPage(settings) {
     const page = new Adw.PreferencesPage({
         title: _("Shortcuts"),
-        iconName: "prefs-keyboard-symbolic",
+        iconName: "preferences-desktop-keyboard-symbolic",
     });
 
     const group = new Adw.PreferencesGroup({
@@ -969,12 +957,9 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
 
-        // Must run before any widget resolves an icon by name.
-        _registerBundledIcons(this.dir);
-
         const page = new Adw.PreferencesPage({
             title: _("General"),
-            iconName: "prefs-general-symbolic",
+            iconName: "preferences-system-symbolic",
         });
         window.add(page);
         window.add(_makeNotificationsPage(settings));
