@@ -3,6 +3,7 @@
 
 UUID        := tailscale-gnome@diskmth.fr
 NAME        := Tailscale
+URL         := https://github.com/Disk-MTH/Tailscale-Gnome
 USER_EXTDIR := $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
 SCHEMA      := schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml
 COMPILED    := schemas/gschemas.compiled
@@ -78,7 +79,7 @@ pack:
 	@cd "$(CURDIR)" && zip -qr "$(ZIPNAME)" \
 	    metadata.json extension.js prefs.js stylesheet.css \
 	    lib nautilus \
-	    icons/tailscale-symbolic.svg icons/tailscale-disabled-symbolic.svg \
+	    icons/hicolor \
 	    schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml \
 	    LICENSE README.md CHANGELOG.md
 	@printf "Built %s\n" "$(ZIPNAME)"
