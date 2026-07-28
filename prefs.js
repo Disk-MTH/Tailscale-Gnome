@@ -766,9 +766,7 @@ function _makeNotificationsPage(settings) {
         model: Gtk.StringList.new([_("Notification"), _("Toast")]),
     });
     // The enum nicks in schema order; index maps 1:1 onto the StringList.
-    // The nick stays "persistent" even though the label now reads
-    // "Notification": renaming it would strand everyone's stored value.
-    const MODES = ["persistent", "toast"];
+    const MODES = ["notification", "toast"];
     modeRow.selected = Math.max(
         0,
         MODES.indexOf(settings.get_string("notification-mode")),
@@ -822,10 +820,8 @@ function _makeNotificationsPage(settings) {
     // Only the rows that apply to the active mode are shown. The minimum
     // pending duration applies to both, so it always stays visible.
     const syncModeRows = () => {
-        const persistent =
-            settings.get_string("notification-mode") === "persistent";
-        historyRow.visible = persistent;
-        durationRow.visible = !persistent;
+        durationRow.visible =
+            settings.get_string("notification-mode") === "toast";
     };
     syncModeRows();
     const modeId = settings.connect("changed::notification-mode", () => {

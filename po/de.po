@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: https://github.com/Disk-MTH/Tailscale-Gnome/issues\n"
-"POT-Creation-Date: 2026-07-28 18:26+0200\n"
-"PO-Revision-Date: 2026-07-28 18:26+0200\n"
+"POT-Creation-Date: 2026-07-28 18:34+0200\n"
+"PO-Revision-Date: 2026-07-28 18:34+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -349,131 +349,131 @@ msgstr "Benachrichtigung"
 msgid "Toast"
 msgstr "Toast"
 
-#: prefs.js:783
+#: prefs.js:781
 msgid "Toast duration"
 msgstr "Toast-Dauer"
 
-#: prefs.js:784
+#: prefs.js:782
 msgid "Seconds the result toast stays on screen (1 to 10)."
 msgstr "Sekunden, die der Ergebnis-Toast sichtbar bleibt (1 bis 10)."
 
-#: prefs.js:802
+#: prefs.js:800
 msgid "Minimum pending duration"
 msgstr "Mindestdauer des Wartezustands"
 
-#: prefs.js:804
+#: prefs.js:802
 msgid "Milliseconds the pending state stays visible before showing the result (0 to 3000). Prevents flicker on instant actions."
 msgstr "Millisekunden, die der Wartezustand vor dem Ergebnis sichtbar bleibt (0 bis 3000). Verhindert Flackern bei sofortigen Aktionen."
 
-#: prefs.js:842
+#: prefs.js:838
 msgid "Events"
 msgstr "Ereignisse"
 
-#: prefs.js:843
+#: prefs.js:839
 msgid "Which actions are allowed to notify."
 msgstr "Welche Aktionen benachrichtigen dürfen."
 
-#: prefs.js:862
+#: prefs.js:858
 msgid "Failures"
 msgstr "Fehler"
 
-#: prefs.js:867
+#: prefs.js:863
 msgid "Always report failures"
 msgstr "Fehler immer melden"
 
-#: prefs.js:869
+#: prefs.js:865
 msgid "Let errors and warnings through even when the category above is off. Turn this off as well for complete silence."
 msgstr "Lässt Fehler und Warnungen auch dann durch, wenn die Kategorie oben aus ist. Für völlige Stille auch dies deaktivieren."
 
-#: prefs.js:893
+#: prefs.js:889
 msgid "Connect / disconnect Tailscale"
 msgstr "Tailscale verbinden / trennen"
 
-#: prefs.js:897
+#: prefs.js:893
 msgid "Toggle automatic exit node"
 msgstr "Automatischen Exit-Node umschalten"
 
-#: prefs.js:901
+#: prefs.js:897
 msgid "Open the Tailscale menu"
 msgstr "Tailscale-Menü öffnen"
 
-#: prefs.js:905
+#: prefs.js:901
 msgid "Open the Tailscale admin console"
 msgstr "Tailscale-Verwaltungskonsole öffnen"
 
-#: prefs.js:909
+#: prefs.js:905
 msgid "Send a file via Taildrop"
 msgstr "Datei über Taildrop senden"
 
-#: prefs.js:915
+#: prefs.js:911
 msgid "Shortcuts"
 msgstr "Tastenkürzel"
 
-#: prefs.js:920
+#: prefs.js:916
 msgid "Keyboard shortcuts"
 msgstr "Tastenkürzel"
 
-#: prefs.js:922
+#: prefs.js:918
 msgid "Click a row to capture a key combination. Backspace to clear."
 msgstr "Auf eine Zeile klicken, um eine Tastenkombination aufzuzeichnen. Rücktaste zum Löschen."
 
-#: prefs.js:944
+#: prefs.js:940
 msgid "General"
 msgstr "Allgemein"
 
-#: prefs.js:980
+#: prefs.js:976
 msgid "Indicators"
 msgstr "Anzeigen"
 
-#: prefs.js:981
+#: prefs.js:977
 msgid "Icons shown in the top bar, next to Wi-Fi."
 msgstr "Symbole in der oberen Leiste, neben WLAN."
 
-#: prefs.js:986
+#: prefs.js:982
 msgid "Show Tailscale panel indicator"
 msgstr "Tailscale-Panel-Indikator anzeigen"
 
-#: prefs.js:987
+#: prefs.js:983
 msgid "Small Tailscale icon shown while connected."
 msgstr "Kleines Tailscale-Symbol, solange verbunden."
 
-#: prefs.js:999
+#: prefs.js:995
 msgid "Show exit node status panel indicator"
 msgstr "Exit-Node-Statusanzeige einblenden"
 
-#: prefs.js:1001
+#: prefs.js:997
 msgid "Warning icon shown when the selected exit node cannot route, which leaves the device without internet access."
 msgstr "Warnsymbol, wenn der gewählte Exit-Node nicht weiterleiten kann und das Gerät dadurch ohne Internetzugang bleibt."
 
-#: prefs.js:1017
+#: prefs.js:1013
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: prefs.js:1026
+#: prefs.js:1022
 msgid "Poll interval"
 msgstr "Abfrageintervall"
 
-#: prefs.js:1027
+#: prefs.js:1023
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr "Sekunden zwischen Statusaktualisierungen (1 bis 60)."
 
-#: prefs.js:1044
+#: prefs.js:1040
 msgid "tailscale binary"
 msgstr "tailscale-Programmdatei"
 
-#: prefs.js:1059
+#: prefs.js:1055
 msgid "Reset all settings"
 msgstr "Alle Einstellungen zurücksetzen"
 
-#: prefs.js:1060
+#: prefs.js:1056
 msgid "Restore every setting to its default, on all pages."
 msgstr "Setzt jede Einstellung auf allen Seiten auf den Standardwert zurück."
 
-#: prefs.js:1063
+#: prefs.js:1059
 msgid "Reset all"
 msgstr "Alle zurücksetzen"
 
-#: prefs.js:1119
+#: prefs.js:1115
 msgid "All settings reset to defaults"
 msgstr "Alle Einstellungen wurden zurückgesetzt"
 

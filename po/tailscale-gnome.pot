@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: https://github.com/Disk-MTH/Tailscale-Gnome/issues\n"
-"POT-Creation-Date: 2026-07-28 18:26+0200\n"
+"POT-Creation-Date: 2026-07-28 18:34+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -356,137 +356,137 @@ msgstr ""
 msgid "Toast"
 msgstr ""
 
-#: prefs.js:783
+#: prefs.js:781
 msgid "Toast duration"
 msgstr ""
 
-#: prefs.js:784
+#: prefs.js:782
 msgid "Seconds the result toast stays on screen (1 to 10)."
 msgstr ""
 
-#: prefs.js:802
+#: prefs.js:800
 msgid "Minimum pending duration"
 msgstr ""
 
-#: prefs.js:804
+#: prefs.js:802
 msgid ""
 "Milliseconds the pending state stays visible before showing the result (0 to "
 "3000). Prevents flicker on instant actions."
 msgstr ""
 
-#: prefs.js:842
+#: prefs.js:838
 msgid "Events"
 msgstr ""
 
-#: prefs.js:843
+#: prefs.js:839
 msgid "Which actions are allowed to notify."
 msgstr ""
 
-#: prefs.js:862
+#: prefs.js:858
 msgid "Failures"
 msgstr ""
 
-#: prefs.js:867
+#: prefs.js:863
 msgid "Always report failures"
 msgstr ""
 
-#: prefs.js:869
+#: prefs.js:865
 msgid ""
 "Let errors and warnings through even when the category above is off. Turn "
 "this off as well for complete silence."
 msgstr ""
 
-#: prefs.js:893
+#: prefs.js:889
 msgid "Connect / disconnect Tailscale"
 msgstr ""
 
-#: prefs.js:897
+#: prefs.js:893
 msgid "Toggle automatic exit node"
 msgstr ""
 
-#: prefs.js:901
+#: prefs.js:897
 msgid "Open the Tailscale menu"
 msgstr ""
 
-#: prefs.js:905
+#: prefs.js:901
 msgid "Open the Tailscale admin console"
 msgstr ""
 
-#: prefs.js:909
+#: prefs.js:905
 msgid "Send a file via Taildrop"
 msgstr ""
 
-#: prefs.js:915
+#: prefs.js:911
 msgid "Shortcuts"
 msgstr ""
 
-#: prefs.js:920
+#: prefs.js:916
 msgid "Keyboard shortcuts"
 msgstr ""
 
-#: prefs.js:922
+#: prefs.js:918
 msgid "Click a row to capture a key combination. Backspace to clear."
 msgstr ""
 
-#: prefs.js:944
+#: prefs.js:940
 msgid "General"
 msgstr ""
 
-#: prefs.js:980
+#: prefs.js:976
 msgid "Indicators"
 msgstr ""
 
-#: prefs.js:981
+#: prefs.js:977
 msgid "Icons shown in the top bar, next to Wi-Fi."
 msgstr ""
 
-#: prefs.js:986
+#: prefs.js:982
 msgid "Show Tailscale panel indicator"
 msgstr ""
 
-#: prefs.js:987
+#: prefs.js:983
 msgid "Small Tailscale icon shown while connected."
 msgstr ""
 
-#: prefs.js:999
+#: prefs.js:995
 msgid "Show exit node status panel indicator"
 msgstr ""
 
-#: prefs.js:1001
+#: prefs.js:997
 msgid ""
 "Warning icon shown when the selected exit node cannot route, which leaves "
 "the device without internet access."
 msgstr ""
 
-#: prefs.js:1017
+#: prefs.js:1013
 msgid "Advanced"
 msgstr ""
 
-#: prefs.js:1026
+#: prefs.js:1022
 msgid "Poll interval"
 msgstr ""
 
-#: prefs.js:1027
+#: prefs.js:1023
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr ""
 
-#: prefs.js:1044
+#: prefs.js:1040
 msgid "tailscale binary"
 msgstr ""
 
-#: prefs.js:1059
+#: prefs.js:1055
 msgid "Reset all settings"
 msgstr ""
 
-#: prefs.js:1060
+#: prefs.js:1056
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 
-#: prefs.js:1063
+#: prefs.js:1059
 msgid "Reset all"
 msgstr ""
 
-#: prefs.js:1119
+#: prefs.js:1115
 msgid "All settings reset to defaults"
 msgstr ""
 

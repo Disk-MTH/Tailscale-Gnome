@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="tailscale-gnome">
     <enum id="org.gnome.shell.extensions.tailscale-gnome.notification-mode">
-        <value nick="persistent" value="0"/>
+        <value nick="notification" value="0"/>
         <value nick="toast" value="1"/>
     </enum>
 
@@ -100,10 +100,10 @@
 
         <key name="notification-mode"
              enum="org.gnome.shell.extensions.tailscale-gnome.notification-mode">
-            <default>'persistent'</default>
+            <default>'notification'</default>
             <summary>How notifications are presented</summary>
-            <description>"persistent" posts native GNOME notifications that
-                stack into a browsable history under a single Tailscale
+            <description>"notification" posts native GNOME notifications
+                that stack into a browsable history under a single Tailscale
                 entry. "toast" shows the transient on-screen bubble and
                 keeps no history.</description>
         </key>
