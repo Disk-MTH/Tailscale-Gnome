@@ -24,6 +24,15 @@
                 Wi-Fi indicator while Tailscale is connected.</description>
         </key>
 
+        <key name="show-exit-node-indicator" type="b">
+            <default>true</default>
+            <summary>Show the exit node warning icon in the panel</summary>
+            <description>If true, a warning icon appears in the panel while an
+                exit node is selected but cannot route, which is when the
+                device has no internet access. Independent of
+                show-indicator.</description>
+        </key>
+
         <key name="tailscale-binary" type="s">
             <default>'tailscale'</default>
             <summary>Path to the tailscale CLI binary</summary>
@@ -97,15 +106,6 @@
                 stack into a browsable history under a single Tailscale
                 entry. "toast" shows the transient on-screen bubble and
                 keeps no history.</description>
-        </key>
-
-        <key name="notification-history-size" type="u">
-            <default>5</default>
-            <range min="1" max="10"/>
-            <summary>Entries kept in the notification history</summary>
-            <description>Persistent mode only. Once the history is full the
-                oldest entry is evicted. GNOME Shell caps a notification
-                source at 10, which is the hard ceiling here.</description>
         </key>
 
         <key name="toast-duration" type="u">

@@ -680,7 +680,7 @@ function _makeAvailabilityGroup(settings, window) {
     const group = new Adw.PreferencesGroup({
         title: _("Availability"),
         description: _(
-            "What this tailnet allows. Both depend on your tailnet's admin settings, not on anything you can change here. (Hover over the info icon for details.)",
+            "What this tailnet allows. Both depend on your tailnet's admin settings, not on anything you can change here. (Hover over the info icon for details)",
         ),
     });
     for (const def of AVAILABILITY_DEFS)
@@ -756,16 +756,18 @@ function _makeNotificationsPage(settings) {
     const modeGroup = new Adw.PreferencesGroup({
         title: _("Mode"),
         description: _(
-            "Persistent mode posts native notifications that stack into a browsable history. Toast mode shows a transient bubble and keeps no history.",
+            "Notification mode posts native notifications that stack into a browsable history. Toast mode shows a transient bubble and keeps no history.",
         ),
     });
     page.add(modeGroup);
 
     const modeRow = new Adw.ComboRow({
         title: _("Presentation"),
-        model: Gtk.StringList.new([_("Persistent"), _("Toast")]),
+        model: Gtk.StringList.new([_("Notification"), _("Toast")]),
     });
     // The enum nicks in schema order; index maps 1:1 onto the StringList.
+    // The nick stays "persistent" even though the label now reads
+    // "Notification": renaming it would strand everyone's stored value.
     const MODES = ["persistent", "toast"];
     modeRow.selected = Math.max(
         0,
@@ -776,25 +778,6 @@ function _makeNotificationsPage(settings) {
     });
     modeRow.add_suffix(_resetButton(settings, "notification-mode"));
     modeGroup.add(modeRow);
-
-    const historyRow = new Adw.SpinRow({
-        title: _("History size"),
-        subtitle: _("Entries kept before the oldest is dropped (1 to 10)."),
-        adjustment: new Gtk.Adjustment({
-            lower: 1,
-            upper: 10,
-            step_increment: 1,
-            page_increment: 1,
-        }),
-    });
-    settings.bind(
-        "notification-history-size",
-        historyRow,
-        "value",
-        Gio.SettingsBindFlags.DEFAULT,
-    );
-    historyRow.add_suffix(_resetButton(settings, "notification-history-size"));
-    modeGroup.add(historyRow);
 
     const durationRow = new Adw.SpinRow({
         title: _("Toast duration"),
@@ -988,6 +971,47 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         /* ----------------------------- Taildrop ------------------------- */
         page.add(_makeTaildropGroup(settings, this.dir));
 
+        /* --------------------------- Indicators ------------------------- */
+        // Two independent switches rather than one: the exit-node warning is
+        // the only sign that the device has no internet, so someone who hides
+        // the connection icon to keep the panel quiet must still be able to
+        // keep the warning.
+        const indicators = new Adw.PreferencesGroup({
+            title: _("Indicators"),
+            description: _("Icons shown in the top bar, next to Wi-Fi."),
+        });
+        page.add(indicators);
+
+        const showRow = new Adw.SwitchRow({
+            title: _("Show Tailscale panel indicator"),
+            subtitle: _("Small Tailscale icon shown while connected."),
+        });
+        settings.bind(
+            "show-indicator",
+            showRow,
+            "active",
+            Gio.SettingsBindFlags.DEFAULT,
+        );
+        showRow.add_suffix(_resetButton(settings, "show-indicator"));
+        indicators.add(showRow);
+
+        const exitIndicatorRow = new Adw.SwitchRow({
+            title: _("Show exit node status panel indicator"),
+            subtitle: _(
+                "Warning icon shown when the selected exit node cannot route, which leaves the device without internet access.",
+            ),
+        });
+        settings.bind(
+            "show-exit-node-indicator",
+            exitIndicatorRow,
+            "active",
+            Gio.SettingsBindFlags.DEFAULT,
+        );
+        exitIndicatorRow.add_suffix(
+            _resetButton(settings, "show-exit-node-indicator"),
+        );
+        indicators.add(exitIndicatorRow);
+
         /* ---------------------------- Advanced -------------------------- */
         const advanced = new Adw.PreferencesGroup({
             title: _("Advanced"),
@@ -997,19 +1021,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         // The systemd unit toggle isn't a GSettings key, so no reset
         // suffix; the system manages its own state.
         advanced.add(_makeServiceRow());
-
-        const showRow = new Adw.SwitchRow({
-            title: _("Show panel indicator"),
-            subtitle: _("Small Tailscale icon next to Wi-Fi while connected."),
-        });
-        settings.bind(
-            "show-indicator",
-            showRow,
-            "active",
-            Gio.SettingsBindFlags.DEFAULT,
-        );
-        showRow.add_suffix(_resetButton(settings, "show-indicator"));
-        advanced.add(showRow);
 
         const pollRow = new Adw.SpinRow({
             title: _("Poll interval"),
