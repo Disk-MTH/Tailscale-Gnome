@@ -70,7 +70,7 @@
 
         <key name="shortcut-send-file" type="as">
             <default><![CDATA[[]]]></default>
-            <summary>Shortcut: send a file via Taildrop</summary>
+            <summary>Shortcut: send files via Taildrop</summary>
         </key>
 
         <key name="shortcut-add-funnel" type="as">

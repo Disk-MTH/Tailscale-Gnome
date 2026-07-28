@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Nautilus right-click action: zip the selection, then hand the archive off
 # to the Tailscale GNOME extension via DBus (same native picker as the
-# Quick Settings "Send file" entry).
+# Quick Settings "Send files" entry).
 
 set -eu
 

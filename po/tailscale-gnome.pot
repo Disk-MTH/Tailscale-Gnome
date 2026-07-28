@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: https://github.com/Disk-MTH/Tailscale-Gnome/issues\n"
-"POT-Creation-Date: 2026-07-28 22:36+0200\n"
+"POT-Creation-Date: 2026-07-28 22:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Connecting Tailscale — this may take a moment"
 msgstr ""
 
-#: extension.js:88 extension.js:401 lib/menu.js:1386
+#: extension.js:88 extension.js:401 lib/menu.js:1383
 msgid "Tailscale connected"
 msgstr ""
 
@@ -71,31 +71,31 @@ msgstr ""
 msgid "Tailscale is not ready yet"
 msgstr ""
 
-#: extension.js:393 lib/menu.js:1392
+#: extension.js:393 lib/menu.js:1389
 msgid "Disconnecting Tailscale"
 msgstr ""
 
-#: extension.js:394 lib/menu.js:1393
+#: extension.js:394 lib/menu.js:1390
 msgid "Tailscale disconnected"
 msgstr ""
 
-#: extension.js:400 lib/menu.js:1385
+#: extension.js:400 lib/menu.js:1382
 msgid "Connecting Tailscale"
 msgstr ""
 
-#: extension.js:412 lib/menu.js:1773
+#: extension.js:412 lib/menu.js:1770
 msgid "Clearing exit node"
 msgstr ""
 
-#: extension.js:413 lib/menu.js:1774
+#: extension.js:413 lib/menu.js:1771
 msgid "Exit node cleared"
 msgstr ""
 
-#: extension.js:419 lib/menu.js:1785
+#: extension.js:419 lib/menu.js:1782
 msgid "Selecting an exit node"
 msgstr ""
 
-#: extension.js:420 lib/menu.js:1786
+#: extension.js:420 lib/menu.js:1783
 msgid "Exit node: auto"
 msgstr ""
 
@@ -211,7 +211,7 @@ msgid ""
 "or by different users are not eligible."
 msgstr ""
 
-#: prefs.js:538 prefs.js:802 lib/menu.js:1218 lib/notify.js:31
+#: prefs.js:538 prefs.js:802 lib/menu.js:1216 lib/notify.js:31
 msgid "Funnel"
 msgstr ""
 
@@ -306,7 +306,7 @@ msgstr ""
 msgid "A single notification once the new profile is applied."
 msgstr ""
 
-#: prefs.js:785 lib/menu.js:1142 lib/menu.js:1739 lib/notify.js:28
+#: prefs.js:785 lib/menu.js:1142 lib/menu.js:1736 lib/notify.js:28
 msgid "Exit node"
 msgstr ""
 
@@ -420,8 +420,8 @@ msgstr ""
 msgid "Open the Tailscale admin console"
 msgstr ""
 
-#: prefs.js:968
-msgid "Send a file via Taildrop"
+#: prefs.js:968 lib/menu.js:2064
+msgid "Send files via Taildrop"
 msgstr ""
 
 #: prefs.js:972
@@ -532,7 +532,7 @@ msgstr ""
 msgid "Copy %s"
 msgstr ""
 
-#: lib/menu.js:295 lib/menu.js:1656
+#: lib/menu.js:295 lib/menu.js:1653
 #, javascript-format
 msgid "Could not open %s"
 msgstr ""
@@ -541,7 +541,7 @@ msgstr ""
 msgid "Tailscale unavailable"
 msgstr ""
 
-#: lib/menu.js:307 lib/menu.js:2010
+#: lib/menu.js:307 lib/menu.js:2007
 msgid "Logged out"
 msgstr ""
 
@@ -561,7 +561,7 @@ msgstr ""
 msgid "Send via Taildrop"
 msgstr ""
 
-#: lib/menu.js:717 lib/menu.js:2119
+#: lib/menu.js:717 lib/menu.js:2111
 #, javascript-format
 msgid "%d files"
 msgstr ""
@@ -590,7 +590,7 @@ msgstr ""
 msgid "Spaces are not allowed in the password"
 msgstr ""
 
-#: lib/menu.js:936 lib/menu.js:1531
+#: lib/menu.js:936 lib/menu.js:1528
 msgid "Add funnel"
 msgstr ""
 
@@ -614,7 +614,7 @@ msgstr ""
 msgid "Tailnet"
 msgstr ""
 
-#: lib/menu.js:1135 lib/menu.js:1860
+#: lib/menu.js:1135 lib/menu.js:1857
 msgid "Peers"
 msgstr ""
 
@@ -698,283 +698,271 @@ msgstr ""
 msgid "SSH server: off"
 msgstr ""
 
-#: lib/menu.js:1206
-msgid "Send file"
+#: lib/menu.js:1211
+msgid "Send files"
 msgstr ""
 
-#: lib/menu.js:1210
-msgid "Send folder"
-msgstr ""
-
-#: lib/menu.js:1240
+#: lib/menu.js:1238
 msgid "Extension settings"
 msgstr ""
 
-#: lib/menu.js:1270
+#: lib/menu.js:1268
 msgid "Admin panel"
 msgstr ""
 
-#: lib/menu.js:1319
+#: lib/menu.js:1316
 msgid "Operator not set"
 msgstr ""
 
-#: lib/menu.js:1325
+#: lib/menu.js:1322
 msgid "Set operator"
 msgstr ""
 
-#: lib/menu.js:1331
+#: lib/menu.js:1328
 msgid "Granting operator privilege"
 msgstr ""
 
-#: lib/menu.js:1332
+#: lib/menu.js:1329
 msgid "Operator set"
 msgstr ""
 
-#: lib/menu.js:1364
+#: lib/menu.js:1361
 msgid "Login required (see Account menu)"
 msgstr ""
 
-#: lib/menu.js:1460
+#: lib/menu.js:1457
 msgid "This device"
 msgstr ""
 
-#: lib/menu.js:1520
+#: lib/menu.js:1517
 msgid "No funnels configured"
 msgstr ""
 
-#: lib/menu.js:1547
+#: lib/menu.js:1544
 #, javascript-format
 msgid "proxies %s"
 msgstr ""
 
-#: lib/menu.js:1577
+#: lib/menu.js:1574
 #, javascript-format
 msgid "Removing funnel %s"
 msgstr ""
 
-#: lib/menu.js:1578
+#: lib/menu.js:1575
 #, javascript-format
 msgid "Funnel removed %s"
 msgstr ""
 
-#: lib/menu.js:1605
+#: lib/menu.js:1602
 #, javascript-format
 msgid "All Funnel ports are in use (%s) — remove one first"
 msgstr ""
 
-#: lib/menu.js:1623
+#: lib/menu.js:1620
 msgid "Invalid port number"
 msgstr ""
 
-#: lib/menu.js:1636
+#: lib/menu.js:1633
 #, javascript-format
 msgid "Adding funnel %d:%d"
 msgstr ""
 
-#: lib/menu.js:1637
+#: lib/menu.js:1634
 #, javascript-format
 msgid "Funnel added %d:%d"
 msgstr ""
 
-#: lib/menu.js:1662
+#: lib/menu.js:1659
 msgid "Approve Funnel in the browser, then retry."
 msgstr ""
 
-#: lib/menu.js:1695
+#: lib/menu.js:1692
 msgid "1 route"
 msgstr ""
 
-#: lib/menu.js:1696
+#: lib/menu.js:1693
 #, javascript-format
 msgid "%d routes"
 msgstr ""
 
-#: lib/menu.js:1705
+#: lib/menu.js:1702
 #, javascript-format
 msgid "via %s"
 msgstr ""
 
-#: lib/menu.js:1721
+#: lib/menu.js:1718
 msgid "Through exit node"
 msgstr ""
 
-#: lib/menu.js:1753
+#: lib/menu.js:1750
 #, javascript-format
 msgid "Auto (%s)"
 msgstr ""
 
-#: lib/menu.js:1754
+#: lib/menu.js:1751
 msgid "Auto (None)"
 msgstr ""
 
-#: lib/menu.js:1757
+#: lib/menu.js:1754
 #, javascript-format
 msgid "Offline (%s)"
 msgstr ""
 
-#: lib/menu.js:1759
+#: lib/menu.js:1756
 #, javascript-format
 msgid "Disabled (%s)"
 msgstr ""
 
-#: lib/menu.js:1762 lib/menu.js:1769
+#: lib/menu.js:1759 lib/menu.js:1766
 msgid "None"
 msgstr ""
 
-#: lib/menu.js:1781
+#: lib/menu.js:1778
 msgid "Auto"
 msgstr ""
 
-#: lib/menu.js:1802
+#: lib/menu.js:1799
 msgid "No approved exit nodes"
 msgstr ""
 
-#: lib/menu.js:1824
+#: lib/menu.js:1821
 #, javascript-format
 msgid "Routing through %s"
 msgstr ""
 
-#: lib/menu.js:1825
+#: lib/menu.js:1822
 #, javascript-format
 msgid "Exit node: %s"
 msgstr ""
 
-#: lib/menu.js:1840
+#: lib/menu.js:1837
 msgid "Allow LAN access"
 msgstr ""
 
-#: lib/menu.js:1843
+#: lib/menu.js:1840
 msgid "Enabling LAN access"
 msgstr ""
 
-#: lib/menu.js:1843
+#: lib/menu.js:1840
 msgid "Disabling LAN access"
 msgstr ""
 
-#: lib/menu.js:1844
+#: lib/menu.js:1841
 msgid "LAN access: on"
 msgstr ""
 
-#: lib/menu.js:1844
+#: lib/menu.js:1841
 msgid "LAN access: off"
 msgstr ""
 
-#: lib/menu.js:1865
+#: lib/menu.js:1862
 msgid "No peers"
 msgstr ""
 
-#: lib/menu.js:1919
+#: lib/menu.js:1916
 msgid "No tailnet"
 msgstr ""
 
-#: lib/menu.js:1921
+#: lib/menu.js:1918
 #, javascript-format
 msgid "Tailnet: %s"
 msgstr ""
 
-#: lib/menu.js:1959
+#: lib/menu.js:1956
 #, javascript-format
 msgid "Switching to %s"
 msgstr ""
 
-#: lib/menu.js:1960
+#: lib/menu.js:1957
 #, javascript-format
 msgid "Active tailnet: %s"
 msgstr ""
 
-#: lib/menu.js:1984
+#: lib/menu.js:1981
 msgid "Login"
 msgstr ""
 
-#: lib/menu.js:1992
+#: lib/menu.js:1989
 msgid "Opening Tailscale login"
 msgstr ""
 
-#: lib/menu.js:1993
+#: lib/menu.js:1990
 msgid "Login flow started"
 msgstr ""
 
-#: lib/menu.js:2001
+#: lib/menu.js:1998
 msgid "Logout"
 msgstr ""
 
-#: lib/menu.js:2009
+#: lib/menu.js:2006
 msgid "Logging out"
 msgstr ""
 
-#: lib/menu.js:2056
+#: lib/menu.js:2052
 msgid "Accepting Taildrop files"
 msgstr ""
 
-#: lib/menu.js:2057
+#: lib/menu.js:2053
 msgid "Taildrop receiver stopped"
 msgstr ""
 
-#: lib/menu.js:2070
-msgid "Send a folder via Taildrop"
-msgstr ""
-
-#: lib/menu.js:2071
-msgid "Send files via Taildrop"
-msgstr ""
-
-#: lib/menu.js:2087
+#: lib/menu.js:2079
 msgid "Taildrop is disabled for this tailnet by your admin."
 msgstr ""
 
-#: lib/menu.js:2096
+#: lib/menu.js:2088
 msgid "No online peers available to receive files"
 msgstr ""
 
-#: lib/menu.js:2122
+#: lib/menu.js:2114
 #, javascript-format
 msgid "%d devices"
 msgstr ""
 
-#: lib/menu.js:2142
+#: lib/menu.js:2134
 #, javascript-format
 msgid "Could not send to %s"
 msgstr ""
 
-#: lib/menu.js:2148
+#: lib/menu.js:2140
 #, javascript-format
 msgid "Sent to %d of %d devices"
 msgstr ""
 
-#: lib/menu.js:2155
+#: lib/menu.js:2147
 #, javascript-format
 msgid "Sent %s to %s"
 msgstr ""
 
-#: lib/menu.js:2160
+#: lib/menu.js:2152
 #, javascript-format
 msgid "Sending %s to %s"
 msgstr ""
 
-#: lib/menu.js:2169
+#: lib/menu.js:2161
 #, javascript-format
 msgid "Archiving %s"
 msgstr ""
 
-#: lib/menu.js:2179
+#: lib/menu.js:2171
 msgid "Could not create the archive"
 msgstr ""
 
-#: lib/menu.js:2274
+#: lib/menu.js:2269
 msgid "File chooser portal unavailable"
 msgstr ""
 
-#: lib/menu.js:2313
+#: lib/menu.js:2308
 #, javascript-format
 msgid "Received %s (%s) - click to open"
 msgstr ""
 
-#: lib/menu.js:2314
+#: lib/menu.js:2309
 #, javascript-format
 msgid "Received %s (%s)"
 msgstr ""
 
-#: lib/menu.js:2334
+#: lib/menu.js:2329
 #, javascript-format
 msgid "Copied %s to clipboard"
 msgstr ""

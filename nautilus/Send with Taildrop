@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Nautilus right-click action: hand the selected files off to the running
 # Tailscale GNOME extension via DBus, which shows the native in-shell peer
-# picker (same UI as "Send file" in Quick Settings).
+# picker (same UI as "Send files" in Quick Settings).
 #
 # Installed by the extension prefs under ~/.local/share/nautilus/scripts/.
 

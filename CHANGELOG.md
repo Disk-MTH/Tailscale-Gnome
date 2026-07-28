@@ -43,6 +43,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   send path received `undefined` where it destructured `{ asZip, password }`.
 
 ### Changed
+- One Taildrop entry, "Send files", replaces the "Send file" / "Send folder"
+  pair, and the `shortcut-send-file` keybinding reaches the same call. The
+  portal's `directory` option does not restrict the chooser to folders — it
+  lets folders be picked *as well as* files, several of each at once — so
+  there was nothing left to decide before opening it. What the selection
+  turns out to contain is settled afterwards: a folder anywhere in it forces
+  the archive path, plain files leave zipping optional.
 - The Taildrop send dialog picks recipients instead of firing on the first
   click. Rows toggle, several devices can be ticked at once, and a Send
   button — inert until something is ticked — starts the transfer. When

@@ -965,7 +965,7 @@ const SHORTCUT_DEFS = [
     },
     {
         key: "shortcut-send-file",
-        title: () => _("Send a file via Taildrop"),
+        title: () => _("Send files via Taildrop"),
     },
     {
         key: "shortcut-add-funnel",
