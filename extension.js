@@ -24,6 +24,7 @@ const SHORTCUT_KEYS = [
     'shortcut-show-menu',
     'shortcut-open-admin-panel',
     'shortcut-send-file',
+    'shortcut-add-funnel',
 ];
 
 // Session-bus interface exposed for the Nautilus right-click scripts so they
@@ -427,6 +428,8 @@ export default class TailscaleGnomeExtension extends Extension {
             return () => openAdminPanel();
         case 'shortcut-send-file':
             return () => this._indicator.sendFiles();
+        case 'shortcut-add-funnel':
+            return () => this._indicator.addFunnel();
         default:
             return null;
         }

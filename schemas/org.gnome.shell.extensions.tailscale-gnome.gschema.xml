@@ -73,6 +73,11 @@
             <summary>Shortcut: send a file via Taildrop</summary>
         </key>
 
+        <key name="shortcut-add-funnel" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: open the Add funnel dialog</summary>
+        </key>
+
         <key name="taildrop-accept" type="b">
             <default>false</default>
             <summary>Accept incoming Taildrop files</summary>
