@@ -31,3 +31,5 @@ node_modules/
 
 # Local scratch (screenshots, notes)
 temp/
+/image.png
+/image copy*.png
