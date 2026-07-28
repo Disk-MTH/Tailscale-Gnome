@@ -78,43 +78,42 @@
     color: white;
 }
 
-/* Header identity lines: signed-in account above, its tailnet below.
-   The account is the primary line, so the tailnet is dimmed and smaller
-   rather than given a competing weight. */
-.tailscale-header-line {
-    spacing: 6px;
+/* Small square icon buttons sitting inside rows (copy, remove). Without
+   this they inherit the shell's full `.button` metrics, which puts a wide
+   slab of padding around a 16px glyph. */
+.tailscale-icon-btn {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 3px;
+    margin-left: 6px;
+    border-radius: 6px;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
 }
-.tailscale-header-line-icon {
-    icon-size: 14px;
-    -st-icon-style: symbolic;
-}
-.tailscale-header-account {
-    font-weight: bold;
-}
-.tailscale-header-tailnet {
-    font-size: 9pt;
-    opacity: 0.7;
-}
-.tailscale-header-line:last-child .tailscale-header-line-icon {
-    opacity: 0.7;
+.tailscale-icon-btn:hover,
+.tailscale-icon-btn:focus {
+    background-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Copy chooser: unfolds under a row when a node has both an IP and a
-   Magic DNS name. Indented to read as belonging to the row above. */
+   Magic DNS name. Right-aligned so the choices sit under the copy button
+   that opened them, and only as wide as their own text. */
 .tailscale-copy-chooser {
     spacing: 2px;
-    padding: 4px 0 2px 12px;
+    padding: 2px 0 2px 0;
 }
 .tailscale-copy-choice {
-    padding: 4px 8px;
+    padding: 3px 8px;
     border-radius: 6px;
     font-size: 9pt;
-    background-color: transparent;
-    text-align: left;
+    border: none;
+    box-shadow: none;
+    background-color: rgba(255, 255, 255, 0.06);
 }
 .tailscale-copy-choice:hover,
 .tailscale-copy-choice:focus {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.16);
 }
 
 /* Taildrop send dialog (in-shell ModalDialog). Mirrors the look of the

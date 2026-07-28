@@ -28,3 +28,6 @@ node_modules/
 
 # Brainstorming visual companion (superpowers skill)
 .superpowers/
+
+# Local scratch (screenshots, notes)
+temp/
