@@ -110,10 +110,13 @@
     opacity: 0.65;
     padding: 0 4px 6px 4px;
 }
+/* No min-height: the list is as tall as the peers it holds, so a single
+   device does not leave a slab of empty space above the buttons. The cap
+   is five rows (a row is ~46px: 8px padding twice, a name and an IP);
+   past that the list scrolls instead of running off the screen. */
 .tailscale-send-scroll {
     min-width: 360px;
-    min-height: 220px;
-    max-height: 420px;
+    max-height: 235px;
 }
 .tailscale-send-list {
     spacing: 0;

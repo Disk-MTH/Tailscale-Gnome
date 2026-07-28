@@ -24,6 +24,14 @@
                 Wi-Fi indicator while Tailscale is connected.</description>
         </key>
 
+        <key name="exit-node-indicator-color" type="s">
+            <default>'#e6b800'</default>
+            <summary>Colour of the exit node warning icon</summary>
+            <description>Six-digit hex colour applied to the panel warning
+                icon, e.g. "#e6b800". Anything that is not a #rrggbb literal
+                is ignored and the default amber is used instead.</description>
+        </key>
+
         <key name="show-exit-node-indicator" type="b">
             <default>true</default>
             <summary>Show the exit node warning icon in the panel</summary>

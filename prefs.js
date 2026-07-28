@@ -568,6 +568,69 @@ function _openUrl(url) {
     }
 }
 
+const DEFAULT_WARN_COLOR = "#e6b800";
+
+// GSettings stores the warning colour as a #rrggbb string, which is what
+// the shell-side inline style needs; Gtk speaks Gdk.RGBA. These two convert
+// between the pair, and _parseColor falls back rather than throwing so a
+// hand-edited dconf value cannot leave the row unbuilt.
+function _parseColor(hex) {
+    const rgba = new Gdk.RGBA();
+    if (!rgba.parse(/^#[0-9a-fA-F]{6}$/.test(hex) ? hex : DEFAULT_WARN_COLOR))
+        rgba.parse(DEFAULT_WARN_COLOR);
+    return rgba;
+}
+
+function _formatColor(rgba) {
+    const byte = (v) =>
+        Math.round(Math.min(1, Math.max(0, v)) * 255)
+            .toString(16)
+            .padStart(2, "0");
+    return `#${byte(rgba.red)}${byte(rgba.green)}${byte(rgba.blue)}`;
+}
+
+function _makeExitColorRow(settings) {
+    const row = new Adw.ActionRow({
+        title: _("Exit node indicator colour"),
+        subtitle: _("Colour of the warning icon in the top bar."),
+    });
+
+    const button = new Gtk.ColorDialogButton({
+        // No alpha: the value ends up as a CSS colour on a symbolic icon,
+        // where a translucent ink would just look like a rendering fault.
+        dialog: new Gtk.ColorDialog({ with_alpha: false }),
+        valign: Gtk.Align.CENTER,
+    });
+    button.set_rgba(_parseColor(settings.get_string("exit-node-indicator-color")));
+
+    // Guard against the loop: writing the key re-enters this handler via
+    // the `changed::` subscription below.
+    let syncing = false;
+    button.connect("notify::rgba", () => {
+        if (syncing) return;
+        syncing = true;
+        settings.set_string(
+            "exit-node-indicator-color",
+            _formatColor(button.get_rgba()),
+        );
+        syncing = false;
+    });
+
+    const id = settings.connect("changed::exit-node-indicator-color", () => {
+        if (syncing) return;
+        syncing = true;
+        button.set_rgba(
+            _parseColor(settings.get_string("exit-node-indicator-color")),
+        );
+        syncing = false;
+    });
+    row.connect("destroy", () => settings.disconnect(id));
+
+    row.add_suffix(button);
+    row.add_suffix(_resetButton(settings, "exit-node-indicator-color"));
+    return row;
+}
+
 // Per-row reset suffix: restores the GSettings key to its schema default.
 // Uses `view-refresh-symbolic`; the availability check button uses
 // `rotation-allowed-symbolic` to stay visually distinct from a reset.
@@ -1007,6 +1070,8 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             _resetButton(settings, "show-exit-node-indicator"),
         );
         indicators.add(exitIndicatorRow);
+
+        indicators.add(_makeExitColorRow(settings));
 
         /* ---------------------------- Advanced -------------------------- */
         const advanced = new Adw.PreferencesGroup({
