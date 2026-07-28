@@ -1,16 +1,16 @@
 // Preferences dialog (Adwaita). GNOME 46+.
 
-import Adw from 'gi://Adw';
-import Gdk from 'gi://Gdk';
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk';
+import Adw from "gi://Adw";
+import Gdk from "gi://Gdk";
+import Gio from "gi://Gio";
+import GLib from "gi://GLib";
+import GObject from "gi://GObject";
+import Gtk from "gi://Gtk";
 
 import {
     ExtensionPreferences,
     gettext as _,
-} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+} from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
 import {
     CAP_FILE_SHARING,
@@ -18,21 +18,35 @@ import {
     fmt as _fmt,
     hasCapability as _hasCapability,
     spawn as _spawn,
-} from './lib/util.js';
+} from "./lib/util.js";
 
-const TAILSCALED_UNIT = 'tailscaled.service';
+const TAILSCALED_UNIT = "tailscaled.service";
+
+// Make the extension's bundled symbolics resolvable by plain name, the way
+// a system icon is. Adw page and Gtk.Button `iconName` properties take a
+// theme name and nothing else, so a Gio.FileIcon is not an option for them.
+// icons/ follows the hicolor/<size>/<context> layout Gtk.IconTheme expects
+// of a search-path entry. This only ever touches the preferences process,
+// which exists solely to show this window.
+function _registerBundledIcons(dir) {
+    const display = Gdk.Display.get_default();
+    if (!display) return;
+    Gtk.IconTheme.get_for_display(display).add_search_path(
+        dir.get_child("icons").get_path(),
+    );
+}
 
 /* -------------------------------------------------------------------------- */
 /*                            Subprocess helpers                              */
 /* -------------------------------------------------------------------------- */
 
 async function _serviceEnabled() {
-    const r = await _spawn(['systemctl', 'is-enabled', TAILSCALED_UNIT]);
+    const r = await _spawn(["systemctl", "is-enabled", TAILSCALED_UNIT]);
     // systemctl is-enabled prints "enabled" / "disabled" / "static" / etc.
     const out = r.stdout.trim();
     return {
         available: r.code !== 4,
-        enabled: out === 'enabled' || out === 'enabled-runtime',
+        enabled: out === "enabled" || out === "enabled-runtime",
     };
 }
 
@@ -41,17 +55,17 @@ async function _serviceEnabled() {
 // Empty/relative paths and system roots (/etc, /var, …) all land here via
 // the kernel's own permission bits — no allow-list to maintain.
 function _isPathSafe(p) {
-    if (!p || !p.trim().startsWith('/')) return false;
+    if (!p || !p.trim().startsWith("/")) return false;
     let f = Gio.File.new_for_path(p);
     while (f && !f.query_exists(null)) f = f.get_parent();
     if (!f) return false;
     try {
         const info = f.query_info(
-            'access::can-write',
+            "access::can-write",
             Gio.FileQueryInfoFlags.NONE,
             null,
         );
-        return info.get_attribute_boolean('access::can-write');
+        return info.get_attribute_boolean("access::can-write");
     } catch {
         return false;
     }
@@ -64,38 +78,38 @@ function _isPathSafe(p) {
 const ShortcutRow = GObject.registerClass(
     class ShortcutRow extends Adw.ActionRow {
         _init({ title, subtitle, key, settings }) {
-            super._init({ title, subtitle: subtitle || '', activatable: true });
+            super._init({ title, subtitle: subtitle || "", activatable: true });
             this._key = key;
             this._settings = settings;
 
             this._label = new Gtk.ShortcutLabel({
-                disabled_text: _('Disabled'),
+                disabled_text: _("Disabled"),
                 valign: Gtk.Align.CENTER,
             });
             this.add_suffix(this._label);
 
             this._clearButton = new Gtk.Button({
-                icon_name: 'edit-clear-symbolic',
+                icon_name: "action-clear-symbolic",
                 valign: Gtk.Align.CENTER,
-                tooltip_text: _('Clear shortcut'),
-                css_classes: ['flat'],
+                tooltip_text: _("Clear shortcut"),
+                css_classes: ["flat"],
             });
-            this._clearButton.connect('clicked', () =>
+            this._clearButton.connect("clicked", () =>
                 settings.set_strv(this._key, []),
             );
             this.add_suffix(this._clearButton);
 
-            this.connect('activated', () => this._capture());
+            this.connect("activated", () => this._capture());
 
             this._handlerId = settings.connect(`changed::${key}`, () =>
                 this._sync(),
             );
-            this.connect('destroy', () => settings.disconnect(this._handlerId));
+            this.connect("destroy", () => settings.disconnect(this._handlerId));
             this._sync();
         }
 
         _sync() {
-            const accel = this._settings.get_strv(this._key)[0] || '';
+            const accel = this._settings.get_strv(this._key)[0] || "";
             this._label.set_accelerator(accel);
             this._clearButton.sensitive = !!accel;
         }
@@ -105,7 +119,7 @@ const ShortcutRow = GObject.registerClass(
             const dialog = new Adw.Window({
                 modal: true,
                 transient_for: root,
-                title: _('Set shortcut'),
+                title: _("Set shortcut"),
                 default_width: 420,
                 default_height: 180,
                 resizable: false,
@@ -124,14 +138,14 @@ const ShortcutRow = GObject.registerClass(
             });
             content.append(
                 new Gtk.Label({
-                    label: `<b>${_('Press a key combination')}</b>`,
+                    label: `<b>${_("Press a key combination")}</b>`,
                     use_markup: true,
                 }),
             );
             content.append(
                 new Gtk.Label({
-                    label: _('Escape to cancel · Backspace to clear'),
-                    css_classes: ['dim-label'],
+                    label: _("Escape to cancel · Backspace to clear"),
+                    css_classes: ["dim-label"],
                 }),
             );
             toolbar.set_content(content);
@@ -139,7 +153,7 @@ const ShortcutRow = GObject.registerClass(
 
             const controller = new Gtk.EventControllerKey();
             dialog.add_controller(controller);
-            controller.connect('key-pressed', (_c, keyval, _kc, state) => {
+            controller.connect("key-pressed", (_c, keyval, _kc, state) => {
                 const mask = state & Gtk.accelerator_get_default_mod_mask();
                 if (keyval === Gdk.KEY_Escape && !mask) {
                     dialog.close();
@@ -174,67 +188,67 @@ const ShortcutRow = GObject.registerClass(
 // The accept toggle lives in the Quick Settings panel.
 function _makeTaildropGroup(settings, extensionDir) {
     const group = new Adw.PreferencesGroup({
-        title: _('Taildrop'),
-        description: _('Send and receive files between Tailscale nodes.'),
+        title: _("Taildrop"),
+        description: _("Send and receive files between Tailscale nodes."),
     });
     // Grey these rows out when the tailnet forbids Taildrop: they would have
     // no effect, and the Availability group above says why.
     const syncSensitivity = () => {
-        group.sensitive = settings.get_boolean('feature-taildrop-available');
+        group.sensitive = settings.get_boolean("feature-taildrop-available");
     };
     const sensId = settings.connect(
-        'changed::feature-taildrop-available',
+        "changed::feature-taildrop-available",
         syncSensitivity,
     );
-    group.connect('destroy', () => settings.disconnect(sensId));
+    group.connect("destroy", () => settings.disconnect(sensId));
     syncSensitivity();
 
     // Default inbox: must match TailscaleClient._resolveInbox in lib/tailscale.js.
     const defaultInbox = GLib.build_filenamev([
         GLib.get_home_dir(),
-        'Downloads',
-        'Taildrop',
+        "Downloads",
+        "Taildrop",
     ]);
     // Migrate "empty means default" to an explicit prefilled value so the
     // input is never blank. The receiver treats both equivalently.
-    if (!settings.get_string('taildrop-inbox'))
-        settings.set_string('taildrop-inbox', defaultInbox);
+    if (!settings.get_string("taildrop-inbox"))
+        settings.set_string("taildrop-inbox", defaultInbox);
 
     // Expand ~ and $HOME into an absolute path, leaving relative paths
     // alone so the user can spot and correct them on commit.
     const expandHome = (p) => {
         if (!p) return p;
-        if (p === '~' || p.startsWith('~/'))
+        if (p === "~" || p.startsWith("~/"))
             return GLib.build_filenamev([GLib.get_home_dir(), p.slice(2)]);
-        if (p.startsWith('$HOME'))
+        if (p.startsWith("$HOME"))
             return GLib.build_filenamev([
                 GLib.get_home_dir(),
-                p.slice(5).replace(/^\//, ''),
+                p.slice(5).replace(/^\//, ""),
             ]);
         return p;
     };
 
     const inboxRow = new Adw.EntryRow({
-        title: _('Inbox folder (created if it does not exist)'),
+        title: _("Inbox folder (created if it does not exist)"),
         show_apply_button: true,
     });
     // Initialise from the stored value but do NOT live-bind to settings;
     // every keystroke would otherwise restart the receiver and pre-create
     // partial folders ("T", "Ta", "Tai", ...) on disk. The setting is
     // committed below, only on apply (Enter / check button) or focus-out.
-    inboxRow.text = settings.get_string('taildrop-inbox') || defaultInbox;
+    inboxRow.text = settings.get_string("taildrop-inbox") || defaultInbox;
 
     // Warning glyph that surfaces when the typed path would need elevation.
     // Outline-style symbolic icon tinted with the Adwaita "warning" accent
     // (yellow/orange), matching the visual language of the rest of the app.
     const warningIcon = new Gtk.Image({
-        icon_name: 'dialog-warning-symbolic',
+        icon_name: "status-warning-symbolic",
         valign: Gtk.Align.CENTER,
         tooltip_text: _(
-            'Path is empty or not writable without admin privileges.',
+            "Path is empty or not writable without admin privileges.",
         ),
         visible: false,
-        css_classes: ['warning'],
+        css_classes: ["warning"],
     });
     inboxRow.add_suffix(warningIcon);
 
@@ -242,10 +256,10 @@ function _makeTaildropGroup(settings, extensionDir) {
     // touching the row so a transient invalid text doesn't leak back into
     // the input. Returns the path that would be persisted.
     const normalisePath = (text) => {
-        let v = (text ?? '').trim();
-        if (v === '') return defaultInbox;
+        let v = (text ?? "").trim();
+        if (v === "") return defaultInbox;
         v = expandHome(v);
-        if (!v.startsWith('/'))
+        if (!v.startsWith("/"))
             v = GLib.build_filenamev([GLib.get_home_dir(), v]);
         return v;
     };
@@ -253,7 +267,7 @@ function _makeTaildropGroup(settings, extensionDir) {
     const updateValidity = () => {
         const v = normalisePath(inboxRow.text);
         const text = inboxRow.text.trim();
-        const valid = text !== '' && _isPathSafe(v);
+        const valid = text !== "" && _isPathSafe(v);
         // show_apply_button doubles as our "commit affordance is allowed"
         // signal. Hiding it when invalid stops both the check-button click
         // and the Enter key from emitting `apply` on an unwritable path.
@@ -267,53 +281,55 @@ function _makeTaildropGroup(settings, extensionDir) {
         // Refuse to persist a path the user can't write to — the receiver
         // would just crash on first file. Revert to the last committed
         // value so the row keeps reflecting reality.
-        if (text === '' || !_isPathSafe(v)) {
+        if (text === "" || !_isPathSafe(v)) {
             const committed =
-                settings.get_string('taildrop-inbox') || defaultInbox;
+                settings.get_string("taildrop-inbox") || defaultInbox;
             if (inboxRow.text !== committed) inboxRow.text = committed;
             updateValidity();
             return;
         }
         if (v !== inboxRow.text) inboxRow.text = v;
-        if (v !== settings.get_string('taildrop-inbox')) {
-            settings.set_string('taildrop-inbox', v);
+        if (v !== settings.get_string("taildrop-inbox")) {
+            settings.set_string("taildrop-inbox", v);
             // Confirm the change — commitInbox also fires on focus-out
             // with an unchanged value, so the toast is gated on an actual
             // write to keep it from nagging.
-            group.get_root().add_toast(new Adw.Toast({
-                title: _fmt(_('Taildrop inbox set to %s'), v),
-                timeout: 3,
-            }));
+            group.get_root().add_toast(
+                new Adw.Toast({
+                    title: _fmt(_("Taildrop inbox set to %s"), v),
+                    timeout: 3,
+                }),
+            );
         }
         updateValidity();
     };
-    inboxRow.connect('apply', commitInbox);
-    inboxRow.connect('notify::text', updateValidity);
+    inboxRow.connect("apply", commitInbox);
+    inboxRow.connect("notify::text", updateValidity);
 
     const focusCtrl = new Gtk.EventControllerFocus();
     inboxRow.add_controller(focusCtrl);
-    focusCtrl.connect('leave', commitInbox);
+    focusCtrl.connect("leave", commitInbox);
 
     // Keep the row in sync when the setting is changed externally
     // (e.g. the reset button below, or another prefs window).
-    const inboxId = settings.connect('changed::taildrop-inbox', () => {
-        const v = settings.get_string('taildrop-inbox') || defaultInbox;
+    const inboxId = settings.connect("changed::taildrop-inbox", () => {
+        const v = settings.get_string("taildrop-inbox") || defaultInbox;
         if (inboxRow.text !== v) inboxRow.text = v;
         updateValidity();
     });
-    inboxRow.connect('destroy', () => settings.disconnect(inboxId));
+    inboxRow.connect("destroy", () => settings.disconnect(inboxId));
 
     updateValidity();
 
     const browseBtn = new Gtk.Button({
-        icon_name: 'document-open-symbolic',
+        icon_name: "action-open-folder-symbolic",
         valign: Gtk.Align.CENTER,
-        css_classes: ['flat'],
-        tooltip_text: _('Browse'),
+        css_classes: ["flat"],
+        tooltip_text: _("Browse"),
     });
-    browseBtn.connect('clicked', () => {
+    browseBtn.connect("clicked", () => {
         const dlg = new Gtk.FileDialog({
-            title: _('Choose Taildrop inbox folder'),
+            title: _("Choose Taildrop inbox folder"),
             modal: true,
         });
         dlg.select_folder(group.get_root(), null, (d, res) => {
@@ -330,12 +346,12 @@ function _makeTaildropGroup(settings, extensionDir) {
     });
 
     const resetBtn = new Gtk.Button({
-        icon_name: 'view-refresh-symbolic',
+        icon_name: "action-refresh-symbolic",
         valign: Gtk.Align.CENTER,
-        css_classes: ['flat'],
-        tooltip_text: _('Reset to default'),
+        css_classes: ["flat"],
+        tooltip_text: _("Reset to default"),
     });
-    resetBtn.connect('clicked', () => {
+    resetBtn.connect("clicked", () => {
         inboxRow.text = defaultInbox;
         commitInbox();
     });
@@ -347,11 +363,11 @@ function _makeTaildropGroup(settings, extensionDir) {
     // Nautilus right-click integration
     const scriptsDir = GLib.build_filenamev([
         GLib.get_user_data_dir(),
-        'nautilus',
-        'scripts',
+        "nautilus",
+        "scripts",
     ]);
-    const sendName = 'Send with Taildrop';
-    const zipName = 'Send with Taildrop as ZIP';
+    const sendName = "Send with Taildrop";
+    const zipName = "Send with Taildrop as ZIP";
 
     const isInstalled = () => {
         const p1 = Gio.File.new_for_path(
@@ -364,31 +380,31 @@ function _makeTaildropGroup(settings, extensionDir) {
     };
 
     const nautilusRow = new Adw.ActionRow({
-        title: _('Nautilus right-click scripts'),
+        title: _("Nautilus right-click scripts"),
         subtitle: _('Add "Send with Taildrop" to the Nautilus context menu.'),
     });
     const statusLabel = new Gtk.Label({
         valign: Gtk.Align.CENTER,
-        css_classes: ['dim-label'],
+        css_classes: ["dim-label"],
     });
     nautilusRow.add_suffix(statusLabel);
 
     const installBtn = new Gtk.Button({
-        label: _('Install'),
+        label: _("Install"),
         valign: Gtk.Align.CENTER,
-        css_classes: ['suggested-action'],
+        css_classes: ["suggested-action"],
     });
     const removeBtn = new Gtk.Button({
-        label: _('Remove'),
+        label: _("Remove"),
         valign: Gtk.Align.CENTER,
-        css_classes: ['destructive-action'],
+        css_classes: ["destructive-action"],
     });
     nautilusRow.add_suffix(installBtn);
     nautilusRow.add_suffix(removeBtn);
 
     const refreshNautilus = () => {
         const ok = isInstalled();
-        statusLabel.label = ok ? _('Installed') : _('Not installed');
+        statusLabel.label = ok ? _("Installed") : _("Not installed");
         installBtn.visible = !ok;
         removeBtn.visible = ok;
     };
@@ -397,7 +413,7 @@ function _makeTaildropGroup(settings, extensionDir) {
         group.get_root().add_toast(new Adw.Toast({ title, timeout: 4 }));
     };
 
-    installBtn.connect('clicked', () => {
+    installBtn.connect("clicked", () => {
         try {
             Gio.File.new_for_path(scriptsDir).make_directory_with_parents(null);
         } catch (e) {
@@ -406,7 +422,7 @@ function _makeTaildropGroup(settings, extensionDir) {
                 return;
             }
         }
-        const srcDir = extensionDir.get_child('nautilus');
+        const srcDir = extensionDir.get_child("nautilus");
         for (const name of [sendName, zipName]) {
             const src = srcDir.get_child(name);
             const dst = Gio.File.new_for_path(
@@ -415,7 +431,7 @@ function _makeTaildropGroup(settings, extensionDir) {
             try {
                 src.copy(dst, Gio.FileCopyFlags.OVERWRITE, null, null);
                 const info = new Gio.FileInfo();
-                info.set_attribute_uint32('unix::mode', 0o755);
+                info.set_attribute_uint32("unix::mode", 0o755);
                 dst.set_attributes_from_info(
                     info,
                     Gio.FileQueryInfoFlags.NONE,
@@ -427,10 +443,10 @@ function _makeTaildropGroup(settings, extensionDir) {
             }
         }
         refreshNautilus();
-        toast(_('Installed. You may need to restart Nautilus.'));
+        toast(_("Installed. You may need to restart Nautilus."));
     });
 
-    removeBtn.connect('clicked', () => {
+    removeBtn.connect("clicked", () => {
         for (const name of [sendName, zipName]) {
             const f = Gio.File.new_for_path(
                 GLib.build_filenamev([scriptsDir, name]),
@@ -442,7 +458,7 @@ function _makeTaildropGroup(settings, extensionDir) {
             }
         }
         refreshNautilus();
-        toast(_('Removed.'));
+        toast(_("Removed."));
     });
 
     refreshNautilus();
@@ -455,9 +471,9 @@ function _makeTaildropGroup(settings, extensionDir) {
 // one and wire the systemctl toggle externally instead.
 function _makeServiceRow() {
     const row = new Adw.SwitchRow({
-        title: _('Start Tailscale at boot'),
+        title: _("Start Tailscale at boot"),
         subtitle: _(
-            'Enables tailscaled.service via systemctl (asks for password).',
+            "Enables tailscaled.service via systemctl (asks for password).",
         ),
     });
 
@@ -471,7 +487,7 @@ function _makeServiceRow() {
         guard = false;
         if (!available)
             row.subtitle = _(
-                'tailscaled.service not found. Install Tailscale via your distribution.',
+                "tailscaled.service not found. Install Tailscale via your distribution.",
             );
     };
 
@@ -480,10 +496,10 @@ function _makeServiceRow() {
         // path is ever elevated. Listed in README under "Privileged
         // operations".
         const argv = [
-            'pkexec',
-            'systemctl',
-            enable ? 'enable' : 'disable',
-            '--now',
+            "pkexec",
+            "systemctl",
+            enable ? "enable" : "disable",
+            "--now",
             TAILSCALED_UNIT,
         ];
         const r = await _spawn(argv);
@@ -493,7 +509,7 @@ function _makeServiceRow() {
             guard = false;
             row.get_root().add_toast(
                 new Adw.Toast({
-                    title: _('Could not change service state'),
+                    title: _("Could not change service state"),
                     timeout: 4,
                 }),
             );
@@ -501,7 +517,7 @@ function _makeServiceRow() {
         refresh();
     };
 
-    row.connect('notify::active', () => {
+    row.connect("notify::active", () => {
         if (guard) return;
         toggle(row.active);
     });
@@ -520,24 +536,24 @@ function _makeServiceRow() {
 // is no.
 const AVAILABILITY_DEFS = [
     {
-        availabilityKey: 'feature-taildrop-available',
-        title: () => _('Taildrop'),
-        adminUrl: 'https://login.tailscale.com/admin/settings/general',
-        docUrl: 'https://tailscale.com/docs/features/taildrop',
-        unavailableHint: () => _('Taildrop is disabled for this tailnet.'),
+        availabilityKey: "feature-taildrop-available",
+        title: () => _("Taildrop"),
+        adminUrl: "https://login.tailscale.com/admin/settings/general",
+        docUrl: "https://tailscale.com/docs/features/taildrop",
+        unavailableHint: () => _("Taildrop is disabled for this tailnet."),
         infoText: () =>
             _(
-                'Taildrop requires the feature to be enabled for the tailnet and the source and destination devices to be owned by the same user. Devices owned by a tag or by different users are not eligible.',
+                "Taildrop requires the feature to be enabled for the tailnet and the source and destination devices to be owned by the same user. Devices owned by a tag or by different users are not eligible.",
             ),
         checker: _checkTaildrop,
     },
     {
-        availabilityKey: 'feature-funnels-available',
-        title: () => _('Funnel'),
+        availabilityKey: "feature-funnels-available",
+        title: () => _("Funnel"),
         adminUrl:
-            'https://login.tailscale.com/admin/acls/visual/node-attributes',
-        docUrl: 'https://tailscale.com/docs/features/tailscale-funnel',
-        unavailableHint: () => _('Funnel is not enabled for this tailnet.'),
+            "https://login.tailscale.com/admin/acls/visual/node-attributes",
+        docUrl: "https://tailscale.com/docs/features/tailscale-funnel",
+        unavailableHint: () => _("Funnel is not enabled for this tailnet."),
         infoText: () =>
             _(
                 'Funnel requires HTTPS certificates to be enabled tailnet-wide and the "funnel" node attribute granted to the current user.',
@@ -567,17 +583,17 @@ function _openUrl(url) {
 }
 
 // Per-row reset suffix: restores the GSettings key to its schema default.
-// Uses the same `view-refresh-symbolic` as the Quick Settings refresh
-// glyph; the availability check button uses `rotation-allowed-symbolic`
+// Uses the same `action-refresh-symbolic` as the Quick Settings refresh
+// glyph; the availability check button uses `availability-check-symbolic`
 // to stay visually distinct from a reset.
 function _resetButton(settings, key) {
     const btn = new Gtk.Button({
-        icon_name: 'view-refresh-symbolic',
+        icon_name: "action-refresh-symbolic",
         valign: Gtk.Align.CENTER,
-        css_classes: ['flat'],
-        tooltip_text: _('Reset to default'),
+        css_classes: ["flat"],
+        tooltip_text: _("Reset to default"),
     });
-    btn.connect('clicked', () => settings.reset(key));
+    btn.connect("clicked", () => settings.reset(key));
     return btn;
 }
 
@@ -589,12 +605,16 @@ function _makeAvailabilityRow(settings, def, window) {
     const row = new Adw.ActionRow({ title: def.title() });
 
     const infoBtn = new Gtk.Button({
-        icon_name: 'info-outline-symbolic',
+        icon_name: "status-info-symbolic",
         valign: Gtk.Align.CENTER,
-        css_classes: ['flat', 'circular'],
-        tooltip_text: _fmt(_('%s\n\nClick to open: %s'), def.infoText(), def.docUrl),
+        css_classes: ["flat", "circular"],
+        tooltip_text: _fmt(
+            _("%s\n\nClick to open: %s"),
+            def.infoText(),
+            def.docUrl,
+        ),
     });
-    infoBtn.connect('clicked', () => _openUrl(def.docUrl));
+    infoBtn.connect("clicked", () => _openUrl(def.docUrl));
     row.add_prefix(infoBtn);
 
     // libadwaita's success/error classes follow the user's light or dark
@@ -602,14 +622,14 @@ function _makeAvailabilityRow(settings, def, window) {
     const statusIcon = new Gtk.Image({ valign: Gtk.Align.CENTER });
 
     const checkBtn = new Gtk.Button({
-        icon_name: 'rotation-allowed-symbolic',
+        icon_name: "availability-check-symbolic",
         valign: Gtk.Align.CENTER,
-        css_classes: ['flat'],
-        tooltip_text: _('Check availability'),
+        css_classes: ["flat"],
+        tooltip_text: _("Check availability"),
     });
-    checkBtn.connect('clicked', async () => {
+    checkBtn.connect("clicked", async () => {
         checkBtn.sensitive = false;
-        const bin = settings.get_string('tailscale-binary') || 'tailscale';
+        const bin = settings.get_string("tailscale-binary") || "tailscale";
         let available;
         try {
             available = await def.checker(bin);
@@ -625,24 +645,25 @@ function _makeAvailabilityRow(settings, def, window) {
             // The probe could not answer (daemon down, unparseable status,
             // too old to publish CapMap, or a missing binary). Leave the
             // cached key untouched rather than caching a false negative.
-            toastTitle = _fmt(_('Could not check %s: is Tailscale running?'), title);
+            toastTitle = _fmt(
+                _("Could not check %s: is Tailscale running?"),
+                title,
+            );
         } else {
             settings.set_boolean(def.availabilityKey, available);
             toastTitle = available
-                ? _fmt(_('%s is available'), title)
-                : _fmt(_('%s is not available on this tailnet'), title);
+                ? _fmt(_("%s is available"), title)
+                : _fmt(_("%s is not available on this tailnet"), title);
         }
-        window.add_toast(
-            new Adw.Toast({ title: toastTitle, timeout: 3 }),
-        );
+        window.add_toast(new Adw.Toast({ title: toastTitle, timeout: 3 }));
     });
 
     const adminBtn = new Gtk.Button({
-        label: _('Open admin'),
+        label: _("Open admin"),
         valign: Gtk.Align.CENTER,
-        css_classes: ['suggested-action'],
+        css_classes: ["suggested-action"],
     });
-    adminBtn.connect('clicked', () => _openUrl(def.adminUrl));
+    adminBtn.connect("clicked", () => _openUrl(def.adminUrl));
 
     row.add_suffix(statusIcon);
     row.add_suffix(checkBtn);
@@ -651,27 +672,27 @@ function _makeAvailabilityRow(settings, def, window) {
     const sync = () => {
         const available = settings.get_boolean(def.availabilityKey);
         statusIcon.icon_name = available
-            ? 'emblem-ok-symbolic'
-            : 'window-close-symbolic';
-        statusIcon.css_classes = [available ? 'success' : 'error'];
+            ? "status-success-symbolic"
+            : "status-error-symbolic";
+        statusIcon.css_classes = [available ? "success" : "error"];
         // An icon alone is not readable by a screen reader.
         statusIcon.tooltip_text = available
-            ? _('Available on this tailnet')
-            : _('Not available on this tailnet');
-        row.subtitle = available ? '' : def.unavailableHint();
+            ? _("Available on this tailnet")
+            : _("Not available on this tailnet");
+        row.subtitle = available ? "" : def.unavailableHint();
         adminBtn.visible = !available;
     };
     const id = settings.connect(`changed::${def.availabilityKey}`, sync);
-    row.connect('destroy', () => settings.disconnect(id));
+    row.connect("destroy", () => settings.disconnect(id));
     sync();
     return row;
 }
 
 function _makeAvailabilityGroup(settings, window) {
     const group = new Adw.PreferencesGroup({
-        title: _('Availability'),
+        title: _("Availability"),
         description: _(
-            "What this tailnet allows. Both depend on your tailnet's admin settings, not on anything you can change here.",
+            "What this tailnet allows. Both depend on your tailnet's admin settings, not on anything you can change here. (Hover over the info icon for details.)",
         ),
     });
     for (const def of AVAILABILITY_DEFS)
@@ -693,81 +714,84 @@ function _makeAvailabilityGroup(settings, window) {
 // later, from inside _makeNotificationsPage().
 const NOTIFY_DEFS = [
     {
-        key: 'notify-connection',
-        title: () => _('Tailscale connection'),
-        subtitle: () => _('Connecting, disconnecting, and daemon startup.'),
+        key: "notify-connection",
+        title: () => _("Tailscale connection"),
+        subtitle: () => _("Connecting, disconnecting, and daemon startup."),
     },
     {
-        key: 'notify-account',
-        title: () => _('Login and logout'),
-        subtitle: () => _('Sign-in, sign-out, and operator changes.'),
+        key: "notify-account",
+        title: () => _("Login and logout"),
+        subtitle: () => _("Sign-in, sign-out, and operator changes."),
     },
     {
-        key: 'notify-profile-switch',
-        title: () => _('Profile switch'),
+        key: "notify-profile-switch",
+        title: () => _("Profile switch"),
         subtitle: () =>
-            _('A single notification once the new profile is applied.'),
+            _("A single notification once the new profile is applied."),
     },
     {
-        key: 'notify-exit-node',
-        title: () => _('Exit node'),
-        subtitle: () => _('Selection, going offline, and automatic switches.'),
+        key: "notify-exit-node",
+        title: () => _("Exit node"),
+        subtitle: () => _("Selection, going offline, and automatic switches."),
     },
     {
-        key: 'notify-network',
-        title: () => _('Network settings'),
+        key: "notify-network",
+        title: () => _("Network settings"),
         subtitle: () =>
-            _('Magic DNS, routes, shields up, SSH server, LAN access.'),
+            _("Magic DNS, routes, shields up, SSH server, LAN access."),
     },
     {
-        key: 'notify-taildrop',
-        title: () => _('Taildrop'),
+        key: "notify-taildrop",
+        title: () => _("Taildrop"),
         subtitle: () =>
-            _('Files sent and received, receiver started and stopped.'),
+            _("Files sent and received, receiver started and stopped."),
     },
     {
-        key: 'notify-funnel',
-        title: () => _('Funnel'),
-        subtitle: () => _('Ports added and removed.'),
+        key: "notify-funnel",
+        title: () => _("Funnel"),
+        subtitle: () => _("Ports added and removed."),
     },
     {
-        key: 'notify-misc',
-        title: () => _('Other'),
-        subtitle: () => _('Clipboard copies and manual refreshes.'),
+        key: "notify-misc",
+        title: () => _("Other"),
+        subtitle: () => _("Clipboard copies and manual refreshes."),
     },
 ];
 
 function _makeNotificationsPage(settings) {
     const page = new Adw.PreferencesPage({
-        title: _('Notifications'),
-        iconName: 'preferences-system-notifications-symbolic',
+        title: _("Notifications"),
+        iconName: "prefs-notifications-symbolic",
     });
 
     /* ------------------------------- Mode -------------------------------- */
     const modeGroup = new Adw.PreferencesGroup({
-        title: _('Mode'),
+        title: _("Mode"),
         description: _(
-            'Persistent mode posts native notifications that stack into a browsable history. Toast mode shows a transient bubble and keeps no history.',
+            "Persistent mode posts native notifications that stack into a browsable history. Toast mode shows a transient bubble and keeps no history.",
         ),
     });
     page.add(modeGroup);
 
     const modeRow = new Adw.ComboRow({
-        title: _('Presentation'),
-        model: Gtk.StringList.new([_('Persistent'), _('Toast')]),
+        title: _("Presentation"),
+        model: Gtk.StringList.new([_("Persistent"), _("Toast")]),
     });
     // The enum nicks in schema order; index maps 1:1 onto the StringList.
-    const MODES = ['persistent', 'toast'];
-    modeRow.selected = Math.max(0, MODES.indexOf(settings.get_string('notification-mode')));
-    modeRow.connect('notify::selected', () => {
-        settings.set_string('notification-mode', MODES[modeRow.selected]);
+    const MODES = ["persistent", "toast"];
+    modeRow.selected = Math.max(
+        0,
+        MODES.indexOf(settings.get_string("notification-mode")),
+    );
+    modeRow.connect("notify::selected", () => {
+        settings.set_string("notification-mode", MODES[modeRow.selected]);
     });
-    modeRow.add_suffix(_resetButton(settings, 'notification-mode'));
+    modeRow.add_suffix(_resetButton(settings, "notification-mode"));
     modeGroup.add(modeRow);
 
     const historyRow = new Adw.SpinRow({
-        title: _('History size'),
-        subtitle: _('Entries kept before the oldest is dropped (1 to 10).'),
+        title: _("History size"),
+        subtitle: _("Entries kept before the oldest is dropped (1 to 10)."),
         adjustment: new Gtk.Adjustment({
             lower: 1,
             upper: 10,
@@ -776,17 +800,17 @@ function _makeNotificationsPage(settings) {
         }),
     });
     settings.bind(
-        'notification-history-size',
+        "notification-history-size",
         historyRow,
-        'value',
+        "value",
         Gio.SettingsBindFlags.DEFAULT,
     );
-    historyRow.add_suffix(_resetButton(settings, 'notification-history-size'));
+    historyRow.add_suffix(_resetButton(settings, "notification-history-size"));
     modeGroup.add(historyRow);
 
     const durationRow = new Adw.SpinRow({
-        title: _('Toast duration'),
-        subtitle: _('Seconds the result toast stays on screen (1 to 10).'),
+        title: _("Toast duration"),
+        subtitle: _("Seconds the result toast stays on screen (1 to 10)."),
         adjustment: new Gtk.Adjustment({
             lower: 1,
             upper: 10,
@@ -795,18 +819,18 @@ function _makeNotificationsPage(settings) {
         }),
     });
     settings.bind(
-        'toast-duration',
+        "toast-duration",
         durationRow,
-        'value',
+        "value",
         Gio.SettingsBindFlags.DEFAULT,
     );
-    durationRow.add_suffix(_resetButton(settings, 'toast-duration'));
+    durationRow.add_suffix(_resetButton(settings, "toast-duration"));
     modeGroup.add(durationRow);
 
     const spinnerRow = new Adw.SpinRow({
-        title: _('Minimum pending duration'),
+        title: _("Minimum pending duration"),
         subtitle: _(
-            'Milliseconds the pending state stays visible before showing the result (0 to 3000). Prevents flicker on instant actions.',
+            "Milliseconds the pending state stays visible before showing the result (0 to 3000). Prevents flicker on instant actions.",
         ),
         adjustment: new Gtk.Adjustment({
             lower: 0,
@@ -816,32 +840,36 @@ function _makeNotificationsPage(settings) {
         }),
     });
     settings.bind(
-        'toast-min-spinner',
+        "toast-min-spinner",
         spinnerRow,
-        'value',
+        "value",
         Gio.SettingsBindFlags.DEFAULT,
     );
-    spinnerRow.add_suffix(_resetButton(settings, 'toast-min-spinner'));
+    spinnerRow.add_suffix(_resetButton(settings, "toast-min-spinner"));
     modeGroup.add(spinnerRow);
 
     // Only the rows that apply to the active mode are shown. The minimum
     // pending duration applies to both, so it always stays visible.
     const syncModeRows = () => {
-        const persistent = settings.get_string('notification-mode') === 'persistent';
+        const persistent =
+            settings.get_string("notification-mode") === "persistent";
         historyRow.visible = persistent;
         durationRow.visible = !persistent;
     };
     syncModeRows();
-    const modeId = settings.connect('changed::notification-mode', () => {
-        modeRow.selected = Math.max(0, MODES.indexOf(settings.get_string('notification-mode')));
+    const modeId = settings.connect("changed::notification-mode", () => {
+        modeRow.selected = Math.max(
+            0,
+            MODES.indexOf(settings.get_string("notification-mode")),
+        );
         syncModeRows();
     });
-    modeRow.connect('destroy', () => settings.disconnect(modeId));
+    modeRow.connect("destroy", () => settings.disconnect(modeId));
 
     /* ------------------------------ Events ------------------------------- */
     const eventsGroup = new Adw.PreferencesGroup({
-        title: _('Events'),
-        description: _('Which actions are allowed to notify.'),
+        title: _("Events"),
+        description: _("Which actions are allowed to notify."),
     });
     page.add(eventsGroup);
 
@@ -850,7 +878,7 @@ function _makeNotificationsPage(settings) {
             title: def.title(),
             subtitle: def.subtitle(),
         });
-        settings.bind(def.key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind(def.key, row, "active", Gio.SettingsBindFlags.DEFAULT);
         row.add_suffix(_resetButton(settings, def.key));
         eventsGroup.add(row);
     }
@@ -860,18 +888,23 @@ function _makeNotificationsPage(settings) {
     // category: it lets failures through even when their own category is
     // off, and turning it off is what produces total silence.
     const errorsGroup = new Adw.PreferencesGroup({
-        title: _('Failures'),
+        title: _("Failures"),
     });
     page.add(errorsGroup);
 
     const errorsRow = new Adw.SwitchRow({
-        title: _('Always report failures'),
+        title: _("Always report failures"),
         subtitle: _(
-            'Let errors and warnings through even when the category above is off. Turn this off as well for complete silence.',
+            "Let errors and warnings through even when the category above is off. Turn this off as well for complete silence.",
         ),
     });
-    settings.bind('notify-errors', errorsRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-    errorsRow.add_suffix(_resetButton(settings, 'notify-errors'));
+    settings.bind(
+        "notify-errors",
+        errorsRow,
+        "active",
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    errorsRow.add_suffix(_resetButton(settings, "notify-errors"));
     errorsGroup.add(errorsRow);
 
     return page;
@@ -885,43 +918,45 @@ function _makeNotificationsPage(settings) {
 // body runs before gettext is initialised.
 const SHORTCUT_DEFS = [
     {
-        key: 'shortcut-toggle-tailscale',
-        title: () => _('Connect / disconnect Tailscale'),
+        key: "shortcut-toggle-tailscale",
+        title: () => _("Connect / disconnect Tailscale"),
     },
     {
-        key: 'shortcut-toggle-exit-node',
-        title: () => _('Toggle automatic exit node'),
+        key: "shortcut-toggle-exit-node",
+        title: () => _("Toggle automatic exit node"),
     },
     {
-        key: 'shortcut-show-menu',
-        title: () => _('Open the Tailscale menu'),
+        key: "shortcut-show-menu",
+        title: () => _("Open the Tailscale menu"),
     },
     {
-        key: 'shortcut-open-admin-panel',
-        title: () => _('Open the Tailscale admin console'),
+        key: "shortcut-open-admin-panel",
+        title: () => _("Open the Tailscale admin console"),
     },
     {
-        key: 'shortcut-send-file',
-        title: () => _('Send a file via Taildrop'),
+        key: "shortcut-send-file",
+        title: () => _("Send a file via Taildrop"),
     },
 ];
 
 function _makeShortcutsPage(settings) {
     const page = new Adw.PreferencesPage({
-        title: _('Shortcuts'),
-        iconName: 'preferences-desktop-keyboard-symbolic',
+        title: _("Shortcuts"),
+        iconName: "prefs-keyboard-symbolic",
     });
 
     const group = new Adw.PreferencesGroup({
-        title: _('Keyboard shortcuts'),
+        title: _("Keyboard shortcuts"),
         description: _(
-            'Click a row to capture a key combination. Backspace to clear.',
+            "Click a row to capture a key combination. Backspace to clear.",
         ),
     });
     page.add(group);
 
     for (const def of SHORTCUT_DEFS)
-        group.add(new ShortcutRow({ key: def.key, title: def.title(), settings }));
+        group.add(
+            new ShortcutRow({ key: def.key, title: def.title(), settings }),
+        );
 
     return page;
 }
@@ -934,9 +969,12 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
 
+        // Must run before any widget resolves an icon by name.
+        _registerBundledIcons(this.dir);
+
         const page = new Adw.PreferencesPage({
-            title: _('General'),
-            iconName: 'preferences-system-symbolic',
+            title: _("General"),
+            iconName: "prefs-general-symbolic",
         });
         window.add(page);
         window.add(_makeNotificationsPage(settings));
@@ -952,11 +990,12 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         // unparseable status, too old to publish CapMap) resolves `null` and
         // is skipped, exactly as for the startup probe in extension.js: the
         // last known value stays on screen instead of being cached as "no".
-        const probeBin = settings.get_string('tailscale-binary') || 'tailscale';
+        const probeBin = settings.get_string("tailscale-binary") || "tailscale";
         for (const def of AVAILABILITY_DEFS) {
             def.checker(probeBin)
                 .then((ok) => {
-                    if (ok !== null) settings.set_boolean(def.availabilityKey, ok);
+                    if (ok !== null)
+                        settings.set_boolean(def.availabilityKey, ok);
                 })
                 .catch(() => {});
         }
@@ -966,7 +1005,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
 
         /* ---------------------------- Advanced -------------------------- */
         const advanced = new Adw.PreferencesGroup({
-            title: _('Advanced'),
+            title: _("Advanced"),
         });
         page.add(advanced);
 
@@ -975,21 +1014,21 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         advanced.add(_makeServiceRow());
 
         const showRow = new Adw.SwitchRow({
-            title: _('Show panel indicator'),
-            subtitle: _('Small Tailscale icon next to Wi-Fi while connected.'),
+            title: _("Show panel indicator"),
+            subtitle: _("Small Tailscale icon next to Wi-Fi while connected."),
         });
         settings.bind(
-            'show-indicator',
+            "show-indicator",
             showRow,
-            'active',
+            "active",
             Gio.SettingsBindFlags.DEFAULT,
         );
-        showRow.add_suffix(_resetButton(settings, 'show-indicator'));
+        showRow.add_suffix(_resetButton(settings, "show-indicator"));
         advanced.add(showRow);
 
         const pollRow = new Adw.SpinRow({
-            title: _('Poll interval'),
-            subtitle: _('Seconds between status refreshes (1 to 60).'),
+            title: _("Poll interval"),
+            subtitle: _("Seconds between status refreshes (1 to 60)."),
             adjustment: new Gtk.Adjustment({
                 lower: 1,
                 upper: 60,
@@ -998,22 +1037,22 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             }),
         });
         settings.bind(
-            'poll-interval',
+            "poll-interval",
             pollRow,
-            'value',
+            "value",
             Gio.SettingsBindFlags.DEFAULT,
         );
-        pollRow.add_suffix(_resetButton(settings, 'poll-interval'));
+        pollRow.add_suffix(_resetButton(settings, "poll-interval"));
         advanced.add(pollRow);
 
-        const binaryRow = new Adw.EntryRow({ title: _('tailscale binary') });
+        const binaryRow = new Adw.EntryRow({ title: _("tailscale binary") });
         settings.bind(
-            'tailscale-binary',
+            "tailscale-binary",
             binaryRow,
-            'text',
+            "text",
             Gio.SettingsBindFlags.DEFAULT,
         );
-        binaryRow.add_suffix(_resetButton(settings, 'tailscale-binary'));
+        binaryRow.add_suffix(_resetButton(settings, "tailscale-binary"));
         advanced.add(binaryRow);
 
         /* ----------------------------- Reset all ------------------------ */
@@ -1021,39 +1060,42 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         // visual break from the dense list of settings above.
         const resetGroup = new Adw.PreferencesGroup();
         const resetAllRow = new Adw.ActionRow({
-            title: _('Reset all settings'),
-            subtitle: _('Restore every setting to its default, on all pages.'),
+            title: _("Reset all settings"),
+            subtitle: _("Restore every setting to its default, on all pages."),
         });
         const resetAllBtn = new Gtk.Button({
-            label: _('Reset all'),
+            label: _("Reset all"),
             valign: Gtk.Align.CENTER,
-            css_classes: ['destructive-action'],
+            css_classes: ["destructive-action"],
         });
-        resetAllBtn.connect('clicked', async () => {
+        resetAllBtn.connect("clicked", async () => {
             // Reset all GSettings keys to their schema defaults.
-            for (const k of settings.list_keys())
-                settings.reset(k);
+            for (const k of settings.list_keys()) settings.reset(k);
 
             // Also apply the corresponding defaults to the Tailscale daemon
             // so the Quick Settings menu reflects the reset state:
             //   Magic DNS off, accept routes off, shields up off,
             //   SSH server off, exit node cleared, any active funnels
             //   torn down.
-            const bin = settings.get_string('tailscale-binary') || 'tailscale';
+            const bin = settings.get_string("tailscale-binary") || "tailscale";
             try {
-                await _spawn([bin, 'set',
-                    '--accept-dns=false',
-                    '--accept-routes=false',
-                    '--shields-up=false',
-                    '--ssh=false',
-                    '--exit-node=',
+                await _spawn([
+                    bin,
+                    "set",
+                    "--accept-dns=false",
+                    "--accept-routes=false",
+                    "--shields-up=false",
+                    "--ssh=false",
+                    "--exit-node=",
                 ]);
             } catch {
                 // Non-fatal: GSettings were reset regardless.
             }
             // `funnel reset` is its own subcommand; ignore failures (most
             // likely "no funnels to reset", which is exactly what we want).
-            try { await _spawn([bin, 'funnel', 'reset']); } catch {}
+            try {
+                await _spawn([bin, "funnel", "reset"]);
+            } catch {}
 
             // Re-probe Taildrop / Funnel admin availability now that the
             // gsettings flags were just reset to "assume disabled". Same
@@ -1065,17 +1107,20 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             try {
                 const taildropOk = await _checkTaildrop(bin);
                 if (taildropOk !== null)
-                    settings.set_boolean('feature-taildrop-available', taildropOk);
+                    settings.set_boolean(
+                        "feature-taildrop-available",
+                        taildropOk,
+                    );
             } catch {}
             try {
                 const funnelOk = await _checkFunnel(bin);
                 if (funnelOk !== null)
-                    settings.set_boolean('feature-funnels-available', funnelOk);
+                    settings.set_boolean("feature-funnels-available", funnelOk);
             } catch {}
 
             window.add_toast(
                 new Adw.Toast({
-                    title: _('All settings reset to defaults'),
+                    title: _("All settings reset to defaults"),
                     timeout: 3,
                 }),
             );
