@@ -135,6 +135,13 @@
 .tailscale-send-row:focus {
     background-color: rgba(255, 255, 255, 0.08);
 }
+/* A ticked recipient. Slightly stronger than hover so a selected row still
+   reads as selected while the pointer sits on one of its neighbours. */
+.tailscale-send-target:checked,
+.tailscale-send-target:checked:hover,
+.tailscale-send-target:checked:focus {
+    background-color: rgba(255, 255, 255, 0.14);
+}
 
 /* "Send as zip" block in the Taildrop picker: the toggle row reuses the
    peer-row metrics so the dialog reads as one list, and the password

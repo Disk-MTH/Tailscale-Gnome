@@ -16,8 +16,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - Switching accounts produced a burst of notifications, one per setting that
   flipped. It now reports once, when the new profile has been applied.
+- Turning Funnel on filled the peer list with two dozen `funnel-ingress-node`
+  entries. Those are Tailscale's ingress relays, pushed into the netmap only
+  so they can reach us; the daemon flags them `ShareeNode` and `tailscale
+  status` hides them on that flag. The extension now does the same, which
+  also keeps them out of the exit-node and Taildrop target lists.
+- Sending as a zip crashed instead of sending: the archive options were
+  handed to the Funnel port dialog rather than to the Taildrop one, so the
+  send path received `undefined` where it destructured `{ asZip, password }`.
 
 ### Changed
+- The Taildrop send dialog picks recipients instead of firing on the first
+  click. Rows toggle, several devices can be ticked at once, and a Send
+  button — inert until something is ticked — starts the transfer. When
+  zipping, the archive is built once and reused for every recipient.
 - Toast duration and minimum pending duration moved from the General page to
   the new Notifications page.
 - Keyboard shortcuts moved from the General page to their own page.
