@@ -1,7 +1,7 @@
 // Snapshot parsing rules that don't need a live GNOME Shell session.
 
 import { assertEq, assertDeepEq, suite, test } from './harness.js';
-import { peersFromStatus } from '../lib/tailscale.js';
+import { parseWroteLine, peersFromStatus } from '../lib/tailscale.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
 // netmap. They are flagged `ShareeNode` precisely so clients hide them, and
@@ -70,10 +70,62 @@ suite('peersFromStatus', () => {
     });
 
     test('marks the selected exit node from prefs', () => {
+
         const peers = peersFromStatus(
             { Peer: { a: { ...REAL_PEER, ExitNodeOption: true } } },
             { ExitNodeID: REAL_PEER.ID },
         );
         assertEq(peers[0].exitNode, true);
+    });
+});
+
+// `tailscale file get --verbose` announces each inbound file on stdout as
+//   wrote <sender's name for it> as <absolute path> (<n> bytes)
+// (cmd/tailscale/cli/file.go). The path is what the notification needs in
+// order to open the file manager where the file actually landed.
+suite('parseWroteLine', () => {
+    test('splits the original name, the landing path and the size', () => {
+        const r = parseWroteLine(
+            'wrote rapport.pdf as /home/me/Downloads/rapport.pdf (1234 bytes)');
+        assertEq(r.path, '/home/me/Downloads/rapport.pdf');
+        assertEq(r.name, 'rapport.pdf');
+        assertEq(r.size, 1234);
+    });
+
+    test('reports the landing name, not the sender name', () => {
+        // --conflict=rename is what the receiver runs with, so the file on
+        // disk is frequently not the name the sender used.
+        const r = parseWroteLine(
+            'wrote notes.txt as /home/me/Downloads/notes (2).txt (7 bytes)');
+        assertEq(r.name, 'notes (2).txt');
+        assertEq(r.path, '/home/me/Downloads/notes (2).txt');
+    });
+
+    test('keeps spaces and parentheses inside the path', () => {
+        const r = parseWroteLine(
+            'wrote a b.zip as /home/me/My Files (old)/a b.zip (99 bytes)');
+        assertEq(r.path, '/home/me/My Files (old)/a b.zip');
+        assertEq(r.size, 99);
+    });
+
+    test('finds the record after the pollster noise', () => {
+        // `printf("waiting for file...")` carries no newline and repeats on
+        // every poll of --loop, so the record never starts its own line.
+        const r = parseWroteLine(
+            'waiting for file...waiting for file...wrote a.txt as /home/me/a.txt (6 bytes)');
+        assertEq(r.path, '/home/me/a.txt');
+        assertEq(r.name, 'a.txt');
+        assertEq(r.size, 6);
+    });
+
+    test('ignores the receiver other verbose lines', () => {
+        assertEq(parseWroteLine('waiting for file...'), null);
+        assertEq(parseWroteLine('moved 1/1 files'), null);
+        assertEq(parseWroteLine(''), null);
+    });
+
+    test('ignores a wrote line it cannot fully account for', () => {
+        // Rather than half-parse a format change into a broken path.
+        assertEq(parseWroteLine('wrote something unexpected'), null);
     });
 });

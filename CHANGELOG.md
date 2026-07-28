@@ -12,6 +12,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   configurable 1–10 entries. Toast mode keeps the previous transient bubble.
 - Nine per-category switches controlling which events may notify, plus a
   failures override that lets errors through even when their category is off.
+- Clicking the notification for a received Taildrop file reveals it in the
+  file manager, selected inside its folder, via
+  `org.freedesktop.FileManager1` (falling back to opening the folder when no
+  file manager implements it). The message says so — "click to open" — but
+  only in notification mode: toasts are click-through chrome and cannot
+  honour a click, so the hint is left off there.
 
 ### Fixed
 - Switching accounts produced a burst of notifications, one per setting that
@@ -21,6 +27,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   so they can reach us; the daemon flags them `ShareeNode` and `tailscale
   status` hides them on that flag. The extension now does the same, which
   also keeps them out of the exit-node and Taildrop target lists.
+- Clicking a notification deleted it instead of leaving it in the history.
+  GNOME destroys a notification on activation unless it is `resident`, which
+  the extension never set, so a click on a passing banner threw away the
+  entry the history was meant to keep.
+- The Taildrop "file received" message was parsed wrong. The receiver prints
+  `wrote <name> as <path> (<n> bytes)`, and the extension took everything
+  after "wrote", so the message ended up carrying the byte count the code
+  claimed to strip. It also tried to name the sender from a line
+  `tailscale file get` never prints — the record behind that command
+  (`apitype.WaitingFile`) holds only a name and a size, so no sender was
+  ever available and the "from <peer>" half was unreachable.
 - Sending as a zip crashed instead of sending: the archive options were
   handed to the Funnel port dialog rather than to the Taildrop one, so the
   send path received `undefined` where it destructured `{ asZip, password }`.
