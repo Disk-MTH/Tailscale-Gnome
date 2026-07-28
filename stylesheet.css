@@ -78,6 +78,45 @@
     color: white;
 }
 
+/* Header identity lines: signed-in account above, its tailnet below.
+   The account is the primary line, so the tailnet is dimmed and smaller
+   rather than given a competing weight. */
+.tailscale-header-line {
+    spacing: 6px;
+}
+.tailscale-header-line-icon {
+    icon-size: 14px;
+    -st-icon-style: symbolic;
+}
+.tailscale-header-account {
+    font-weight: bold;
+}
+.tailscale-header-tailnet {
+    font-size: 9pt;
+    opacity: 0.7;
+}
+.tailscale-header-line:last-child .tailscale-header-line-icon {
+    opacity: 0.7;
+}
+
+/* Copy chooser: unfolds under a row when a node has both an IP and a
+   Magic DNS name. Indented to read as belonging to the row above. */
+.tailscale-copy-chooser {
+    spacing: 2px;
+    padding: 4px 0 2px 12px;
+}
+.tailscale-copy-choice {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 9pt;
+    background-color: transparent;
+    text-align: left;
+}
+.tailscale-copy-choice:hover,
+.tailscale-copy-choice:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* Taildrop send dialog (in-shell ModalDialog). Mirrors the look of the
    QuickSettings peer rows so the picker feels native. */
 .tailscale-send-dialog {
