@@ -109,15 +109,14 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 
 | Page          | Setting                            | Default       |
 | ------------- | ---------------------------------- | ------------- |
-| General       | Availability: Taildrop / Funnel    | read from every poll |
-| General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
-| General       | Taildrop Nautilus right-click scripts | not installed |
-| General       | Start Tailscale at boot            | system        |
 | General       | Show panel indicator               | on            |
 | General       | Show exit node active indicator    | on            |
 | General       | Exit node active indicator colour  | theme         |
 | General       | Show exit node status indicator    | on            |
 | General       | Exit node indicator colour         | `#e6b800`     |
+| General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
+| General       | Taildrop Nautilus right-click scripts | not installed |
+| General       | Start Tailscale at boot            | system        |
 | General       | Poll interval                      | 3s            |
 | General       | tailscale binary                   | `tailscale`   |
 | Notifications | Minimum pending duration           | 1000ms        |
@@ -127,6 +126,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | Shortcuts     | Open the Tailscale menu            | unbound       |
 | Shortcuts     | Open the admin console             | unbound       |
 | Shortcuts     | Send a file via Taildrop           | unbound       |
+| Help          | Availability: Taildrop / Funnel    | read from every poll |
 | Help          | Versions, source and issue links   | read-only     |
 
 ## Debugging

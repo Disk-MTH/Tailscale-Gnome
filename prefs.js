@@ -6,6 +6,7 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
+import Pango from "gi://Pango";
 
 import {
     ExtensionPreferences,
@@ -458,9 +459,7 @@ function _makeTaildropGroup(settings, extensionDir) {
 function _makeServiceRow() {
     const row = new Adw.SwitchRow({
         title: _("Start Tailscale at boot"),
-        subtitle: _(
-            "Enables tailscaled.service via systemctl (asks for password).",
-        ),
+        subtitle: _("Enables tailscaled.service via systemctl."),
     });
 
     let guard = false;
@@ -779,10 +778,7 @@ const NOTIFY_DEFS = [
     {
         key: "notify-errors",
         title: () => _("Errors"),
-        subtitle: () =>
-            _(
-                "Failures outside any category above: the daemon becoming unreachable, a portal or browser that will not open.",
-            ),
+        subtitle: () => _("Failures outside any category above."),
     },
     {
         key: "notify-misc",
@@ -979,7 +975,7 @@ const SHORTCUT_DEFS = [
 function _makeShortcutsPage(settings) {
     const page = new Adw.PreferencesPage({
         title: _("Shortcuts"),
-        iconName: "preferences-desktop-keyboard-symbolic",
+        iconName: "org.gnome.Settings-keyboard-symbolic",
     });
 
     const group = new Adw.PreferencesGroup({
@@ -1014,11 +1010,17 @@ function _makeInfoRow(title) {
         valign: Gtk.Align.CENTER,
         selectable: true,
         css_classes: ["dim-label"],
-        // Long enough values (the daemon's -t… suffix) would otherwise
-        // stretch the window rather than wrap.
+        // hexpand claims the empty run between the title and the right
+        // edge, which is where these values belong: "Fedora Linux 44
+        // (Workstation Edition)" fits on one line there and was only
+        // wrapping because a max-width-chars cap held it to a narrow
+        // column. Wrapping stays on for the window narrowed by hand, and
+        // WORD_CHAR is what lets it break inside an unbroken version
+        // string rather than pushing the window wider.
+        hexpand: true,
         wrap: true,
+        wrap_mode: Pango.WrapMode.WORD_CHAR,
         xalign: 1,
-        max_width_chars: 32,
     });
     row.add_suffix(value);
     return {
@@ -1104,6 +1106,14 @@ function _makeHelpPage(settings, metadata) {
     });
 
     const repoUrl = metadata.url || "https://github.com/Disk-MTH/Tailscale-Gnome";
+
+    /* --------------------------- Availability ---------------------------- */
+    // First on the page, ahead of the versions: it answers "why can I not
+    // see this feature", which is the question that brings someone here.
+    // No probe on open — the group shows the last poll's answer and follows
+    // the key from there. The shell refreshes it every few seconds whether
+    // this window is up or not.
+    page.add(_makeAvailabilityGroup(settings));
 
     /* ------------------------------ Versions ----------------------------- */
     const about = new Adw.PreferencesGroup({
@@ -1213,15 +1223,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         window.add(_makeShortcutsPage(settings));
         window.add(_makeHelpPage(settings, this.metadata));
 
-        /* --------------------------- Availability ------------------------ */
-        // No probe on open: the window shows the last poll's answer and
-        // follows the key from there. The shell refreshes it every few
-        // seconds whether this window is up or not.
-        page.add(_makeAvailabilityGroup(settings));
-
-        /* ----------------------------- Taildrop ------------------------- */
-        page.add(_makeTaildropGroup(settings, this.dir));
-
         /* --------------------------- Indicators ------------------------- */
         // Three independent switches rather than one: the exit-node warning
         // is the only sign that the device has no internet, so someone who
@@ -1301,6 +1302,9 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
                 subtitle: () => _("Colour of the warning icon in the top bar."),
             }),
         );
+
+        /* ----------------------------- Taildrop ------------------------- */
+        page.add(_makeTaildropGroup(settings, this.dir));
 
         /* ---------------------------- Advanced -------------------------- */
         const advanced = new Adw.PreferencesGroup({
