@@ -8,13 +8,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - Native GNOME notifications, configured from a new Notifications preferences
   page. They stack into a browsable history under a single Tailscale entry,
-  capped at a configurable 1–10 entries.
+  which GNOME itself caps at ten before evicting the oldest.
 - A second exit-node panel icon, for an exit node that is routing, beside the
   one that already reported an exit node that cannot. It has its own switch
   and its own colour, which defaults to none at all — the icon then takes the
   panel's own ink and follows a light or dark theme without being told to.
-- Nine per-category switches controlling which events may notify, plus a
-  failures override that lets errors through even when their category is off.
+- Nine notification categories, each set to All, Errors or Off independently,
+  with a tenth control at the top of the list that applies one answer to all
+  of them at once. Errors keeps a category's failures and warnings while
+  dropping its successes, which is what the single global failures override
+  used to approximate for every category at the same time — badly, since one
+  category wanting its errors kept forced them on everywhere.
+- A Help page in the preferences, carrying the extension, daemon, operating
+  system and GNOME Shell versions — copied to the clipboard in one click —
+  beside links to the project's source and its issue tracker.
 - Clicking the notification for a received Taildrop file reveals it in the
   file manager, selected inside its folder, via
   `org.freedesktop.FileManager1` (falling back to opening the folder when no

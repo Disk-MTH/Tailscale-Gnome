@@ -16,6 +16,9 @@ import {
     fmt as _fmt,
     spawn as _spawn,
 } from "./lib/util.js";
+// Pure module, no Shell imports: importing it here is what keeps the mode
+// nicks and the category-to-key map from drifting between the two processes.
+import { CATEGORY_KEY, NotifyMode } from "./lib/notify-policy.js";
 
 const TAILSCALED_UNIT = "tailscaled.service";
 
@@ -636,17 +639,21 @@ function _makeIndicatorColorRow(settings, def) {
     return row;
 }
 
-// Per-row reset suffix: restores the GSettings key to its schema default.
-// Uses `view-refresh-symbolic`; the availability check button uses
-// `rotation-allowed-symbolic` to stay visually distinct from a reset.
+// Per-row reset suffix: restores the GSettings key — or every key in the
+// array — to its schema default. Uses `view-refresh-symbolic`; the
+// availability check button uses `rotation-allowed-symbolic` to stay
+// visually distinct from a reset.
 function _resetButton(settings, key) {
+    const keys = Array.isArray(key) ? key : [key];
     const btn = new Gtk.Button({
         icon_name: "view-refresh-symbolic",
         valign: Gtk.Align.CENTER,
         css_classes: ["flat"],
         tooltip_text: _("Reset to default"),
     });
-    btn.connect("clicked", () => settings.reset(key));
+    btn.connect("clicked", () => {
+        for (const k of keys) settings.reset(k);
+    });
     return btn;
 }
 
@@ -770,11 +777,119 @@ const NOTIFY_DEFS = [
         subtitle: () => _("Ports added and removed."),
     },
     {
+        key: "notify-errors",
+        title: () => _("Errors"),
+        subtitle: () =>
+            _(
+                "Failures outside any category above: the daemon becoming unreachable, a portal or browser that will not open.",
+            ),
+    },
+    {
         key: "notify-misc",
         title: () => _("Other"),
         subtitle: () => _("Clipboard copies and manual refreshes."),
     },
 ];
+
+// The three-way control every event row carries, replacing the on/off
+// switch and the single global failures override that used to sit beside
+// it. Labels are terse on purpose: ten of these stack down the page and a
+// homogeneous group is as wide as its widest toggle, so a long middle label
+// would push the whole column out.
+function _makeModeToggleGroup() {
+    const group = new Adw.ToggleGroup({ valign: Gtk.Align.CENTER });
+    group.add(
+        new Adw.Toggle({
+            name: NotifyMode.ALL,
+            label: _("All"),
+            tooltip: _("Report everything this category produces"),
+        }),
+    );
+    group.add(
+        new Adw.Toggle({
+            name: NotifyMode.ERRORS,
+            label: _("Errors"),
+            tooltip: _("Report only failures and warnings"),
+        }),
+    );
+    group.add(
+        new Adw.Toggle({
+            name: NotifyMode.OFF,
+            label: _("Off"),
+            tooltip: _("Report nothing at all"),
+        }),
+    );
+    return group;
+}
+
+function _makeNotifyModeRow(settings, def) {
+    const row = new Adw.ActionRow({
+        title: def.title(),
+        subtitle: def.subtitle(),
+    });
+    const group = _makeModeToggleGroup();
+    // The key is an enum of the same three nicks, so this is a plain
+    // string-to-string binding — no mapping functions, and an out-of-range
+    // dconf value can never reach the widget.
+    settings.bind(
+        def.key,
+        group,
+        "active-name",
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    row.add_suffix(group);
+    row.add_suffix(_resetButton(settings, def.key));
+    return row;
+}
+
+// Quick access at the top of the list: one control that drives all of them.
+// It has no key of its own — it reads the categories back, and shows a mode
+// only while every one of them agrees on it. Once they differ it goes blank
+// rather than picking a winner, because there is no honest answer to show.
+function _makeAllEventsRow(settings) {
+    const keys = Object.values(CATEGORY_KEY);
+    const row = new Adw.ActionRow({
+        title: _("All events"),
+        subtitle: _("Apply one setting to every category below."),
+    });
+    const group = _makeModeToggleGroup();
+
+    // Guards the loop both ways: writing the keys re-enters through their
+    // `changed::` handlers, and sync() writing the widget re-enters through
+    // notify::active-name.
+    let syncing = false;
+
+    const sync = () => {
+        if (syncing) return;
+        const modes = new Set(keys.map((k) => settings.get_string(k)));
+        syncing = true;
+        group.set_active_name(modes.size === 1 ? [...modes][0] : null);
+        syncing = false;
+    };
+
+    group.connect("notify::active-name", () => {
+        if (syncing) return;
+        const mode = group.active_name;
+        // Null means sync() blanked it for a mixed list, not a click. There
+        // is nothing to apply, and applying "" would clear nine keys.
+        if (!mode) return;
+        syncing = true;
+        for (const k of keys) settings.set_string(k, mode);
+        syncing = false;
+    });
+
+    const ids = keys.map((k) => settings.connect(`changed::${k}`, sync));
+    row.connect("destroy", () => {
+        for (const id of ids) settings.disconnect(id);
+    });
+    sync();
+
+    row.add_suffix(group);
+    // Resets the nine category keys only — not the whole page, and not the
+    // pending-duration spinner above it.
+    row.add_suffix(_resetButton(settings, keys));
+    return row;
+}
 
 function _makeNotificationsPage(settings) {
     const page = new Adw.PreferencesPage({
@@ -815,43 +930,15 @@ function _makeNotificationsPage(settings) {
     /* ------------------------------ Events ------------------------------- */
     const eventsGroup = new Adw.PreferencesGroup({
         title: _("Events"),
-        description: _("Which actions are allowed to notify."),
+        description: _(
+            "How much each kind of event may report. All lets everything through, Errors keeps only failures and warnings, Off silences the category completely.",
+        ),
     });
     page.add(eventsGroup);
 
-    for (const def of NOTIFY_DEFS) {
-        const row = new Adw.SwitchRow({
-            title: def.title(),
-            subtitle: def.subtitle(),
-        });
-        settings.bind(def.key, row, "active", Gio.SettingsBindFlags.DEFAULT);
-        row.add_suffix(_resetButton(settings, def.key));
-        eventsGroup.add(row);
-    }
-
-    /* ------------------------------ Failures ----------------------------- */
-    // Separate group so it reads as an override rather than a ninth
-    // category: it lets failures through even when their own category is
-    // off, and turning it off is what produces total silence.
-    const errorsGroup = new Adw.PreferencesGroup({
-        title: _("Failures"),
-    });
-    page.add(errorsGroup);
-
-    const errorsRow = new Adw.SwitchRow({
-        title: _("Always report failures"),
-        subtitle: _(
-            "Let errors and warnings through even when the category above is off. Turn this off as well for complete silence.",
-        ),
-    });
-    settings.bind(
-        "notify-errors",
-        errorsRow,
-        "active",
-        Gio.SettingsBindFlags.DEFAULT,
-    );
-    errorsRow.add_suffix(_resetButton(settings, "notify-errors"));
-    errorsGroup.add(errorsRow);
+    eventsGroup.add(_makeAllEventsRow(settings));
+    for (const def of NOTIFY_DEFS)
+        eventsGroup.add(_makeNotifyModeRow(settings, def));
 
     return page;
 }
@@ -912,6 +999,204 @@ function _makeShortcutsPage(settings) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                 Help page                                  */
+/* -------------------------------------------------------------------------- */
+
+const UNKNOWN_VALUE = "—";
+
+// One "label: value" row. The value is a selectable label rather than a
+// subtitle so a single line can be picked out and pasted into a bug report
+// without taking the rest of the page with it.
+function _makeInfoRow(title) {
+    const row = new Adw.ActionRow({ title });
+    const value = new Gtk.Label({
+        label: UNKNOWN_VALUE,
+        valign: Gtk.Align.CENTER,
+        selectable: true,
+        css_classes: ["dim-label"],
+        // Long enough values (the daemon's -t… suffix) would otherwise
+        // stretch the window rather than wrap.
+        wrap: true,
+        xalign: 1,
+        max_width_chars: 32,
+    });
+    row.add_suffix(value);
+    return {
+        row,
+        set: (text) => (value.label = text || UNKNOWN_VALUE),
+        get: () => value.label,
+    };
+}
+
+// A row that opens a URL. The address goes in the tooltip because the row
+// itself only carries a purpose ("Report a problem"), and someone should be
+// able to see where a click will take them before taking it.
+function _makeLinkRow(title, subtitle, url) {
+    const row = new Adw.ActionRow({
+        title,
+        subtitle,
+        activatable: true,
+        tooltip_text: url,
+    });
+    // external-link-symbolic, not adw-external-link-symbolic: the latter is
+    // libadwaita's own name for it and is not in the icon theme, so it would
+    // have rendered as nothing at all.
+    row.add_suffix(
+        new Gtk.Image({
+            icon_name: "external-link-symbolic",
+            valign: Gtk.Align.CENTER,
+            css_classes: ["dim-label"],
+        }),
+    );
+    row.connect("activated", () => _openUrl(url));
+    return row;
+}
+
+// `tailscale version --daemon` prints the CLI's own version first and the
+// daemon's on a "Daemon:" line — but only when it can reach the daemon.
+// Falling back to the first line (the CLI version) keeps the row useful on
+// a machine where tailscaled is stopped, which is exactly the machine
+// someone is most likely to be filing a bug from.
+function _parseTailscaleVersion(stdout) {
+    const lines = stdout.split("\n").map((l) => l.trim());
+    const daemon = lines.find((l) => l.startsWith("Daemon:"));
+    if (daemon) return { version: daemon.slice("Daemon:".length).trim() };
+
+    const client = lines.find((l) => l.startsWith("Client:"));
+    if (client)
+        return {
+            version: client.slice("Client:".length).trim(),
+            clientOnly: true,
+        };
+
+    // Plain `tailscale version` leads with the bare number. The shape test
+    // matters: when the command fails it prints prose on that first line,
+    // and "failed to connect to local tailscaled" is not a version.
+    const bare = lines.find((l) => /^\d+\.\d+/.test(l));
+    if (bare) return { version: bare, clientOnly: true };
+    return {};
+}
+
+function _osDescription() {
+    const pretty = GLib.get_os_info("PRETTY_NAME");
+    if (pretty) return pretty;
+    const name = GLib.get_os_info("NAME");
+    const version = GLib.get_os_info("VERSION");
+    if (name) return version ? `${name} ${version}` : name;
+    return "";
+}
+
+function _copyToClipboard(widget, text) {
+    const display = widget.get_display() ?? Gdk.Display.get_default();
+    if (!display) return false;
+    const value = new GObject.Value();
+    value.init(GObject.TYPE_STRING);
+    value.set_string(text);
+    return display
+        .get_clipboard()
+        .set_content(Gdk.ContentProvider.new_for_value(value));
+}
+
+function _makeHelpPage(settings, metadata) {
+    const page = new Adw.PreferencesPage({
+        title: _("Help"),
+        iconName: "help-about-symbolic",
+    });
+
+    const repoUrl = metadata.url || "https://github.com/Disk-MTH/Tailscale-Gnome";
+
+    /* ------------------------------ Versions ----------------------------- */
+    const about = new Adw.PreferencesGroup({
+        title: _("About"),
+        description: _(
+            "What is running on this machine. Include it when reporting a problem.",
+        ),
+    });
+    page.add(about);
+
+    const extensionRow = _makeInfoRow(_("Extension"));
+    const tailscaleRow = _makeInfoRow(_("Tailscale daemon"));
+    const osRow = _makeInfoRow(_("Operating system"));
+    const shellRow = _makeInfoRow(_("GNOME Shell"));
+    for (const r of [extensionRow, tailscaleRow, osRow, shellRow])
+        about.add(r.row);
+
+    // version-name is the human one ("0.2.1"); `version` is the integer
+    // EGO increments on every upload and means nothing to a user.
+    extensionRow.set(
+        metadata["version-name"] ||
+            (metadata.version != null ? String(metadata.version) : ""),
+    );
+    osRow.set(_osDescription());
+
+    // Both of these shell out, so the page builds with placeholders and
+    // fills in when the answers arrive. A failure leaves the row on its
+    // placeholder, which already says "we could not tell" — it goes to the
+    // log rather than at the user, who did not ask for it and cannot act
+    // on it.
+    const bin = settings.get_string("tailscale-binary") || "tailscale";
+    _spawn([bin, "version", "--daemon"])
+        .then((r) => {
+            const { version, clientOnly } = _parseTailscaleVersion(r.stdout);
+            tailscaleRow.set(version);
+            if (version && clientOnly)
+                tailscaleRow.row.subtitle = _(
+                    "Daemon unreachable — this is the CLI version.",
+                );
+        })
+        .catch((e) => console.warn(`tailscale-gnome: ${e}`));
+
+    _spawn(["gnome-shell", "--version"])
+        .then((r) => shellRow.set(r.stdout.replace(/^GNOME Shell\s*/, "").trim()))
+        .catch((e) => console.warn(`tailscale-gnome: ${e}`));
+
+    // Copying the four rows in one go is the whole point of collecting
+    // them: a bug report wants all of it, and re-typing a version string is
+    // how a report ends up with the wrong one.
+    const copyBtn = new Gtk.Button({
+        icon_name: "edit-copy-symbolic",
+        valign: Gtk.Align.CENTER,
+        css_classes: ["flat"],
+        tooltip_text: _("Copy this information to the clipboard"),
+    });
+    copyBtn.connect("clicked", () => {
+        const text = [extensionRow, tailscaleRow, osRow, shellRow]
+            .map((r) => `${r.row.title}: ${r.get()}`)
+            .join("\n");
+        if (!_copyToClipboard(copyBtn, text)) return;
+        // The prefs window is an Adw.PreferencesDialog on current GNOME and
+        // an Adw.PreferencesWindow before it; both take a toast, but only
+        // once the page is in one, which a header-suffix click guarantees.
+        const root = copyBtn.get_root();
+        root?.add_toast?.(
+            new Adw.Toast({ title: _("Copied to clipboard"), timeout: 3 }),
+        );
+    });
+    about.set_header_suffix(copyBtn);
+
+    /* -------------------------------- Links ------------------------------ */
+    const links = new Adw.PreferencesGroup({ title: _("Project") });
+    page.add(links);
+
+    links.add(
+        _makeLinkRow(
+            _("Source code"),
+            _("Browse the extension's repository on GitHub."),
+            repoUrl,
+        ),
+    );
+    links.add(
+        _makeLinkRow(
+            _("Report a problem"),
+            _("Open an issue on GitHub. Attach the information above."),
+            `${repoUrl}/issues`,
+        ),
+    );
+
+    return page;
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                  Page                                      */
 /* -------------------------------------------------------------------------- */
 
@@ -926,6 +1211,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         window.add(page);
         window.add(_makeNotificationsPage(settings));
         window.add(_makeShortcutsPage(settings));
+        window.add(_makeHelpPage(settings, this.metadata));
 
         /* --------------------------- Availability ------------------------ */
         // No probe on open: the window shows the last poll's answer and

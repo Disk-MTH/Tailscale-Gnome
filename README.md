@@ -120,15 +120,14 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Exit node indicator colour         | `#e6b800`     |
 | General       | Poll interval                      | 3s            |
 | General       | tailscale binary                   | `tailscale`   |
-| Notifications | History size                       | 5             |
 | Notifications | Minimum pending duration           | 1000ms        |
-| Notifications | Per-event switches                 | all on        |
-| Notifications | Always report failures             | on            |
+| Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
 | Shortcuts     | Toggle automatic exit node         | unbound       |
 | Shortcuts     | Open the Tailscale menu            | unbound       |
 | Shortcuts     | Open the admin console             | unbound       |
 | Shortcuts     | Send a file via Taildrop           | unbound       |
+| Help          | Versions, source and issue links   | read-only     |
 
 ## Debugging
 

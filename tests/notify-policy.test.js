@@ -1,5 +1,7 @@
 import { suite, test, assertTrue, assertFalse, assertEq } from './harness.js';
-import { Category, CATEGORY_KEY, NotifyPolicy } from '../lib/notify-policy.js';
+import {
+    Category, CATEGORY_KEY, NotifyMode, NotifyPolicy,
+} from '../lib/notify-policy.js';
 
 const show = (policy, opts) => policy.shouldShow({
     category: Category.TAILDROP, level: 'info', ...opts,
@@ -28,35 +30,48 @@ suite('NotifyPolicy', () => {
         }
     });
 
-    test('categories default to enabled', () => {
+    test('categories default to reporting everything', () => {
         const p = new NotifyPolicy();
+        assertEq(p.categoryMode(Category.TAILDROP), NotifyMode.ALL, 'default mode');
         assertTrue(show(p, {}), 'unconfigured category passes');
     });
 
-    test('a disabled category is filtered', () => {
+    test('an off category is filtered at every level', () => {
         const p = new NotifyPolicy();
-        p.setCategoryEnabled(Category.TAILDROP, false);
-        assertFalse(show(p, {}), 'info in a muted category is dropped');
+        p.setCategoryMode(Category.TAILDROP, NotifyMode.OFF);
+        assertFalse(show(p, {}), 'info in a silenced category is dropped');
+        assertFalse(show(p, { level: 'error' }), 'so is an error');
+        assertFalse(show(p, { level: 'warning' }), 'so is a warning');
     });
 
-    test('errors pass through a muted category', () => {
+    test('an errors-only category keeps its failures', () => {
         const p = new NotifyPolicy();
-        p.setCategoryEnabled(Category.TAILDROP, false);
-        assertTrue(show(p, { level: 'error' }), 'error escapes via notify-errors');
-        assertTrue(show(p, { level: 'warning' }), 'warning escapes via notify-errors');
+        p.setCategoryMode(Category.TAILDROP, NotifyMode.ERRORS);
+        assertTrue(show(p, { level: 'error' }), 'error passes');
+        assertTrue(show(p, { level: 'warning' }), 'warning passes');
+        assertFalse(show(p, { level: 'info' }), 'info is dropped');
+        assertFalse(show(p, { level: 'success' }), 'success is dropped');
+        assertFalse(show(p, { level: 'pending' }), 'pending is dropped');
     });
 
-    test('muting errors closes the safety net', () => {
+    // The global "always report failures" override is gone: each category
+    // now carries its own, so silencing one cannot un-silence another.
+    test('categories no longer lean on each other', () => {
         const p = new NotifyPolicy();
-        p.setCategoryEnabled(Category.TAILDROP, false);
-        p.setCategoryEnabled(Category.ERRORS, false);
-        assertFalse(show(p, { level: 'error' }), 'no escape once errors are muted');
+        p.setCategoryMode(Category.TAILDROP, NotifyMode.OFF);
+        p.setCategoryMode(Category.ERRORS, NotifyMode.ALL);
+        assertFalse(show(p, { level: 'error' }), 'no escape via another category');
+        assertTrue(
+            p.shouldShow({ category: Category.ERRORS, level: 'error' }),
+            'the errors category itself still reports',
+        );
     });
 
-    test('an enabled category shows errors regardless of notify-errors', () => {
+    test('an unknown mode falls back to reporting everything', () => {
         const p = new NotifyPolicy();
-        p.setCategoryEnabled(Category.ERRORS, false);
-        assertTrue(show(p, { level: 'error' }), 'own category still wins');
+        p.setCategoryMode(Category.TAILDROP, 'nonsense');
+        assertEq(p.categoryMode(Category.TAILDROP), NotifyMode.ALL, 'coerced to all');
+        assertTrue(show(p, {}), 'a stale dconf value cannot silence a category');
     });
 
     test('a quiet window mutes only spontaneous notifications', () => {
@@ -72,7 +87,7 @@ suite('NotifyPolicy', () => {
     test('a quiet window never overrides the category filter', () => {
         const p = new NotifyPolicy();
         p.beginQuiet();
-        p.setCategoryEnabled(Category.TAILDROP, false);
+        p.setCategoryMode(Category.TAILDROP, NotifyMode.OFF);
         assertFalse(show(p, { spontaneous: false }), 'a muted category stays muted');
     });
 

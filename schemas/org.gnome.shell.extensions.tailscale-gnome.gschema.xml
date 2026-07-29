@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="tailscale-gnome">
+    <enum id="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+        <value nick="all" value="0"/>
+        <value nick="errors" value="1"/>
+        <value nick="off" value="2"/>
+    </enum>
+
     <schema id="org.gnome.shell.extensions.tailscale-gnome"
             path="/org/gnome/shell/extensions/tailscale-gnome/">
 
@@ -140,44 +146,63 @@
                 extension does not set.</description>
         </key>
 
-        <key name="notify-connection" type="b">
-            <default>true</default>
+        <!-- One key per notification category, each taking the same three
+             values: "all" reports everything the category produces, "errors"
+             only its warnings and failures, "off" nothing at all. This is
+             what replaced the per-category booleans and the single global
+             failures override that sat beside them: a category can now be
+             quiet about its successes without every other one being quiet
+             too. A value stored under the old boolean type does not match
+             the enum and is ignored, so the category comes back as
+             "all". -->
+        <key name="notify-connection"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify about connecting and disconnecting</summary>
         </key>
-        <key name="notify-account" type="b">
-            <default>true</default>
+        <key name="notify-account"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify about login, logout and operator changes</summary>
         </key>
-        <key name="notify-profile-switch" type="b">
-            <default>true</default>
+        <key name="notify-profile-switch"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify when a different profile is applied</summary>
         </key>
-        <key name="notify-exit-node" type="b">
-            <default>true</default>
+        <key name="notify-exit-node"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify about exit-node selection and availability</summary>
         </key>
-        <key name="notify-network" type="b">
-            <default>true</default>
+        <key name="notify-network"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify about Magic DNS, routes, shields, SSH and LAN access</summary>
         </key>
-        <key name="notify-taildrop" type="b">
-            <default>true</default>
+        <key name="notify-taildrop"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify about Taildrop transfers and the receiver</summary>
         </key>
-        <key name="notify-funnel" type="b">
-            <default>true</default>
+        <key name="notify-funnel"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify about Funnel ports</summary>
         </key>
-        <key name="notify-errors" type="b">
-            <default>true</default>
-            <summary>Let failures through even when their category is off</summary>
-            <description>Acts as a safety net rather than a category of its
-                own: muting Taildrop hides its successes but not its
-                failures. Turning this off as well produces total
-                silence.</description>
+        <key name="notify-errors"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
+            <summary>Notify about failures that belong to no other category</summary>
+            <description>Covers the errors raised outside any specific
+                domain: the daemon becoming unreachable, a browser that will
+                not open, a missing file-chooser portal. Everything it
+                carries is already a failure, so "all" and "errors" mean the
+                same thing here.</description>
         </key>
-        <key name="notify-misc" type="b">
-            <default>true</default>
+        <key name="notify-misc"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
             <summary>Notify about clipboard copies and manual refreshes</summary>
         </key>
 
