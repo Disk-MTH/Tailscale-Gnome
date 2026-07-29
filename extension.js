@@ -434,7 +434,7 @@ export default class TailscaleGnomeExtension extends Extension {
         case 'shortcut-send-file':
             return () => this._indicator.sendFiles();
         case 'shortcut-add-funnel':
-            return () => this._indicator.addFunnel();
+            return () => this._indicator.openFunnels();
         default:
             return null;
         }

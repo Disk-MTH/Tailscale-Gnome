@@ -31,20 +31,23 @@ send/receive files with Taildrop — no terminal required.
   glyph when the selected node can no longer route.
 - **Menu toggles** for Magic DNS, Accept routes, Shields up, SSH
   server, Allow LAN access.
-- **Funnel** management from the menu: add a port, copy each public
-  URL, remove. If the tailnet hasn't approved Funnel yet, the admin
-  page opens automatically.
+- **Funnel** management from a single dialog: what is published now, with
+  copy and remove on every entry, over a form that publishes one more. If
+  the tailnet hasn't approved Funnel yet, the admin page opens
+  automatically.
 - **Taildrop** receive (background `tailscale file get --loop` writing
   to a configurable inbox) and send via a file picker → peer picker
   flow.
+- **Taildrop and Funnels** sit side by side on one menu row, each opening
+  its own dialog.
 - **Nautilus integration** (optional): right-click any file or folder
   for "Send with Taildrop" / "Send with Taildrop as ZIP". The scripts
   hand the selection to the extension over D-Bus
   (`org.gnome.Shell.Extensions.TailscaleGnome` on the `org.gnome.Shell`
   bus name) and the native in-shell peer picker takes over.
 - **Keyboard shortcuts**: toggle Tailscale, toggle exit node, open menu,
-  open admin console, send file via Taildrop. All unbound by default —
-  bind what you use.
+  open admin console, open Taildrop, open Funnels. All unbound by
+  default — bind what you use.
 
 ## Requirements
 
@@ -125,7 +128,8 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | Shortcuts     | Toggle automatic exit node         | unbound       |
 | Shortcuts     | Open the Tailscale menu            | unbound       |
 | Shortcuts     | Open the admin console             | unbound       |
-| Shortcuts     | Send a file via Taildrop           | unbound       |
+| Shortcuts     | Open Taildrop                      | unbound       |
+| Shortcuts     | Open Funnels                       | unbound       |
 | Help          | Availability: Taildrop / Funnel    | read from every poll |
 | Help          | Versions, source and issue links   | read-only     |
 

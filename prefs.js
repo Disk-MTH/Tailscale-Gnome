@@ -962,13 +962,17 @@ const SHORTCUT_DEFS = [
         key: "shortcut-open-admin-panel",
         title: () => _("Open the Tailscale admin console"),
     },
+    // The two keys are still named for what they used to do — send a file,
+    // add a funnel. Both now open their dialog instead, which is where
+    // those actions live; the keys keep their names so a shortcut someone
+    // has already bound survives the rename.
     {
         key: "shortcut-send-file",
-        title: () => _("Send files via Taildrop"),
+        title: () => _("Open Taildrop"),
     },
     {
         key: "shortcut-add-funnel",
-        title: () => _("Add a Funnel"),
+        title: () => _("Open Funnels"),
     },
 ];
 
@@ -1213,6 +1217,16 @@ function _makeHelpPage(settings, metadata) {
 export default class TailscaleGnomePrefs extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
+
+        // The shell opens this at a size that leaves the four page titles
+        // fighting for the header, and "Notifications" loses — it comes up
+        // elided to "Notifi…". Wide enough for all four spelled out, and
+        // for the longest of them in French and German too. Guarded rather
+        // than called outright: the host is an Adw.PreferencesWindow today,
+        // but the same entry point is documented against Adw.Dialog, which
+        // sizes through content-width instead.
+        if (typeof window.set_default_size === "function")
+            window.set_default_size(820, 700);
 
         const page = new Adw.PreferencesPage({
             title: _("General"),

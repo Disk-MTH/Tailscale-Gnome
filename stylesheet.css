@@ -47,7 +47,8 @@
     opacity: 0.65;
 }
 
-/* Bottom paired buttons (Extension settings | Admin panel). */
+/* Paired buttons on one menu row, used twice: Taildrop | Funnels, and
+   Extension settings | Admin panel at the very bottom. */
 .tailscale-bottom-buttons {
     spacing: 8px;
     padding: 4px 8px;
@@ -265,7 +266,15 @@
     padding: 0 10px;
 }
 
-/* Funnel port entry inside the in-shell Add funnel dialog. */
+/* The published address in a Funnels dialog row. Fixed width for the same
+   reason .tailscale-file-name has one: a long tailnet hostname gives way to
+   the copy and remove buttons rather than widening the dialog. What is
+   clipped stays reachable — the copy button hands over the whole URL. */
+.tailscale-funnel-url {
+    width: 320px;
+}
+
+/* Funnel port entry inside the in-shell Funnels dialog. */
 .tailscale-port-entry {
     min-width: 280px;
     padding: 8px 10px;
@@ -273,7 +282,7 @@
     margin: 0 4px 4px 4px;
 }
 
-/* Public-port radio pills in the Add funnel dialog. Used ports are kept
+/* Public-port radio pills in the Funnels dialog. Used ports are kept
    visible but dimmed so it's obvious the slot exists and is taken. */
 .tailscale-port-choices {
     spacing: 8px;

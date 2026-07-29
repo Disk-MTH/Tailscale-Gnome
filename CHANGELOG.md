@@ -51,6 +51,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   send path received `undefined` where it destructured `{ asZip, password }`.
 
 ### Changed
+- Funnel is one dialog now, reached from a "Funnels" button beside
+  "Taildrop" on a single menu row. It opens on the list of what is
+  published, each entry carrying its own copy and remove button, over the
+  form that publishes one more — and it stays open across both, so pruning
+  a list does not mean re-opening the dialog per entry and adding one shows
+  it appear. The menu keeps none of it: the Funnel submenu, its count pill
+  and its inline "+" are gone, because a list you could only read was worth
+  less there than the room it took.
+- Every public port being taken no longer refuses to open anything. The
+  dialog opens on the list that explains why, with the port row and the Add
+  button greyed and a line saying to remove one first — which is the thing
+  the dialog is now able to do.
+- The preferences window opens at 820×700. At the size the shell chose,
+  four page titles did not fit the header and "Notifications" came up
+  elided to "Notifi…".
+- The two shortcuts are "Open Taildrop" and "Open Funnels", both naming
+  the dialog they open rather than one action inside it. Their GSettings
+  keys keep the old names so a binding already made is not lost.
 - Taildrop and Funnel availability is read from every poll, like every other
   fact about the tailnet, instead of from a cache refreshed at startup, on
   account switches, and by hand. The capability map it comes from is already

@@ -91,12 +91,19 @@
 
         <key name="shortcut-send-file" type="as">
             <default><![CDATA[[]]]></default>
-            <summary>Shortcut: send files via Taildrop</summary>
+            <summary>Shortcut: open the Taildrop dialog</summary>
+            <description>Named for sending a file, which is what it used to
+                do directly; it now opens the dialog that does it. The name
+                is kept so an existing binding is not lost.</description>
         </key>
 
         <key name="shortcut-add-funnel" type="as">
             <default><![CDATA[[]]]></default>
-            <summary>Shortcut: open the Add funnel dialog</summary>
+            <summary>Shortcut: open the Funnels dialog</summary>
+            <description>Named for adding a funnel, which is what it used to
+                do directly; it now opens the dialog that lists them and
+                adds one. The name is kept so an existing binding is not
+                lost.</description>
         </key>
 
         <key name="taildrop-accept" type="b">
