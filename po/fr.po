@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: https://github.com/Disk-MTH/Tailscale-Gnome/issues\n"
-"POT-Creation-Date: 2026-07-29 16:14+0200\n"
+"POT-Creation-Date: 2026-07-29 16:36+0200\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: French\n"
@@ -19,7 +19,7 @@ msgstr ""
 msgid "Connecting Tailscale — this may take a moment"
 msgstr "Connexion à Tailscale — cela peut prendre un moment"
 
-#: extension.js:88 extension.js:408 lib/menu.js:1847
+#: extension.js:88 extension.js:406 lib/menu.js:1847
 msgid "Tailscale connected"
 msgstr "Tailscale connecté"
 
@@ -78,39 +78,39 @@ msgstr "Funnel activé pour ce tailnet"
 msgid "Funnel disabled for this tailnet"
 msgstr "Funnel désactivé pour ce tailnet"
 
-#: extension.js:390 lib/menu.js:459
+#: extension.js:388 lib/menu.js:459
 msgid "Login required"
 msgstr "Connexion requise"
 
-#: extension.js:394
+#: extension.js:392
 msgid "Tailscale is not ready yet"
 msgstr "Tailscale n'est pas encore prêt"
 
-#: extension.js:400 lib/menu.js:1853
+#: extension.js:398 lib/menu.js:1853
 msgid "Disconnecting Tailscale"
 msgstr "Déconnexion de Tailscale"
 
-#: extension.js:401 lib/menu.js:1854
+#: extension.js:399 lib/menu.js:1854
 msgid "Tailscale disconnected"
 msgstr "Tailscale déconnecté"
 
-#: extension.js:407 lib/menu.js:1846
+#: extension.js:405 lib/menu.js:1846
 msgid "Connecting Tailscale"
 msgstr "Connexion à Tailscale"
 
-#: extension.js:419 lib/menu.js:2243
+#: extension.js:417 lib/menu.js:2243
 msgid "Clearing exit node"
 msgstr "Effacement du nœud de sortie"
 
-#: extension.js:420 lib/menu.js:2244
+#: extension.js:418 lib/menu.js:2244
 msgid "Exit node cleared"
 msgstr "Nœud de sortie effacé"
 
-#: extension.js:426 lib/menu.js:2255
+#: extension.js:424 lib/menu.js:2255
 msgid "Selecting an exit node"
 msgstr "Sélection d'un nœud de sortie"
 
-#: extension.js:427 lib/menu.js:2256
+#: extension.js:425 lib/menu.js:2256
 msgid "Exit node: auto"
 msgstr "Nœud de sortie : auto"
 
@@ -134,7 +134,7 @@ msgstr "Appuyez sur une combinaison de touches"
 msgid "Escape to cancel · Backspace to clear"
 msgstr "Échap pour annuler · Retour arrière pour effacer"
 
-#: prefs.js:174 prefs.js:525 prefs.js:744 lib/notify.js:30
+#: prefs.js:174 prefs.js:525 prefs.js:763 lib/notify.js:29
 msgid "Taildrop"
 msgstr "Taildrop"
 
@@ -165,7 +165,7 @@ msgstr "Parcourir"
 msgid "Choose Taildrop inbox folder"
 msgstr "Choisir le dossier de réception Taildrop"
 
-#: prefs.js:335 prefs.js:628
+#: prefs.js:335 prefs.js:647
 msgid "Reset to default"
 msgstr "Réinitialiser"
 
@@ -233,7 +233,7 @@ msgstr ""
 "appareils détenus par un tag ou par des utilisateurs différents ne sont pas "
 "éligibles."
 
-#: prefs.js:536 prefs.js:750 lib/menu.js:1673 lib/notify.js:31
+#: prefs.js:536 prefs.js:769 lib/menu.js:1673 lib/notify.js:30
 msgid "Funnel"
 msgstr "Funnel"
 
@@ -250,15 +250,7 @@ msgstr ""
 "tailnet et que l'attribut de nœud « funnel » soit accordé à l'utilisateur "
 "courant."
 
-#: prefs.js:580
-msgid "Exit node indicator colour"
-msgstr "Couleur de l'indicateur de nœud de sortie"
-
-#: prefs.js:581
-msgid "Colour of the warning icon in the top bar."
-msgstr "Couleur de l'icône d'avertissement dans la barre supérieure."
-
-#: prefs.js:646
+#: prefs.js:665
 #, javascript-format
 msgid ""
 "%s\n"
@@ -269,23 +261,23 @@ msgstr ""
 "\n"
 "Cliquer pour ouvrir : %s"
 
-#: prefs.js:659
+#: prefs.js:678
 msgid "Open admin"
 msgstr "Ouvrir l'admin"
 
-#: prefs.js:679
+#: prefs.js:698
 msgid "Available on this tailnet"
 msgstr "Disponible sur ce tailnet"
 
-#: prefs.js:680
+#: prefs.js:699
 msgid "Not available on this tailnet"
 msgstr "Non disponible sur ce tailnet"
 
-#: prefs.js:692
+#: prefs.js:711
 msgid "Availability"
 msgstr "Disponibilité"
 
-#: prefs.js:694
+#: prefs.js:713
 msgid ""
 "What this tailnet allows. Both depend on your tailnet's admin settings, not "
 "on anything you can change here. (Hover over the info icon for details)"
@@ -294,105 +286,86 @@ msgstr ""
 "de votre tailnet, et non de quoi que ce soit de modifiable ici. (Survolez "
 "l'icône d'information pour les détails)"
 
-#: prefs.js:717
+#: prefs.js:736
 msgid "Tailscale connection"
 msgstr "Connexion Tailscale"
 
-#: prefs.js:718
+#: prefs.js:737
 msgid "Connecting, disconnecting, and daemon startup."
 msgstr "Connexion, déconnexion et démarrage du démon."
 
-#: prefs.js:722
+#: prefs.js:741
 msgid "Login and logout"
 msgstr "Connexion et déconnexion"
 
-#: prefs.js:723
+#: prefs.js:742
 msgid "Sign-in, sign-out, and operator changes."
 msgstr "Ouverture de session, fermeture de session et changements d'opérateur."
 
-#: prefs.js:727
+#: prefs.js:746
 msgid "Profile switch"
 msgstr "Changement de profil"
 
-#: prefs.js:729
+#: prefs.js:748
 msgid "A single notification once the new profile is applied."
 msgstr "Une seule notification une fois le nouveau profil appliqué."
 
-#: prefs.js:733 lib/menu.js:1599 lib/menu.js:2209 lib/notify.js:28
+#: prefs.js:752 lib/menu.js:1599 lib/menu.js:2209 lib/notify.js:27
 msgid "Exit node"
 msgstr "Nœud de sortie"
 
-#: prefs.js:734
+#: prefs.js:753
 msgid "Selection, going offline, and automatic switches."
 msgstr "Sélection, passage hors ligne et bascules automatiques."
 
-#: prefs.js:738
+#: prefs.js:757
 msgid "Network settings"
 msgstr "Paramètres réseau"
 
-#: prefs.js:740
+#: prefs.js:759
 msgid "Magic DNS, routes, shields up, SSH server, LAN access."
 msgstr "Magic DNS, routes, Shields up, serveur SSH, accès LAN."
 
-#: prefs.js:746
+#: prefs.js:765
 msgid "Files sent and received, receiver started and stopped."
 msgstr "Fichiers envoyés et reçus, récepteur démarré et arrêté."
 
-#: prefs.js:751
+#: prefs.js:770
 msgid "Ports added and removed."
 msgstr "Ports ajoutés et supprimés."
 
-#: prefs.js:755
+#: prefs.js:774
 msgid "Other"
 msgstr "Autre"
 
-#: prefs.js:756
+#: prefs.js:775
 msgid "Clipboard copies and manual refreshes."
 msgstr "Copies dans le presse-papiers et actualisations manuelles."
 
-#: prefs.js:762
+#: prefs.js:781
 msgid "Notifications"
 msgstr "Notifications"
 
-#: prefs.js:768
-msgid "Mode"
-msgstr "Mode"
-
-#: prefs.js:770
-msgid ""
-"Notification mode posts native notifications that stack into a browsable "
-"history. Toast mode shows a transient bubble and keeps no history."
-msgstr ""
-"Le mode Notification publie des notifications natives qui s'empilent en un "
-"historique consultable. Le mode toast affiche une bulle temporaire et ne "
-"conserve aucun historique."
-
-#: prefs.js:776
+#: prefs.js:787
 msgid "Presentation"
 msgstr "Présentation"
 
-#: prefs.js:777
-msgid "Notification"
-msgstr "Notification"
-
-#: prefs.js:777
-msgid "Toast"
-msgstr "Toast"
-
-#: prefs.js:792
-msgid "Toast duration"
-msgstr "Durée du toast"
-
-#: prefs.js:793
-msgid "Seconds the result toast stays on screen (1 to 10)."
+#: prefs.js:789
+msgid ""
+"Reports post as native GNOME notifications, stacking into a browsable "
+"history under a single Tailscale entry. How long a banner stays on screen is "
+"GNOME's own setting, not this extension's."
 msgstr ""
-"Secondes pendant lesquelles le toast de résultat reste affiché (1 à 10)."
+"Les rapports sont publiés comme notifications GNOME natives et s'empilent en "
+"un historique consultable sous une seule entrée Tailscale. La durée "
+"d'affichage d'une bannière relève du réglage de GNOME, pas de cette "
+"extension."
 
-#: prefs.js:811
+#: prefs.js:795
 msgid "Minimum pending duration"
 msgstr "Durée minimale de l'état en cours"
 
-#: prefs.js:813
+#: prefs.js:797
 msgid ""
 "Milliseconds the pending state stays visible before showing the result (0 to "
 "3000). Prevents flicker on instant actions."
@@ -401,23 +374,23 @@ msgstr ""
 "l'affichage du résultat (0 à 3000). Évite le clignotement sur les actions "
 "instantanées."
 
-#: prefs.js:849
+#: prefs.js:817
 msgid "Events"
 msgstr "Événements"
 
-#: prefs.js:850
+#: prefs.js:818
 msgid "Which actions are allowed to notify."
 msgstr "Quelles actions sont autorisées à notifier."
 
-#: prefs.js:869
+#: prefs.js:837
 msgid "Failures"
 msgstr "Échecs"
 
-#: prefs.js:874
+#: prefs.js:842
 msgid "Always report failures"
 msgstr "Toujours signaler les échecs"
 
-#: prefs.js:876
+#: prefs.js:844
 msgid ""
 "Let errors and warnings through even when the category above is off. Turn "
 "this off as well for complete silence."
@@ -425,69 +398,91 @@ msgstr ""
 "Laisse passer les erreurs et avertissements même lorsque la catégorie ci-"
 "dessus est désactivée. Désactivez également ceci pour un silence complet."
 
-#: prefs.js:900
+#: prefs.js:868
 msgid "Connect / disconnect Tailscale"
 msgstr "Connecter / déconnecter Tailscale"
 
-#: prefs.js:904
+#: prefs.js:872
 msgid "Toggle automatic exit node"
 msgstr "Basculer le nœud de sortie automatique"
 
-#: prefs.js:908
+#: prefs.js:876
 msgid "Open the Tailscale menu"
 msgstr "Ouvrir le menu Tailscale"
 
-#: prefs.js:912
+#: prefs.js:880
 msgid "Open the Tailscale admin console"
 msgstr "Ouvrir la console d'administration Tailscale"
 
-#: prefs.js:916
+#: prefs.js:884
 msgid "Send files via Taildrop"
 msgstr "Envoyer des fichiers via Taildrop"
 
-#: prefs.js:920
+#: prefs.js:888
 msgid "Add a Funnel"
 msgstr "Ajouter un Funnel"
 
-#: prefs.js:926
+#: prefs.js:894
 msgid "Shortcuts"
 msgstr "Raccourcis"
 
-#: prefs.js:931
+#: prefs.js:899
 msgid "Keyboard shortcuts"
 msgstr "Raccourcis clavier"
 
-#: prefs.js:933
+#: prefs.js:901
 msgid "Click a row to capture a key combination. Backspace to clear."
 msgstr ""
 "Cliquez sur une ligne pour capturer une combinaison de touches. Retour "
 "arrière pour effacer."
 
-#: prefs.js:955
+#: prefs.js:923
 msgid "General"
 msgstr "Général"
 
-#: prefs.js:977
+#: prefs.js:947
 msgid "Indicators"
 msgstr "Indicateurs"
 
-#: prefs.js:978
+#: prefs.js:948
 msgid "Icons shown in the top bar, next to Wi-Fi."
 msgstr "Icônes affichées dans la barre supérieure, à côté du Wi-Fi."
 
-#: prefs.js:983
+#: prefs.js:953
 msgid "Show Tailscale panel indicator"
 msgstr "Afficher l'indicateur Tailscale dans le panneau"
 
-#: prefs.js:984
+#: prefs.js:954
 msgid "Small Tailscale icon shown while connected."
 msgstr "Petite icône Tailscale affichée lorsque connecté."
 
-#: prefs.js:996
+#: prefs.js:966
+msgid "Show exit node active panel indicator"
+msgstr "Afficher l'indicateur de nœud de sortie actif"
+
+#: prefs.js:968
+msgid "VPN icon shown while an exit node is selected and routing traffic."
+msgstr ""
+"Icône VPN affichée lorsqu'un nœud de sortie est sélectionné et achemine le "
+"trafic."
+
+#: prefs.js:985
+msgid "Exit node active indicator colour"
+msgstr "Couleur de l'indicateur de nœud de sortie actif"
+
+#: prefs.js:989
+msgid "Custom colour. Reset to follow the theme again."
+msgstr "Couleur personnalisée. Réinitialisez pour suivre à nouveau le thème."
+
+#: prefs.js:990
+msgid "Follows the panel's own colour, light or dark."
+msgstr "Suit la couleur du panneau, en thème clair comme sombre."
+
+#: prefs.js:995
 msgid "Show exit node status panel indicator"
 msgstr "Afficher l'indicateur d'état du nœud de sortie"
 
-#: prefs.js:998
+#: prefs.js:997
 msgid ""
 "Warning icon shown when the selected exit node cannot route, which leaves "
 "the device without internet access."
@@ -495,36 +490,44 @@ msgstr ""
 "Icône d'avertissement affichée lorsque le nœud de sortie sélectionné ne peut "
 "pas router, ce qui prive l'appareil d'accès à Internet."
 
-#: prefs.js:1016
+#: prefs.js:1014
+msgid "Exit node indicator colour"
+msgstr "Couleur de l'indicateur de nœud de sortie"
+
+#: prefs.js:1015
+msgid "Colour of the warning icon in the top bar."
+msgstr "Couleur de l'icône d'avertissement dans la barre supérieure."
+
+#: prefs.js:1021
 msgid "Advanced"
 msgstr "Avancé"
 
-#: prefs.js:1025
+#: prefs.js:1030
 msgid "Poll interval"
 msgstr "Intervalle d'interrogation"
 
-#: prefs.js:1026
+#: prefs.js:1031
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr "Secondes entre les actualisations d'état (1 à 60)."
 
-#: prefs.js:1043
+#: prefs.js:1048
 msgid "tailscale binary"
 msgstr "Binaire tailscale"
 
-#: prefs.js:1058
+#: prefs.js:1063
 msgid "Reset all settings"
 msgstr "Réinitialiser tous les paramètres"
 
-#: prefs.js:1059
+#: prefs.js:1064
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 "Restaure chaque paramètre à sa valeur par défaut, sur toutes les pages."
 
-#: prefs.js:1062
+#: prefs.js:1067
 msgid "Reset all"
 msgstr "Tout réinitialiser"
 
-#: prefs.js:1102
+#: prefs.js:1107
 msgid "All settings reset to defaults"
 msgstr "Tous les paramètres ont été réinitialisés"
 
@@ -661,7 +664,7 @@ msgstr "Ajouter"
 msgid "Loading…"
 msgstr "Chargement…"
 
-#: lib/menu.js:1583 lib/notify.js:27
+#: lib/menu.js:1583 lib/notify.js:26
 msgid "Tailnet"
 msgstr "Tailnet"
 
@@ -1012,40 +1015,63 @@ msgstr "Impossible de créer l'archive"
 msgid "File chooser portal unavailable"
 msgstr "Portail de sélection de fichiers indisponible"
 
-#: lib/menu.js:2784
+#: lib/menu.js:2780
 #, javascript-format
 msgid "Received %s (%s) - click to open"
 msgstr "Reçu %s (%s) - cliquer pour ouvrir"
 
-#: lib/menu.js:2785
-#, javascript-format
-msgid "Received %s (%s)"
-msgstr "Reçu %s (%s)"
-
-#: lib/menu.js:2805
+#: lib/menu.js:2800
 #, javascript-format
 msgid "Copied %s to clipboard"
 msgstr "%s copié dans le presse-papiers"
 
-#: lib/notify.js:25
+#: lib/notify.js:24
 msgid "Connection"
 msgstr "Connexion"
 
-#: lib/notify.js:26
+#: lib/notify.js:25
 msgid "Account"
 msgstr "Compte"
 
-#: lib/notify.js:29
+#: lib/notify.js:28
 msgid "Network"
 msgstr "Réseau"
 
-#: lib/notify.js:32
+#: lib/notify.js:31
 msgid "Error"
 msgstr "Erreur"
 
-#: lib/notify.js:249
+#: lib/notify.js:205
 msgid "Operation failed"
 msgstr "L'opération a échoué"
+
+#~ msgid "Mode"
+#~ msgstr "Mode"
+
+#~ msgid ""
+#~ "Notification mode posts native notifications that stack into a browsable "
+#~ "history. Toast mode shows a transient bubble and keeps no history."
+#~ msgstr ""
+#~ "Le mode Notification publie des notifications natives qui s'empilent en "
+#~ "un historique consultable. Le mode toast affiche une bulle temporaire et "
+#~ "ne conserve aucun historique."
+
+#~ msgid "Notification"
+#~ msgstr "Notification"
+
+#~ msgid "Toast"
+#~ msgstr "Toast"
+
+#~ msgid "Toast duration"
+#~ msgstr "Durée du toast"
+
+#~ msgid "Seconds the result toast stays on screen (1 to 10)."
+#~ msgstr ""
+#~ "Secondes pendant lesquelles le toast de résultat reste affiché (1 à 10)."
+
+#, javascript-format
+#~ msgid "Received %s (%s)"
+#~ msgstr "Reçu %s (%s)"
 
 #~ msgid "Check availability"
 #~ msgstr "Vérifier la disponibilité"

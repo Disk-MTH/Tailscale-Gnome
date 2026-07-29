@@ -202,7 +202,6 @@ export default class TailscaleGnomeExtension extends Extension {
                         level: ev.level,
                         message,
                         spontaneous: ev.spontaneous,
-                        gicon: Notifier.icon,
                     });
                     continue;
                 }
@@ -216,7 +215,6 @@ export default class TailscaleGnomeExtension extends Extension {
                     level: ev.level,
                     message,
                     spontaneous: ev.spontaneous,
-                    gicon: Notifier.icon,
                 });
             }
         }, this);

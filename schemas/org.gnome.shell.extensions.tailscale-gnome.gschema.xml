@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="tailscale-gnome">
-    <enum id="org.gnome.shell.extensions.tailscale-gnome.notification-mode">
-        <value nick="notification" value="0"/>
-        <value nick="toast" value="1"/>
-    </enum>
-
     <schema id="org.gnome.shell.extensions.tailscale-gnome"
             path="/org/gnome/shell/extensions/tailscale-gnome/">
 
@@ -30,6 +25,26 @@
             <description>Six-digit hex colour applied to the panel warning
                 icon, e.g. "#e6b800". Anything that is not a #rrggbb literal
                 is ignored and the default amber is used instead.</description>
+        </key>
+
+        <key name="exit-node-active-indicator-color" type="s">
+            <default>''</default>
+            <summary>Colour of the exit node active icon</summary>
+            <description>Six-digit hex colour applied to the panel icon shown
+                while an exit node is routing, e.g. "#8ab4f8". Empty — the
+                default — leaves the icon in whatever colour the panel gives
+                it, which is what makes it follow a light or dark theme.
+                Anything that is not a #rrggbb literal is treated as
+                empty.</description>
+        </key>
+
+        <key name="show-exit-node-active-indicator" type="b">
+            <default>true</default>
+            <summary>Show the exit node active icon in the panel</summary>
+            <description>If true, a VPN icon appears in the panel while an
+                exit node is selected and routing. Independent of
+                show-indicator and of show-exit-node-indicator, which reports
+                the opposite state.</description>
         </key>
 
         <key name="show-exit-node-indicator" type="b">
@@ -114,33 +129,15 @@
                 itself gates on.</description>
         </key>
 
-        <key name="notification-mode"
-             enum="org.gnome.shell.extensions.tailscale-gnome.notification-mode">
-            <default>'notification'</default>
-            <summary>How notifications are presented</summary>
-            <description>"notification" posts native GNOME notifications
-                that stack into a browsable history under a single Tailscale
-                entry. "toast" shows the transient on-screen bubble and
-                keeps no history.</description>
-        </key>
-
-        <key name="toast-duration" type="u">
-            <default>3</default>
-            <range min="1" max="10"/>
-            <summary>Toast display duration (seconds)</summary>
-            <description>Toast mode only. How long success / error / info
-                toasts stay on screen after the action completes. Persistent
-                mode uses GNOME's own banner timeout, which is not
-                configurable.</description>
-        </key>
-
-        <key name="toast-min-spinner" type="u">
+        <key name="min-pending-duration" type="u">
             <default>1000</default>
             <range min="0" max="3000"/>
             <summary>Minimum pending duration (milliseconds)</summary>
             <description>Floor the pending state stays visible before
                 transitioning to the result, so instant operations don't
-                flash. Applies to both modes. 0 disables the floor.</description>
+                flash. 0 disables the floor. How long the finished banner
+                then stays on screen is GNOME's own timeout, which this
+                extension does not set.</description>
         </key>
 
         <key name="notify-connection" type="b">

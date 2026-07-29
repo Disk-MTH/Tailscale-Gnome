@@ -6,18 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## Unreleased
 
 ### Added
-- Two notification modes, selectable in a new Notifications preferences page.
-  Persistent mode (the default) posts native GNOME notifications that stack
-  into a browsable history under a single Tailscale entry, capped at a
-  configurable 1–10 entries. Toast mode keeps the previous transient bubble.
+- Native GNOME notifications, configured from a new Notifications preferences
+  page. They stack into a browsable history under a single Tailscale entry,
+  capped at a configurable 1–10 entries.
+- A second exit-node panel icon, for an exit node that is routing, beside the
+  one that already reported an exit node that cannot. It has its own switch
+  and its own colour, which defaults to none at all — the icon then takes the
+  panel's own ink and follows a light or dark theme without being told to.
 - Nine per-category switches controlling which events may notify, plus a
   failures override that lets errors through even when their category is off.
 - Clicking the notification for a received Taildrop file reveals it in the
   file manager, selected inside its folder, via
   `org.freedesktop.FileManager1` (falling back to opening the folder when no
-  file manager implements it). The message says so — "click to open" — but
-  only in notification mode: toasts are click-through chrome and cannot
-  honour a click, so the hint is left off there.
+  file manager implements it). The message says so — "click to open".
 
 ### Fixed
 - Switching accounts produced a burst of notifications, one per setting that
@@ -100,8 +101,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   click. Rows toggle, several devices can be ticked at once, and a Send
   button — inert until something is ticked — starts the transfer. When
   zipping, the archive is built once and reused for every recipient.
-- Toast duration and minimum pending duration moved from the General page to
-  the new Notifications page.
+- The minimum pending duration moved from the General page to the new
+  Notifications page. Its key is `min-pending-duration`, renamed from
+  `toast-min-spinner` now that the toast it was named for is gone; the
+  behaviour is unchanged, but a value set by hand under the old name does not
+  carry over.
 - Keyboard shortcuts moved from the General page to their own page.
 - Adding a funnel is a "+" button on the Funnel row itself, past the
   dropdown arrow, instead of the last entry inside the submenu. It is the
@@ -109,6 +113,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   now costs one click rather than two.
 
 ### Removed
+- The toast backend, and with it the choice of how notifications are
+  presented. `lib/toast.js`, its OSD stylesheet block, the `notification-mode`
+  enum and key, and `toast-duration` are gone; everything now posts as a
+  native GNOME notification. One presentation is less code, and it is the one
+  that keeps a history, honours a click, and obeys the user's own
+  do-not-disturb — none of which a bubble painted over the desktop can do.
 - Per-tailnet feature-state persistence. tailscaled already stores exit node,
   Magic DNS, accepted routes, shields, SSH and LAN access per profile and
   restores them on `tailscale switch`; the extension's copy duplicated that and

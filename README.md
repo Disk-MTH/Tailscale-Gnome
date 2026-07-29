@@ -109,16 +109,18 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 
 | Page          | Setting                            | Default       |
 | ------------- | ---------------------------------- | ------------- |
-| General       | Availability: Taildrop / Funnel    | probed        |
+| General       | Availability: Taildrop / Funnel    | read from every poll |
 | General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
 | General       | Taildrop Nautilus right-click scripts | not installed |
 | General       | Start Tailscale at boot            | system        |
 | General       | Show panel indicator               | on            |
+| General       | Show exit node active indicator    | on            |
+| General       | Exit node active indicator colour  | theme         |
+| General       | Show exit node status indicator    | on            |
+| General       | Exit node indicator colour         | `#e6b800`     |
 | General       | Poll interval                      | 3s            |
 | General       | tailscale binary                   | `tailscale`   |
-| Notifications | Presentation                       | persistent    |
 | Notifications | History size                       | 5             |
-| Notifications | Toast duration                     | 3s            |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-event switches                 | all on        |
 | Notifications | Always report failures             | on            |
@@ -153,9 +155,8 @@ lib/
 ├── menu.js             # Quick Settings toggle + submenus
 ├── watchers.js         # snapshot diffing into semantic events
 ├── notify-policy.js    # category, level and quiet-window rules
-├── notify.js           # notification entry point, picks a backend
-├── tray.js             # persistent backend (MessageTray.Source)
-├── toast.js            # OSD-style transient backend
+├── notify.js           # notification entry point
+├── tray.js             # notification backend (MessageTray.Source)
 └── util.js             # helpers shared by shell and prefs processes
 nautilus/               # right-click scripts (installed on demand)
 icons/  schemas/  stylesheet.css

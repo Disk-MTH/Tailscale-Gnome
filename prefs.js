@@ -555,14 +555,21 @@ function _openUrl(url) {
 }
 
 const DEFAULT_WARN_COLOR = "#e6b800";
+// Only ever shown in the button of a row whose key is empty, to stand in
+// for "whatever the panel paints it". Never written to GSettings.
+const THEME_COLOR_PLACEHOLDER = "#ffffff";
+
+function _isHexColor(value) {
+    return /^#[0-9a-fA-F]{6}$/.test(value);
+}
 
 // GSettings stores the warning colour as a #rrggbb string, which is what
 // the shell-side inline style needs; Gtk speaks Gdk.RGBA. These two convert
 // between the pair, and _parseColor falls back rather than throwing so a
 // hand-edited dconf value cannot leave the row unbuilt.
-function _parseColor(hex) {
+function _parseColor(hex, fallback = DEFAULT_WARN_COLOR) {
     const rgba = new Gdk.RGBA();
-    if (!rgba.parse(/^#[0-9a-fA-F]{6}$/.test(hex) ? hex : DEFAULT_WARN_COLOR))
+    if (!rgba.parse(_isHexColor(hex) ? hex : fallback))
         rgba.parse(DEFAULT_WARN_COLOR);
     return rgba;
 }
@@ -575,11 +582,16 @@ function _formatColor(rgba) {
     return `#${byte(rgba.red)}${byte(rgba.green)}${byte(rgba.blue)}`;
 }
 
-function _makeExitColorRow(settings) {
-    const row = new Adw.ActionRow({
-        title: _("Exit node indicator colour"),
-        subtitle: _("Colour of the warning icon in the top bar."),
-    });
+// Colour picker bound to a GSettings #rrggbb string.
+//
+// `themeDefault` marks a key whose default is no colour at all: the value
+// is then empty, the shell leaves the icon in the panel's own ink, and it
+// follows a light or dark theme without being told to. A colour button has
+// no way to draw "none", so it shows white as a stand-in and the subtitle
+// says which of the two is in force — picking a colour opts in, the reset
+// suffix opts back out.
+function _makeIndicatorColorRow(settings, def) {
+    const row = new Adw.ActionRow({ title: def.title() });
 
     const button = new Gtk.ColorDialogButton({
         // No alpha: the value ends up as a CSS colour on a symbolic icon,
@@ -587,33 +599,40 @@ function _makeExitColorRow(settings) {
         dialog: new Gtk.ColorDialog({ with_alpha: false }),
         valign: Gtk.Align.CENTER,
     });
-    button.set_rgba(_parseColor(settings.get_string("exit-node-indicator-color")));
+    const fallback = def.themeDefault
+        ? THEME_COLOR_PLACEHOLDER
+        : DEFAULT_WARN_COLOR;
+    const read = () => settings.get_string(def.key);
+    const syncSubtitle = () => {
+        row.subtitle = def.subtitle(_isHexColor(read()));
+    };
 
     // Guard against the loop: writing the key re-enters this handler via
-    // the `changed::` subscription below.
+    // the `changed::` subscription below. The subtitle is refreshed either
+    // way round, so it stays right whichever end the change came from.
     let syncing = false;
     button.connect("notify::rgba", () => {
         if (syncing) return;
         syncing = true;
-        settings.set_string(
-            "exit-node-indicator-color",
-            _formatColor(button.get_rgba()),
-        );
+        settings.set_string(def.key, _formatColor(button.get_rgba()));
         syncing = false;
+        syncSubtitle();
     });
 
-    const id = settings.connect("changed::exit-node-indicator-color", () => {
+    const id = settings.connect(`changed::${def.key}`, () => {
+        syncSubtitle();
         if (syncing) return;
         syncing = true;
-        button.set_rgba(
-            _parseColor(settings.get_string("exit-node-indicator-color")),
-        );
+        button.set_rgba(_parseColor(read(), fallback));
         syncing = false;
     });
     row.connect("destroy", () => settings.disconnect(id));
 
+    button.set_rgba(_parseColor(read(), fallback));
+    syncSubtitle();
+
     row.add_suffix(button);
-    row.add_suffix(_resetButton(settings, "exit-node-indicator-color"));
+    row.add_suffix(_resetButton(settings, def.key));
     return row;
 }
 
@@ -669,7 +688,7 @@ function _makeAvailabilityRow(settings, def) {
         const available = settings.get_boolean(def.availabilityKey);
         // object-select-symbolic, not emblem-ok-symbolic: the latter is gone
         // from current Adwaita, so the "available" tick silently rendered as
-        // nothing. Same glyph the toast success state uses.
+        // nothing.
         statusIcon.icon_name = available
             ? "object-select-symbolic"
             : "window-close-symbolic";
@@ -763,49 +782,14 @@ function _makeNotificationsPage(settings) {
         iconName: "preferences-system-notifications-symbolic",
     });
 
-    /* ------------------------------- Mode -------------------------------- */
+    /* ---------------------------- Presentation --------------------------- */
     const modeGroup = new Adw.PreferencesGroup({
-        title: _("Mode"),
+        title: _("Presentation"),
         description: _(
-            "Notification mode posts native notifications that stack into a browsable history. Toast mode shows a transient bubble and keeps no history.",
+            "Reports post as native GNOME notifications, stacking into a browsable history under a single Tailscale entry. How long a banner stays on screen is GNOME's own setting, not this extension's.",
         ),
     });
     page.add(modeGroup);
-
-    const modeRow = new Adw.ComboRow({
-        title: _("Presentation"),
-        model: Gtk.StringList.new([_("Notification"), _("Toast")]),
-    });
-    // The enum nicks in schema order; index maps 1:1 onto the StringList.
-    const MODES = ["notification", "toast"];
-    modeRow.selected = Math.max(
-        0,
-        MODES.indexOf(settings.get_string("notification-mode")),
-    );
-    modeRow.connect("notify::selected", () => {
-        settings.set_string("notification-mode", MODES[modeRow.selected]);
-    });
-    modeRow.add_suffix(_resetButton(settings, "notification-mode"));
-    modeGroup.add(modeRow);
-
-    const durationRow = new Adw.SpinRow({
-        title: _("Toast duration"),
-        subtitle: _("Seconds the result toast stays on screen (1 to 10)."),
-        adjustment: new Gtk.Adjustment({
-            lower: 1,
-            upper: 10,
-            step_increment: 1,
-            page_increment: 1,
-        }),
-    });
-    settings.bind(
-        "toast-duration",
-        durationRow,
-        "value",
-        Gio.SettingsBindFlags.DEFAULT,
-    );
-    durationRow.add_suffix(_resetButton(settings, "toast-duration"));
-    modeGroup.add(durationRow);
 
     const spinnerRow = new Adw.SpinRow({
         title: _("Minimum pending duration"),
@@ -820,29 +804,13 @@ function _makeNotificationsPage(settings) {
         }),
     });
     settings.bind(
-        "toast-min-spinner",
+        "min-pending-duration",
         spinnerRow,
         "value",
         Gio.SettingsBindFlags.DEFAULT,
     );
-    spinnerRow.add_suffix(_resetButton(settings, "toast-min-spinner"));
+    spinnerRow.add_suffix(_resetButton(settings, "min-pending-duration"));
     modeGroup.add(spinnerRow);
-
-    // Only the rows that apply to the active mode are shown. The minimum
-    // pending duration applies to both, so it always stays visible.
-    const syncModeRows = () => {
-        durationRow.visible =
-            settings.get_string("notification-mode") === "toast";
-    };
-    syncModeRows();
-    const modeId = settings.connect("changed::notification-mode", () => {
-        modeRow.selected = Math.max(
-            0,
-            MODES.indexOf(settings.get_string("notification-mode")),
-        );
-        syncModeRows();
-    });
-    modeRow.connect("destroy", () => settings.disconnect(modeId));
 
     /* ------------------------------ Events ------------------------------- */
     const eventsGroup = new Adw.PreferencesGroup({
@@ -969,10 +937,12 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         page.add(_makeTaildropGroup(settings, this.dir));
 
         /* --------------------------- Indicators ------------------------- */
-        // Two independent switches rather than one: the exit-node warning is
-        // the only sign that the device has no internet, so someone who hides
-        // the connection icon to keep the panel quiet must still be able to
-        // keep the warning.
+        // Three independent switches rather than one: the exit-node warning
+        // is the only sign that the device has no internet, so someone who
+        // hides the connection icon to keep the panel quiet must still be
+        // able to keep the warning, and the pair of exit-node icons — routing
+        // and not routing — is worth keeping together rather than tying to
+        // the connection icon.
         const indicators = new Adw.PreferencesGroup({
             title: _("Indicators"),
             description: _("Icons shown in the top bar, next to Wi-Fi."),
@@ -992,6 +962,35 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         showRow.add_suffix(_resetButton(settings, "show-indicator"));
         indicators.add(showRow);
 
+        const exitActiveRow = new Adw.SwitchRow({
+            title: _("Show exit node active panel indicator"),
+            subtitle: _(
+                "VPN icon shown while an exit node is selected and routing traffic.",
+            ),
+        });
+        settings.bind(
+            "show-exit-node-active-indicator",
+            exitActiveRow,
+            "active",
+            Gio.SettingsBindFlags.DEFAULT,
+        );
+        exitActiveRow.add_suffix(
+            _resetButton(settings, "show-exit-node-active-indicator"),
+        );
+        indicators.add(exitActiveRow);
+
+        indicators.add(
+            _makeIndicatorColorRow(settings, {
+                key: "exit-node-active-indicator-color",
+                title: () => _("Exit node active indicator colour"),
+                themeDefault: true,
+                subtitle: (custom) =>
+                    custom
+                        ? _("Custom colour. Reset to follow the theme again.")
+                        : _("Follows the panel's own colour, light or dark."),
+            }),
+        );
+
         const exitIndicatorRow = new Adw.SwitchRow({
             title: _("Show exit node status panel indicator"),
             subtitle: _(
@@ -1009,7 +1008,13 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         );
         indicators.add(exitIndicatorRow);
 
-        indicators.add(_makeExitColorRow(settings));
+        indicators.add(
+            _makeIndicatorColorRow(settings, {
+                key: "exit-node-indicator-color",
+                title: () => _("Exit node indicator colour"),
+                subtitle: () => _("Colour of the warning icon in the top bar."),
+            }),
+        );
 
         /* ---------------------------- Advanced -------------------------- */
         const advanced = new Adw.PreferencesGroup({
