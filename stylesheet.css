@@ -96,34 +96,57 @@
 }
 
 /* Taildrop send dialog (in-shell ModalDialog). Mirrors the look of the
-   QuickSettings peer rows so the picker feels native. */
+   QuickSettings peer rows so the picker feels native.
+
+   One gutter runs down the whole dialog: every block is inset 4px from the
+   content edge, so the things that paint a background (rows, buttons, the
+   password entry) share one left edge, and every piece of text — headings,
+   subtitles, row labels — lands on 14px, being 4px of block inset plus the
+   10px of padding a row carries. Anything added here has to pick one of
+   those two numbers; mixing in a third is what made the earlier layout
+   look ragged. */
+/* 4px, not 8: a subtitle cannot be pulled closer to the list it announces
+   than the dialog's own spacing allows — St clamps margins at zero, so
+   there is no negative to claw the gap back with. The floor is set low
+   here instead, and every block that wants more air asks for it in its own
+   padding. */
 .tailscale-send-dialog {
+    spacing: 4px;
+}
+/* Dialog heading: Tailscale mark, then the title. The padding that used to
+   sit on the label moved here so the icon shares it and both sit on one
+   baseline. */
+.tailscale-dialog-heading {
     spacing: 8px;
+    padding: 4px 14px 4px 14px;
 }
 .tailscale-send-title {
     font-weight: bold;
     font-size: 13pt;
-    padding: 4px 4px 0 4px;
 }
+/* Weighted upwards: a subtitle belongs to what follows it, so all the air
+   goes above it and none below. What is left underneath is the dialog's
+   4px and the label's own line box. */
 .tailscale-send-subtitle {
     font-size: 10pt;
     opacity: 0.65;
-    padding: 0 4px 6px 4px;
+    padding: 12px 14px 0 14px;
 }
 /* No min-height: the list is as tall as the peers it holds, so a single
    device does not leave a slab of empty space above the buttons. The cap
    is five rows (a row is ~46px: 8px padding twice, a name and an IP);
    past that the list scrolls instead of running off the screen. */
 .tailscale-send-scroll {
-    min-width: 360px;
+    min-width: 460px;
     max-height: 235px;
+    padding: 0 4px;
 }
 .tailscale-send-list {
     spacing: 0;
 }
 .tailscale-send-separator {
     background-color: rgba(255, 255, 255, 0.08);
-    margin: 0 8px;
+    margin: 0 10px;
 }
 .tailscale-send-row {
     padding: 8px 10px;
@@ -143,28 +166,103 @@
     background-color: rgba(255, 255, 255, 0.14);
 }
 
-/* "Send as zip" block in the Taildrop picker: the toggle row reuses the
-   peer-row metrics so the dialog reads as one list, and the password
-   field only appears once zipping is on. */
+/* "Send as zip" block in the Taildrop picker: the row reuses the peer-row
+   metrics so the dialog reads as one list, and the password field only
+   appears once zipping is on. */
 .tailscale-send-options {
     spacing: 4px;
     padding: 4px 4px 8px 4px;
 }
-.tailscale-zip-toggle {
+/* The zip row: peer-row metrics, the shell's own switch on the right. It
+   dims as a whole once a folder pins it on, so the lock reads as a state
+   of the setting rather than as a broken control. */
+.tailscale-zip-row:hover,
+.tailscale-zip-row:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.tailscale-zip-row:insensitive {
+    background-color: transparent;
+}
+
+/* The pending selection: one row per picked file or folder, name on the
+   left, size on the right, remove button after it. Capped at five rows
+   (a row is ~30px) and scrolling past that, matching the peer list below
+   it. The whole block hides itself while nothing is selected. */
+.tailscale-send-actions {
+    spacing: 6px;
+    padding: 0 4px 6px 4px;
+}
+.tailscale-send-add {
+    padding: 4px 12px;
+}
+.tailscale-file-scroll {
+    min-width: 460px;
+    max-height: 152px;
+    padding: 0 4px;
+}
+.tailscale-file-row {
+    padding: 5px 10px;
+    spacing: 8px;
+}
+/* Says which rows are folders — the thing that decides whether zipping is
+   optional — without spending a column on the word. */
+.tailscale-file-icon {
+    opacity: 0.7;
+}
+.tailscale-file-name {
+    /* Long names give way to the size and the remove button rather than
+       widening the dialog. What is clipped here is still reachable: the
+       row spells the whole path out on hover. */
+    width: 300px;
+}
+.tailscale-file-size {
+    font-feature-settings: "tnum";
+    opacity: 0.65;
+}
+.tailscale-file-remove {
     border: none;
     box-shadow: none;
+    background: none;
+    padding: 0 2px;
+    color: inherit;
+    opacity: 0.6;
 }
-.tailscale-zip-toggle:checked {
-    background-color: rgba(255, 255, 255, 0.10);
+.tailscale-file-remove:hover,
+.tailscale-file-remove:focus {
+    opacity: 1;
 }
+/* Hover tip carrying the full path of a file row. Parented to the ui group
+   rather than to the dialog, so it floats instead of resizing the dialog
+   out from under the pointer. */
+.tailscale-path-tip {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 9pt;
+}
+
 .tailscale-zip-check {
     padding: 0 4px;
     font-weight: bold;
     color: #66d68a;
 }
+/* Sits inside .tailscale-send-options, which already supplies the 4px
+   block inset — hence no horizontal padding of its own. */
 .tailscale-send-password {
     spacing: 3px;
-    padding: 2px 10px 0 10px;
+    padding: 2px 0 0 0;
+}
+/* The shared entry metrics carry a margin that would push the password
+   field past the gutter every other block sits on. */
+.tailscale-send-password .tailscale-port-entry {
+    margin: 0;
+    min-width: 0;
+}
+/* Loose text under a field, so it carries the 10px a row would have given
+   it and lands on the same 14px as every other line. */
+.tailscale-send-hint {
+    padding: 0 10px;
 }
 
 /* Funnel port entry inside the in-shell Add funnel dialog. */

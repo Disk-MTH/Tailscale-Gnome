@@ -44,12 +44,36 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - One Taildrop entry, "Send files", replaces the "Send file" / "Send folder"
-  pair, and the `shortcut-send-file` keybinding reaches the same call. The
-  portal's `directory` option does not restrict the chooser to folders — it
-  lets folders be picked *as well as* files, several of each at once — so
-  there was nothing left to decide before opening it. What the selection
-  turns out to contain is settled afterwards: a folder anywhere in it forces
-  the archive path, plain files leave zipping optional.
+  pair, and the `shortcut-send-file` keybinding reaches the same call. Both
+  open the send dialog straight away, and the dialog now owns the selection:
+  "Add files" and "Add folders" each open the chooser in their own mode and
+  append to a table listing every picked item with its size, plus a running
+  total. No chooser can produce a mixed selection on its own — the portal's
+  `directory` option selects folders *instead of* files, and in that mode
+  picking a file returns the folder containing it — so accumulating across
+  two trips is what makes files and folders sendable together.
+- Send stays inert until the selection holds at least one real file (an
+  empty folder does not count) and at least one recipient is ticked.
+- "Send as zip" is a real switch rather than a row that ticks, and it pins
+  itself on only while a folder is in the selection. While pinned, the switch
+  and its label dim: `reactive = false` alone left a locked control looking
+  exactly as clickable as a free one, keeping its full accent fill.
+- The send dialog's blocks now share one gutter, so headings, row labels and
+  the password field line up instead of each sitting at its own indent, and
+  the dialog is wider so more of each file name is readable. Rows carry a
+  file or folder icon, spell out their full path on hover, and the tally has
+  merged into the line that introduces the recipients — "Send 4 items
+  (9.8 MB) to:".
+- A Taildrop archive is named for the moment it was made
+  (`taildrop-20260729-140533.zip`) rather than for the first entry in it.
+  The old name made every archive look like that one file, which says
+  nothing about the other three and collides on the receiving end, where
+  several sends land in the same folder. The success notification names the
+  archive too: "Sent 3 files to redmi" described something the recipient
+  never receives, under a name they would then have to guess.
+- The Taildrop and Funnel dialogs carry the Tailscale mark next to their
+  title. Both are raised over whatever the user was doing, and the mark is
+  what identifies who is asking.
 - The Taildrop send dialog picks recipients instead of firing on the first
   click. Rows toggle, several devices can be ticked at once, and a Send
   button — inert until something is ticked — starts the transfer. When
