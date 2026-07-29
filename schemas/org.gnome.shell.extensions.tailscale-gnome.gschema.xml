@@ -94,21 +94,24 @@
 
         <key name="feature-taildrop-available" type="b">
             <default>false</default>
-            <summary>Cached: Taildrop usable on this tailnet</summary>
-            <description>Default false ("assume admin-disabled"). The
-                extension probes once at startup and on account changes;
-                the preferences window re-probes in the background each
-                time it opens; the "Check availability" button in prefs
-                reruns the probe on demand.</description>
+            <summary>Mirror: Taildrop usable on this tailnet</summary>
+            <description>Written by the extension from the capability map
+                in every `status --json` poll, so it tracks the tailnet's
+                ACL on its own. Nothing reads it to decide what the menu
+                shows — that comes off the same snapshot directly. It
+                exists for the two consumers that cannot see a snapshot:
+                the preferences window, which runs in its own process, and
+                the Taildrop receiver, which is driven from
+                GSettings.</description>
         </key>
         <key name="feature-funnels-available" type="b">
             <default>false</default>
-            <summary>Cached: Funnel enabled for this tailnet</summary>
-            <description>Default false ("assume admin-disabled"). The
-                extension probes once at startup and on account changes;
-                the preferences window re-probes in the background each
-                time it opens; the "Check availability" button in prefs
-                reruns the probe on demand.</description>
+            <summary>Mirror: Funnel enabled for this tailnet</summary>
+            <description>Written by the extension from the capability map
+                in every `status --json` poll, so it tracks the tailnet's
+                ACL on its own. Read by the preferences window, which runs
+                in its own process and cannot see the snapshot the menu
+                itself gates on.</description>
         </key>
 
         <key name="notification-mode"

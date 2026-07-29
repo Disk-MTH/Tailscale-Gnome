@@ -13,10 +13,7 @@ import {
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
 import {
-    CAP_FILE_SHARING,
-    CAP_FUNNEL,
     fmt as _fmt,
-    hasCapability as _hasCapability,
     spawn as _spawn,
 } from "./lib/util.js";
 
@@ -517,9 +514,11 @@ function _makeServiceRow() {
 /* -------------------------------------------------------------------------- */
 
 // Taildrop and Funnel can be forbidden tailnet-wide by an administrator.
-// That is a fact to report, not a setting: each row shows the cached probe
-// result, offers a re-check, and points at the admin page when the answer
-// is no.
+// That is a fact to report, not a setting: each row shows what the shell's
+// last poll saw and points at the admin page when the answer is no. There
+// is nothing to re-check by hand — the extension reads availability out of
+// every `status --json` it already runs and writes these keys, so the rows
+// follow along through the `changed::` each one watches.
 const AVAILABILITY_DEFS = [
     {
         availabilityKey: "feature-taildrop-available",
@@ -531,7 +530,6 @@ const AVAILABILITY_DEFS = [
             _(
                 "Taildrop requires the feature to be enabled for the tailnet and the source and destination devices to be owned by the same user. Devices owned by a tag or by different users are not eligible.",
             ),
-        checker: _checkTaildrop,
     },
     {
         availabilityKey: "feature-funnels-available",
@@ -544,20 +542,8 @@ const AVAILABILITY_DEFS = [
             _(
                 'Funnel requires HTTPS certificates to be enabled tailnet-wide and the "funnel" node attribute granted to the current user.',
             ),
-        checker: _checkFunnel,
     },
 ];
-
-// Availability probes go through the shared capability lookup in
-// lib/util.js — the same helper the shell-side startup probe uses, so the
-// manual Check buttons can never disagree with the automatic probe.
-function _checkTaildrop(bin) {
-    return _hasCapability(bin, CAP_FILE_SHARING);
-}
-
-function _checkFunnel(bin) {
-    return _hasCapability(bin, CAP_FUNNEL);
-}
 
 function _openUrl(url) {
     try {
@@ -649,7 +635,7 @@ function _resetButton(settings, key) {
 // button, and — only when the answer is no — a link to the admin page that
 // can change it. No switch: the user cannot grant themselves an ACL, and a
 // control that cannot honour a click is a lie.
-function _makeAvailabilityRow(settings, def, window) {
+function _makeAvailabilityRow(settings, def) {
     const row = new Adw.ActionRow({ title: def.title() });
 
     const infoBtn = new Gtk.Button({
@@ -669,43 +655,6 @@ function _makeAvailabilityRow(settings, def, window) {
     // theme; a hardcoded colour would not.
     const statusIcon = new Gtk.Image({ valign: Gtk.Align.CENTER });
 
-    const checkBtn = new Gtk.Button({
-        icon_name: "rotation-allowed-symbolic",
-        valign: Gtk.Align.CENTER,
-        css_classes: ["flat"],
-        tooltip_text: _("Check availability"),
-    });
-    checkBtn.connect("clicked", async () => {
-        checkBtn.sensitive = false;
-        const bin = settings.get_string("tailscale-binary") || "tailscale";
-        let available;
-        try {
-            available = await def.checker(bin);
-        } catch {
-            // A missing binary, same as any other "could not answer": do
-            // not write the key, and say so rather than asserting a no.
-            available = null;
-        }
-        checkBtn.sensitive = true;
-        const title = def.title();
-        let toastTitle;
-        if (available === null) {
-            // The probe could not answer (daemon down, unparseable status,
-            // too old to publish CapMap, or a missing binary). Leave the
-            // cached key untouched rather than caching a false negative.
-            toastTitle = _fmt(
-                _("Could not check %s: is Tailscale running?"),
-                title,
-            );
-        } else {
-            settings.set_boolean(def.availabilityKey, available);
-            toastTitle = available
-                ? _fmt(_("%s is available"), title)
-                : _fmt(_("%s is not available on this tailnet"), title);
-        }
-        window.add_toast(new Adw.Toast({ title: toastTitle, timeout: 3 }));
-    });
-
     const adminBtn = new Gtk.Button({
         label: _("Open admin"),
         valign: Gtk.Align.CENTER,
@@ -714,7 +663,6 @@ function _makeAvailabilityRow(settings, def, window) {
     adminBtn.connect("clicked", () => _openUrl(def.adminUrl));
 
     row.add_suffix(statusIcon);
-    row.add_suffix(checkBtn);
     row.add_suffix(adminBtn);
 
     const sync = () => {
@@ -739,7 +687,7 @@ function _makeAvailabilityRow(settings, def, window) {
     return row;
 }
 
-function _makeAvailabilityGroup(settings, window) {
+function _makeAvailabilityGroup(settings) {
     const group = new Adw.PreferencesGroup({
         title: _("Availability"),
         description: _(
@@ -747,7 +695,7 @@ function _makeAvailabilityGroup(settings, window) {
         ),
     });
     for (const def of AVAILABILITY_DEFS)
-        group.add(_makeAvailabilityRow(settings, def, window));
+        group.add(_makeAvailabilityRow(settings, def));
     return group;
 }
 
@@ -1012,24 +960,10 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         window.add(_makeShortcutsPage(settings));
 
         /* --------------------------- Availability ------------------------ */
-        page.add(_makeAvailabilityGroup(settings, window));
-
-        // Refresh the cache in the background so the status icons are current
-        // without the user having to click Check. The window opens immediately
-        // on the last known value and each row updates through the `changed::`
-        // it is already watching. A probe that could not answer (daemon down,
-        // unparseable status, too old to publish CapMap) resolves `null` and
-        // is skipped, exactly as for the startup probe in extension.js: the
-        // last known value stays on screen instead of being cached as "no".
-        const probeBin = settings.get_string("tailscale-binary") || "tailscale";
-        for (const def of AVAILABILITY_DEFS) {
-            def.checker(probeBin)
-                .then((ok) => {
-                    if (ok !== null)
-                        settings.set_boolean(def.availabilityKey, ok);
-                })
-                .catch(() => {});
-        }
+        // No probe on open: the window shows the last poll's answer and
+        // follows the key from there. The shell refreshes it every few
+        // seconds whether this window is up or not.
+        page.add(_makeAvailabilityGroup(settings));
 
         /* ----------------------------- Taildrop ------------------------- */
         page.add(_makeTaildropGroup(settings, this.dir));
@@ -1158,26 +1092,10 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
                 await _spawn([bin, "funnel", "reset"]);
             } catch {}
 
-            // Re-probe Taildrop / Funnel admin availability now that the
-            // gsettings flags were just reset to "assume disabled". Same
-            // mechanism the manual Check buttons use; mirrors the startup
-            // probe in extension.js so a fresh reset lands in a coherent
-            // state without forcing the user to click Check. A `null`
-            // result means the probe could not answer — leave the
-            // just-reset default in place rather than caching a guess.
-            try {
-                const taildropOk = await _checkTaildrop(bin);
-                if (taildropOk !== null)
-                    settings.set_boolean(
-                        "feature-taildrop-available",
-                        taildropOk,
-                    );
-            } catch {}
-            try {
-                const funnelOk = await _checkFunnel(bin);
-                if (funnelOk !== null)
-                    settings.set_boolean("feature-funnels-available", funnelOk);
-            } catch {}
+            // The two availability keys were reset along with everything
+            // else, and nothing here puts them back: the shell rewrites
+            // them from its next poll, a second or two out. Probing them
+            // here would only race that.
 
             window.add_toast(
                 new Adw.Toast({

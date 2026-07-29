@@ -43,6 +43,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   send path received `undefined` where it destructured `{ asZip, password }`.
 
 ### Changed
+- Taildrop and Funnel availability is read from every poll, like every other
+  fact about the tailnet, instead of from a cache refreshed at startup, on
+  account switches, and by hand. The capability map it comes from is already
+  in the `status --json` the extension runs every couple of seconds, so this
+  costs nothing and the menu now follows an admin granting or revoking either
+  feature within one poll. A flip is reported: "Funnel enabled for this
+  tailnet". Switching tailnets flips them too, but that happens inside the
+  account-switch quiet window, so only a real admin change reaches the user.
+  A daemon that publishes no capability map answers "don't know" rather than
+  "no", and nothing is hidden on the strength of a question that could not be
+  asked.
+- The `shortcut-add-funnel` keybinding says why nothing happens when the
+  tailnet forbids Funnel, instead of opening a port dialog that leads to a
+  refusal. The menu entry is hidden in that state, but a shortcut fires
+  wherever the user is — the same reason `shortcut-send-file` already
+  reports it for Taildrop.
+- The "Check availability" button is gone from preferences, along with the
+  probe that ran whenever the window opened and the one after a settings
+  reset. There is nothing left to refresh by hand. The two GSettings keys
+  survive as a mirror of the last poll, for the two consumers that cannot see
+  a snapshot: the preferences window, which is a separate process, and the
+  Taildrop receiver, which is driven from GSettings.
 - One Taildrop entry, "Send files", replaces the "Send file" / "Send folder"
   pair, and the `shortcut-send-file` keybinding reaches the same call. Both
   open the send dialog straight away, and the dialog now owns the selection:
@@ -81,6 +103,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Toast duration and minimum pending duration moved from the General page to
   the new Notifications page.
 - Keyboard shortcuts moved from the General page to their own page.
+- Adding a funnel is a "+" button on the Funnel row itself, past the
+  dropdown arrow, instead of the last entry inside the submenu. It is the
+  only thing that row offers which is not about an existing funnel, and it
+  now costs one click rather than two.
 
 ### Removed
 - Per-tailnet feature-state persistence. tailscaled already stores exit node,

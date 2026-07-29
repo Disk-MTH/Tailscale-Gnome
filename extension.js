@@ -99,6 +99,15 @@ export default class TailscaleGnomeExtension extends Extension {
             'exit-node-disabled':    (d) => _fmt(_('Exit node %s was disabled'), d.name),
             'exit-node-reenabled':   (d) => _fmt(_('Exit node %s was re-enabled'), d.name),
             'account-switched':      (d) => _fmt(_('Profile applied (%s)'), d.name),
+            // Nobody in this session asked for these: the tailnet's ACL
+            // moved under us, and the visible effect is a block of the menu
+            // appearing or vanishing. A switch between tailnets flips them
+            // too, but that runs inside the account-switch quiet window, so
+            // only a genuine admin change reaches the user.
+            'taildrop-enabled':      () => _('Taildrop enabled for this tailnet'),
+            'taildrop-disabled':     () => _('Taildrop disabled for this tailnet'),
+            'funnel-enabled':        () => _('Funnel enabled for this tailnet'),
+            'funnel-disabled':       () => _('Funnel disabled for this tailnet'),
         };
 
         this._quietToken = 0;
@@ -156,15 +165,31 @@ export default class TailscaleGnomeExtension extends Extension {
         // A pending connection resolves in place, so its handle outlives the
         // event that created it.
         this._connHandle = null;
+        // The two availability keys are a mirror of what the last poll saw,
+        // not a cache anyone has to refresh: the preferences window runs in
+        // its own process and cannot read the snapshot, and the Taildrop
+        // receiver is driven off gsettings. Only a real answer is written —
+        // a status we could not read leaves the last one standing.
+        const mirrorAvailability = (snap) => {
+            for (const [key, value] of [
+                ['feature-taildrop-available', snap.taildropAvailable],
+                ['feature-funnels-available', snap.funnelsAvailable],
+            ]) {
+                if (typeof value !== 'boolean') continue;
+                if (this._settings.get_boolean(key) === value) continue;
+                this._settings.set_boolean(key, value);
+            }
+        };
+
         this._client.connectObject('state-changed', (_c, snap) => {
+            mirrorAvailability(snap);
             for (const ev of this._watcher.feed(snap)) {
                 const message = WATCHER_COPY[ev.type](ev.data);
                 if (ev.type === 'account-switched') {
                     // Unconditional: the daemon churns after a switch whoever
-                    // started it, and admin ACLs differ per tailnet so the
-                    // availability cache cannot be assumed to carry over.
+                    // started it, and admin ACLs differ per tailnet, so the
+                    // availability flip that follows is not news either.
                     openQuietWindow();
-                    this._client.probeAvailability().catch(() => {});
                     // A menu-driven switch is already reported by its own
                     // withFeedback. An external `tailscale switch` has none, so
                     // there this notification is the only account of it.
@@ -204,19 +229,6 @@ export default class TailscaleGnomeExtension extends Extension {
             'state-changed', () => armQuietDebounce(),
             this,
         );
-
-        // One-shot Taildrop/Funnel availability probe at startup, then
-        // again whenever the active tailnet changes — admin ACLs differ
-        // per tailnet, so the cached availability flags can't be assumed
-        // to carry over. Delayed slightly so the initial daemon refresh
-        // has time to settle (probeAvailability runs a CLI subprocess
-        // that races with the first poll otherwise).
-        this._availabilityProbeId = GLib.timeout_add_seconds(
-            GLib.PRIORITY_DEFAULT, 1, () => {
-                this._availabilityProbeId = 0;
-                this._client.probeAvailability().catch(() => {});
-                return GLib.SOURCE_REMOVE;
-            });
 
         // Restore Taildrop receiver state. The setting is the source of
         // truth across reloads; the receiver subprocess is owned by the
@@ -307,11 +319,6 @@ export default class TailscaleGnomeExtension extends Extension {
         if (this._startupCheckId) {
             GLib.source_remove(this._startupCheckId);
             this._startupCheckId = 0;
-        }
-
-        if (this._availabilityProbeId) {
-            GLib.source_remove(this._availabilityProbeId);
-            this._availabilityProbeId = 0;
         }
 
         for (const key of this._boundShortcuts)

@@ -232,3 +232,52 @@ suite('computeEvents — account', () => {
         assertDeepEq(types(events), ['account-switched', 'exit-node-lost']);
     });
 });
+
+suite('computeEvents — tailnet capabilities', () => {
+    const caps = (over = {}) => snapshot({
+        taildropAvailable: true,
+        funnelsAvailable: true,
+        ...over,
+    });
+
+    test('a grant and a revocation each report once', () => {
+        const t = seed(caps({ taildropAvailable: false }));
+        const { events, track } = computeEvents(t, caps({ funnelsAvailable: false }));
+        assertDeepEq(types(events), ['taildrop-enabled', 'funnel-disabled']);
+        assertEq(events[0].category, 'taildrop');
+        assertEq(events[0].level, 'info');
+        assertEq(events[1].category, 'funnel');
+        assertEq(events[1].level, 'warning');
+        // Reported once, not on every poll that follows.
+        assertDeepEq(
+            types(computeEvents(track, caps({ funnelsAvailable: false })).events),
+            [],
+        );
+    });
+
+    // The first snapshot is the state of the world, not a change to it: a
+    // tailnet that has always forbidden Funnel must not announce it at login.
+    test('the cold start reports nothing', () => {
+        const { events } = computeEvents(
+            EMPTY_TRACK, caps({ funnelsAvailable: false }));
+        assertDeepEq(types(events), []);
+    });
+
+    // A daemon too old to publish a capability map, or a status that could
+    // not be read, answers null — which is not a revocation, and must not
+    // fire one on the way out or a re-grant on the way back.
+    test('an unanswered poll is not a flip in either direction', () => {
+        const t = seed(caps());
+        const { events, track } = computeEvents(t, caps({ funnelsAvailable: null }));
+        assertDeepEq(types(events), []);
+        assertEq(track.funnelsAvailable, true);
+        assertDeepEq(types(computeEvents(track, caps()).events), []);
+    });
+
+    test('a revocation seen through an unanswered poll still reports', () => {
+        const t = seed(caps());
+        const blind = computeEvents(t, caps({ funnelsAvailable: null })).track;
+        const { events } = computeEvents(blind, caps({ funnelsAvailable: false }));
+        assertDeepEq(types(events), ['funnel-disabled']);
+    });
+});
