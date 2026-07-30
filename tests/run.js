@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Disk_MTH
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Entry point: `make test`, or `gjs -m tests/run.js`.
 import System from 'system';
 

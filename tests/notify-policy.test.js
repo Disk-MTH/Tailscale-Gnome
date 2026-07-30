@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Disk_MTH
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 import { suite, test, assertTrue, assertFalse, assertEq } from './harness.js';
 import {
     Category, CATEGORY_KEY, NotifyMode, NotifyPolicy,

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Disk_MTH
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Tailscale GNOME entry point.
 // GNOME Shell 46+ (ESM extensions API).
 

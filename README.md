@@ -167,4 +167,5 @@ icons/  schemas/  stylesheet.css
 
 ## License
 
-MIT, see [LICENSE](./LICENSE).
+GPL-2.0-or-later, see [LICENSE](./LICENSE) — the same terms GNOME Shell
+itself is published under.

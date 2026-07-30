@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Disk_MTH
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Preferences dialog (Adwaita). GNOME 46+.
 
 import Adw from "gi://Adw";

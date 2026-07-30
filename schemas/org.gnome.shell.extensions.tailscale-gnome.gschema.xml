@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 Disk_MTH
+     SPDX-License-Identifier: GPL-2.0-or-later -->
 <schemalist gettext-domain="tailscale-gnome">
     <enum id="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
         <value nick="all" value="0"/>

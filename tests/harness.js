@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Disk_MTH
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Zero-dependency test harness. Runs under plain `gjs -m` so the pure
 // modules can be exercised without a live GNOME Shell session — anything
 // importing `resource:///org/gnome/shell/…` cannot be tested here.

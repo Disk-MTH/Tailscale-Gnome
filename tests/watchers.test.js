@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Disk_MTH
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 import { suite, test, assertEq, assertDeepEq } from './harness.js';
 import { EMPTY_TRACK, computeEvents, SnapshotWatcher } from '../lib/watchers.js';
 

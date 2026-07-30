@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Disk_MTH
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Snapshot parsing rules that don't need a live GNOME Shell session.
 
 import { assertEq, assertDeepEq, suite, test } from './harness.js';
