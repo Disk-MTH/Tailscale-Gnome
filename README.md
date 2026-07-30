@@ -1,13 +1,10 @@
 # Tailscale for GNOME
 
-A GNOME Shell extension that drops Tailscale into the Quick Settings panel.
-Connect, switch accounts, pick exit nodes, expose services via Funnel, and
-send/receive files with Taildrop — no terminal required.
+Connect, switch accounts, manage exit nodes, expose services with Funnel, and send or receive files with Taildrop, all without leaving Quick Settings.
 
-> **Heads up — vibe-coded.** This extension was largely written through
-> AI-assisted iteration on real-world usage, not from a formal spec.
-> The code is reviewed and tested but you may find rough edges; bug
-> reports are very welcome.
+> **Note on development.** This extension was built based on functional specs and requirements, with AI assistance used for code generation and iterative refinement.
+> While the code is tested and reliable for daily use, you might still encounter edge cases.
+> Bug reports and contributions are very welcome!
 
 > **Trademark notice.** This project is an independent, community-built
 > extension. It is **not affiliated with, sponsored by, or endorsed by
@@ -17,47 +14,14 @@ send/receive files with Taildrop — no terminal required.
 
 ## Features
 
-- **Quick toggle** in Quick Settings for connect / disconnect, with a
-  panel icon next to Wi-Fi while connected.
-- **Operator setup** in one click. Polkit prompts for the `tailscale set
-  --operator=$USER` step automatically when needed; login and logout
-  are wrapped so the operator pref survives a profile switch.
-- **Account switcher** that always reconnects after a switch. Per-profile
-  settings — exit node, Magic DNS, accepted routes — are restored by
-  tailscaled itself, so the extension keeps no copy of them.
-- **Peers** list with online state and copy-IP.
-- **Exit node** picker (None / Auto / per-peer) with a status pill that
-  reflects offline or unavailable nodes truthfully, plus a panel warning
-  glyph when the selected node can no longer route.
-- **Menu toggles** for Magic DNS, Accept routes, Shields up, SSH
-  server, Allow LAN access.
-- **Funnel** management from a single dialog: what is published now, with
-  copy and remove on every entry, over a form that publishes one more. If
-  the tailnet hasn't approved Funnel yet, the admin page opens
-  automatically.
-- **Taildrop** receive (background `tailscale file get --loop` writing
-  to a configurable inbox) and send via a file picker → peer picker
-  flow.
-- **Taildrop and Funnels** sit side by side on one menu row, each opening
-  its own dialog.
-- **Nautilus integration** (on by default): right-click any file or folder
-  for "Send with Taildrop". It is a real file-manager extension, symlinked
-  into Nautilus' own `nautilus-python/extensions` directory while the setting
-  is on and taken back out when it is off — no copies to keep in sync. The
-  entry hands the selection to the extension over D-Bus
-  (`org.gnome.Shell.Extensions.TailscaleGnome` on the `org.gnome.Shell`
-  bus name) and the native in-shell peer picker takes over. It reads the
-  extension's own translations, so the menu entry is worded like the dialog
-  it opens.
-
-  Needs the `nautilus-python` package: without it the file manager loads no
-  Python extension at all, and preferences grey the switch out and say so.
-  Nautilus also reads its extensions directory once, at startup, so toggling
-  the setting offers to quit it — the change is then already in place the
-  next time a window is opened.
-- **Keyboard shortcuts**: toggle Tailscale, toggle exit node, open menu,
-  open admin console, open Taildrop, open Funnels. All unbound by
-  default — bind what you use.
+| Feature | What it does |
+| ------- | ------------- |
+| **Connect** | One-click connect / disconnect and account switching, with a panel icon next to Wi-Fi while connected. |
+| **Exit nodes** | Pick None, Auto, or any peer, with a status pill and a panel warning if the selected node stops routing. |
+| **Funnel** | Publish, copy, and remove exposed services from a single dialog. |
+| **Taildrop** | Send and receive files with peers, plus a "Send with Taildrop" entry in Nautilus. |
+| **Menu toggles** | Magic DNS, accepted routes, Shields up, SSH server, and LAN access, one tap away. |
+| **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, and Funnels. |
 
 ## Requirements
 
@@ -65,9 +29,12 @@ send/receive files with Taildrop — no terminal required.
 - `tailscale` 1.70+ on `PATH`.
 - `pkexec` (polkit) for the privileged calls listed below.
 
-File pickers use the XDG Desktop Portal (`org.freedesktop.portal.
-FileChooser`), which ships with every GNOME session — no external
+File pickers use the XDG Desktop Portal (`org.freedesktop.portal.FileChooser`), which ships with every GNOME session, no external
 dialog tool is spawned.
+
+Nautilus integration (on by default) needs the `nautilus-python`
+package. Without it, the file manager loads no Python extension at
+all, and preferences grey the toggle out and say so.
 
 ## Privileged operations
 
@@ -78,28 +45,21 @@ extension therefore runs a **small, fixed set** of commands through
 
 | Command | When it runs |
 | ------- | ------------ |
-| `pkexec tailscale set --operator=$USER` | Once at session startup if the operator pref is missing while logged in, and when you click **Set operator** in the menu. Makes every later command work unprivileged. |
-| `pkexec tailscale login --operator=$USER` | When you click **Login**. Tailscale denies plain `tailscale login` on operator-set profiles ("checkprefs access denied"), and `--operator` keeps the pref on the new profile — including after a logout, so logging back in never needs an extra elevation. |
-| `pkexec tailscale logout` | When you click **Logout**. One prompt only: the operator pref disappears with the discarded profile and the next **Login** restores it via its `--operator` flag; the menu keeps the Login entry and the account list reachable meanwhile (see the `switch` row below). |
-| `pkexec tailscale switch <profile-id>` | When you pick another account while control is denied (typically right after a logout). The profile id comes from the daemon's own `switch --list` output and is validated as a plain token; once on the target profile its own operator pref applies, so no further prompt follows. |
-| `pkexec systemctl enable/disable --now tailscaled.service` | Only from the **Start Tailscale at boot** toggle in the preferences window. |
+| `pkexec tailscale set --operator=$USER` | Once at login if the operator pref is missing, and when you click **Set operator**. Makes every later command work without a prompt. |
+| `pkexec tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
+| `pkexec tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
+| `pkexec tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
+| `pkexec systemctl enable/disable --now tailscaled.service` | Only from the **Start Tailscale at boot** toggle in preferences. |
 
 Safeguards:
 
 - Every elevated command is a **literal argument vector**, readable
-  as-is in the source — nothing typed by a user, read from a file or
+  as-is in the source; nothing typed by a user, read from a file or
   built at runtime is ever concatenated into it (no `sh -c`).
 - Elevated calls hardcode the `tailscale` program name; `pkexec`
   resolves it in its own trusted root `PATH`. The **Advanced →
   tailscale binary** setting is deliberately ignored for privileged
   calls, so a user-writable path can never be elevated.
-
-Prefer to avoid polkit prompts entirely? Run this once in a terminal
-and the extension will never need to elevate for day-to-day use:
-
-```bash
-sudo tailscale set --operator=$USER
-```
 
 ## Install
 
@@ -112,8 +72,7 @@ make install
 gnome-extensions enable tailscale-gnome@diskmth.fr
 ```
 
-Pack a release zip with `make pack`. Upload the resulting `.zip` to
-<https://extensions.gnome.org/upload/>.
+Pack a release zip with `make pack`.
 
 ## Settings
 
@@ -178,5 +137,5 @@ icons/  schemas/  stylesheet.css
 
 ## License
 
-GPL-2.0-or-later, see [LICENSE](./LICENSE) — the same terms GNOME Shell
+GPL-2.0-or-later, see [LICENSE](./LICENSE), the same terms GNOME Shell
 itself is published under.

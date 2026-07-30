@@ -29,6 +29,9 @@ node_modules/
 # Brainstorming visual companion (superpowers skill)
 .superpowers/
 
+# Superpowers plans/specs (internal working docs, not for GitHub)
+docs/superpowers/
+
 # Local scratch (screenshots, notes)
 temp/
 /image.png
