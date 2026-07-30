@@ -121,7 +121,8 @@ pack: translations
 	    icons/hicolor \
 	    locale \
 	    schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml \
-	    LICENSE README.md CHANGELOG.md
+	    LICENSE README.md CHANGELOG.md \
+	    -x '*__pycache__*'
 	@printf "Built %s\n" "$(ZIPNAME)"
 
 clean:

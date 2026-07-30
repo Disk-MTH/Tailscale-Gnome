@@ -3,6 +3,35 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Added
+- A real file-manager extension, `nautilus/tailscale-taildrop.py`, loaded by
+  nautilus-python out of Nautilus' own extensions directory. "Taildrop" now
+  sits in the context menu itself rather than three clicks down the Scripts
+  submenu, and it calls the same D-Bus method the shell extension already
+  exported, so the in-shell picker — the dialog the keyboard shortcut opens —
+  owns the whole interaction.
+- The link is managed by the extension: made on enable while "Nautilus
+  integration" is on, dropped on disable, and pointed at the extension
+  directory rather than copied out of it, so an update needs no
+  re-install. Three flavours are covered — the distro package, plus the
+  Flatpak and Snap sandboxes when either is present, each of which sees a
+  different `$XDG_DATA_HOME`.
+
+### Removed
+- The two shell scripts, "Send with Taildrop" and "Send with Taildrop as
+  ZIP", along with the Install / Remove buttons in preferences that copied
+  them into `~/.local/share/nautilus/scripts`. Both re-implemented the D-Bus
+  call in bash, and zipping is a switch inside the send dialog now. Copies
+  left by 0.2.x are deleted on enable so the same action does not appear
+  twice.
+
+### Fixed
+- "Extension settings" and "Admin panel" lost their bold along with
+  "Taildrop" and "Funnels", which was one row too many: the two that leave
+  the menu keep the weight, and only the pair that acts inside it drops it.
+
 ## [1.0.0] - 2026-07-30
 
 ### Added

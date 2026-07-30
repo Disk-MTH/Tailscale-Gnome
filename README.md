@@ -40,11 +40,15 @@ send/receive files with Taildrop — no terminal required.
   flow.
 - **Taildrop and Funnels** sit side by side on one menu row, each opening
   its own dialog.
-- **Nautilus integration** (optional): right-click any file or folder
-  for "Send with Taildrop" / "Send with Taildrop as ZIP". The scripts
-  hand the selection to the extension over D-Bus
+- **Nautilus integration** (on by default): right-click any file or folder
+  for "Taildrop". It is a real file-manager extension, symlinked into
+  Nautilus' own `nautilus-python/extensions` directory while the setting is
+  on and taken back out when it is off — no copies to keep in sync. The
+  entry hands the selection to the extension over D-Bus
   (`org.gnome.Shell.Extensions.TailscaleGnome` on the `org.gnome.Shell`
-  bus name) and the native in-shell peer picker takes over.
+  bus name) and the native in-shell peer picker takes over. Needs the
+  `nautilus-python` package, and Nautilus reads that directory once at
+  startup, so quit it before expecting the entry to appear.
 - **Keyboard shortcuts**: toggle Tailscale, toggle exit node, open menu,
   open admin console, open Taildrop, open Funnels. All unbound by
   default — bind what you use.
@@ -118,7 +122,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Show exit node status indicator    | on            |
 | General       | Exit node indicator colour         | `#e6b800`     |
 | General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
-| General       | Taildrop Nautilus right-click scripts | not installed |
+| General       | Nautilus integration               | on            |
 | General       | Start Tailscale at boot            | system        |
 | General       | Poll interval                      | 3s            |
 | General       | tailscale binary                   | `tailscale`   |
@@ -160,8 +164,9 @@ lib/
 ├── notify-policy.js    # category, level and quiet-window rules
 ├── notify.js           # notification entry point
 ├── tray.js             # notification backend (MessageTray.Source)
+├── nautilus.js         # symlinks the file-manager extension in and out
 └── util.js             # helpers shared by shell and prefs processes
-nautilus/               # right-click scripts (installed on demand)
+nautilus/               # the nautilus-python extension itself
 icons/  schemas/  stylesheet.css
 ```
 

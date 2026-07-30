@@ -18,6 +18,7 @@ import { openAdminPanel, statusText } from './lib/menu.js';
 import { Notifier, Category } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
 import { fmt as _fmt } from './lib/util.js';
+import * as NautilusIntegration from './lib/nautilus.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
 // one accelerators (e.g. ["<Super>t"]). Empty array = unbound.
@@ -66,6 +67,7 @@ export default class TailscaleGnomeExtension extends Extension {
                     this._settings.get_string('tailscale-binary') || 'tailscale',
                 );
             },
+            'changed::nautilus-integration', () => this._syncNautilus(),
             ...SHORTCUT_KEYS.flatMap((key) => [
                 `changed::${key}`,
                 () => this._rebindShortcut(key),
@@ -283,6 +285,26 @@ export default class TailscaleGnomeExtension extends Extension {
         );
 
         this._exportDbus();
+
+        // The 0.2.x Scripts-submenu entries go whether the integration is
+        // wanted or not: they call the same D-Bus method this file manager
+        // extension does, so keeping them would only show the same action
+        // twice, three clicks deeper.
+        NautilusIntegration.purgeLegacyScripts();
+        this._syncNautilus();
+    }
+
+    /* --------------------------- file manager --------------------------- */
+
+    // Not a live toggle, and it cannot be: a file manager reads its
+    // extensions directory once, at startup. What this decides is what the
+    // next Nautilus to start will find, which is why the preferences say so
+    // rather than promising the menu changes under the pointer.
+    _syncNautilus() {
+        if (this._settings.get_boolean('nautilus-integration'))
+            NautilusIntegration.install(this.path);
+        else
+            NautilusIntegration.uninstall(this.path);
     }
 
     /* ------------------------------- DBus ------------------------------- */
@@ -313,6 +335,12 @@ export default class TailscaleGnomeExtension extends Extension {
 
     disable() {
         this._unexportDbus();
+
+        // Unlinked unconditionally, setting or no setting: the link resolves
+        // into this directory, and an extension uninstalled while disabled
+        // would otherwise leave a dangling entry for nautilus-python to trip
+        // over on every start.
+        NautilusIntegration.uninstall(this.path);
 
         this._settings.disconnectObject(this);
         this._client.disconnectObject(this);

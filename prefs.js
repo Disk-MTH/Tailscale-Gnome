@@ -176,7 +176,7 @@ const ShortcutRow = GObject.registerClass(
 
 // Taildrop preferences: inbox folder + Nautilus integration.
 // The accept toggle lives in the Quick Settings panel.
-function _makeTaildropGroup(settings, extensionDir) {
+function _makeTaildropGroup(settings) {
     const group = new Adw.PreferencesGroup({
         title: _("Taildrop"),
         description: _("Send and receive files between Tailscale nodes."),
@@ -350,108 +350,24 @@ function _makeTaildropGroup(settings, extensionDir) {
     inboxRow.add_suffix(resetBtn);
     group.add(inboxRow);
 
-    // Nautilus right-click integration
-    const scriptsDir = GLib.build_filenamev([
-        GLib.get_user_data_dir(),
-        "nautilus",
-        "scripts",
-    ]);
-    const sendName = "Send with Taildrop";
-    const zipName = "Send with Taildrop as ZIP";
-
-    const isInstalled = () => {
-        const p1 = Gio.File.new_for_path(
-            GLib.build_filenamev([scriptsDir, sendName]),
-        );
-        const p2 = Gio.File.new_for_path(
-            GLib.build_filenamev([scriptsDir, zipName]),
-        );
-        return p1.query_exists(null) && p2.query_exists(null);
-    };
-
-    const nautilusRow = new Adw.ActionRow({
-        title: _("Nautilus right-click scripts"),
-        subtitle: _('Add "Send with Taildrop" to the Nautilus context menu.'),
+    // File manager integration. One switch, no Install / Remove pair: the
+    // extension owns the link now, made on enable and dropped on disable, so
+    // a button that installs by hand would only be a second source of truth
+    // for the same file.
+    const nautilusRow = new Adw.SwitchRow({
+        title: _("Nautilus integration"),
+        subtitle: _(
+            'Add "Taildrop" to the file manager\'s right-click menu. ' +
+                "Needs the nautilus-python package, and Nautilus has to be " +
+                "quit before it notices.",
+        ),
     });
-    const statusLabel = new Gtk.Label({
-        valign: Gtk.Align.CENTER,
-        css_classes: ["dim-label"],
-    });
-    nautilusRow.add_suffix(statusLabel);
-
-    const installBtn = new Gtk.Button({
-        label: _("Install"),
-        valign: Gtk.Align.CENTER,
-        css_classes: ["suggested-action"],
-    });
-    const removeBtn = new Gtk.Button({
-        label: _("Remove"),
-        valign: Gtk.Align.CENTER,
-        css_classes: ["destructive-action"],
-    });
-    nautilusRow.add_suffix(installBtn);
-    nautilusRow.add_suffix(removeBtn);
-
-    const refreshNautilus = () => {
-        const ok = isInstalled();
-        statusLabel.label = ok ? _("Installed") : _("Not installed");
-        installBtn.visible = !ok;
-        removeBtn.visible = ok;
-    };
-
-    const toast = (title) => {
-        group.get_root().add_toast(new Adw.Toast({ title, timeout: 4 }));
-    };
-
-    installBtn.connect("clicked", () => {
-        try {
-            Gio.File.new_for_path(scriptsDir).make_directory_with_parents(null);
-        } catch (e) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS)) {
-                toast(`Error: ${e.message}`);
-                return;
-            }
-        }
-        const srcDir = extensionDir.get_child("nautilus");
-        for (const name of [sendName, zipName]) {
-            const src = srcDir.get_child(name);
-            const dst = Gio.File.new_for_path(
-                GLib.build_filenamev([scriptsDir, name]),
-            );
-            try {
-                src.copy(dst, Gio.FileCopyFlags.OVERWRITE, null, null);
-                const info = new Gio.FileInfo();
-                info.set_attribute_uint32("unix::mode", 0o755);
-                dst.set_attributes_from_info(
-                    info,
-                    Gio.FileQueryInfoFlags.NONE,
-                    null,
-                );
-            } catch (e) {
-                toast(`Error installing ${name}: ${e.message}`);
-                return;
-            }
-        }
-        refreshNautilus();
-        toast(_("Installed. You may need to restart Nautilus."));
-    });
-
-    removeBtn.connect("clicked", () => {
-        for (const name of [sendName, zipName]) {
-            const f = Gio.File.new_for_path(
-                GLib.build_filenamev([scriptsDir, name]),
-            );
-            try {
-                f.delete(null);
-            } catch {
-                // Already gone: nothing to remove.
-            }
-        }
-        refreshNautilus();
-        toast(_("Removed."));
-    });
-
-    refreshNautilus();
+    settings.bind(
+        "nautilus-integration",
+        nautilusRow,
+        "active",
+        Gio.SettingsBindFlags.DEFAULT,
+    );
     group.add(nautilusRow);
 
     return group;
@@ -1321,7 +1237,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         );
 
         /* ----------------------------- Taildrop ------------------------- */
-        page.add(_makeTaildropGroup(settings, this.dir));
+        page.add(_makeTaildropGroup(settings));
 
         /* ---------------------------- Advanced -------------------------- */
         const advanced = new Adw.PreferencesGroup({

@@ -122,6 +122,19 @@
                 first receipt).</description>
         </key>
 
+        <key name="nautilus-integration" type="b">
+            <default>true</default>
+            <summary>Add Taildrop to the file manager context menu</summary>
+            <description>While enabled, the extension symlinks its Nautilus
+                extension into the file manager's own extensions directory
+                (the standard one, plus the Flatpak and Snap sandboxes when
+                either is present) and takes the link back out when
+                disabled. Needs the nautilus-python package to be installed,
+                and Nautilus reads the directory once at startup — a running
+                instance has to be quit before the entry appears or
+                goes.</description>
+        </key>
+
         <key name="feature-taildrop-available" type="b">
             <default>false</default>
             <summary>Mirror: Taildrop usable on this tailnet</summary>

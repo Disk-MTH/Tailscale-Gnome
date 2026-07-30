@@ -33,3 +33,7 @@ node_modules/
 temp/
 /image.png
 /image copy*.png
+
+# Python bytecode (nautilus extension)
+__pycache__/
+*.pyc
