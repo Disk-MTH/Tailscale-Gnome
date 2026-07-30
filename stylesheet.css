@@ -59,10 +59,13 @@
 .tailscale-bottom-buttons .button {
     border-radius: 8px;
     padding: 4px 10px;
-    /* The shell paints every `.button` bold, while `.popup-menu-item` sets
-       itself back to normal. These four labels sit in the same list as the
-       toggle rows above them, so they read as part of it rather than as
-       four bold slabs at the bottom. */
+}
+/* Taildrop | Funnels only. The shell paints every `.button` bold, while
+   `.popup-menu-item` sets itself back to normal; these two sit among the
+   toggle rows and read as part of that list, so they drop the weight. The
+   pair at the very bottom keeps it — Extension settings and Admin panel
+   leave the menu rather than act inside it, and the bold says so. */
+.tailscale-transfer-buttons .button {
     font-weight: normal;
 }
 
