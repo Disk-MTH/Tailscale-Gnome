@@ -69,10 +69,18 @@ locale/%/LC_MESSAGES/$(DOMAIN).mo: po/%.po
 
 translations: $(MO_FILES)
 
+# Directories are replaced rather than merged. `cp -r` into an existing
+# install only ever adds: a file dropped from the source tree — the 0.2.x
+# nautilus scripts, say — would live on in the installed copy, and __pycache__
+# from a local python run would ride along with it.
 install: schemas translations
 	@mkdir -p "$(USER_EXTDIR)"
 	@cp -r metadata.json extension.js prefs.js stylesheet.css "$(USER_EXTDIR)/"
+	@rm -rf "$(USER_EXTDIR)/lib" "$(USER_EXTDIR)/icons" \
+	        "$(USER_EXTDIR)/schemas" "$(USER_EXTDIR)/nautilus" \
+	        "$(USER_EXTDIR)/locale"
 	@cp -r lib icons schemas nautilus "$(USER_EXTDIR)/"
+	@rm -rf "$(USER_EXTDIR)/nautilus/__pycache__"
 	@cp -r locale "$(USER_EXTDIR)/" 2>/dev/null || true
 	@cp -r LICENSE README.md CHANGELOG.md "$(USER_EXTDIR)/" 2>/dev/null || true
 	@printf "Installed to %s\n" "$(USER_EXTDIR)"
@@ -127,4 +135,4 @@ pack: translations
 
 clean:
 	@rm -f "$(COMPILED)" "$(ZIPNAME)"
-	@rm -rf locale
+	@rm -rf locale nautilus/__pycache__
