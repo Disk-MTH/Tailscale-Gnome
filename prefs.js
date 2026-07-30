@@ -1138,7 +1138,7 @@ function _makeHelpPage(settings, metadata) {
     for (const r of [extensionRow, tailscaleRow, osRow, shellRow])
         about.add(r.row);
 
-    // version-name is the human one ("0.2.1"); `version` is the integer
+    // version-name is the human one ("1.0.0"); `version` is the integer
     // EGO increments on every upload and means nothing to a user.
     extensionRow.set(
         metadata["version-name"] ||

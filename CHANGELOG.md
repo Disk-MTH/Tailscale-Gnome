@@ -3,7 +3,7 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased
+## [1.0.0] - 2026-07-30
 
 ### Added
 - Native GNOME notifications, configured from a new Notifications preferences
@@ -51,6 +51,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   send path received `undefined` where it destructured `{ asZip, password }`.
 
 ### Changed
+- The extension is licensed GPL-2.0-or-later, replacing MIT. It is built
+  against GNOME Shell, which is published under those same terms, and every
+  source file now carries an `SPDX-License-Identifier` pointing at
+  `LICENSE` — the full GPL v2 text.
+- The paired "Taildrop" / "Funnels" and "Extension settings" / "Admin panel"
+  buttons no longer come up bold. The shell paints every `.button` bold while
+  a menu item sets itself back to normal, so those four labels were the only
+  bold text in a menu of plain rows.
+- The Funnels dialog is titled "Manage Funnels", saying what it is for rather
+  than repeating the name of the button that opened it.
 - Funnel is one dialog now, reached from a "Funnels" button beside
   "Taildrop" on a single menu row. It opens on the list of what is
   published, each entry carrying its own copy and remove button, over the
