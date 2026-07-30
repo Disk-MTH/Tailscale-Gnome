@@ -14,6 +14,9 @@ ZIPNAME     := $(UUID).shell-extension.zip
 DOMAIN      := tailscale-gnome
 POT         := po/$(DOMAIN).pot
 SOURCES     := extension.js prefs.js $(wildcard lib/*.js)
+# The file-manager extension is python, and shares the catalogue so its
+# context-menu entry is worded by the same strings as the dialog it opens.
+PY_SOURCES  := $(wildcard nautilus/*.py)
 PO_FILES    := $(wildcard po/*.po)
 MO_FILES    := $(patsubst po/%.po,locale/%/LC_MESSAGES/$(DOMAIN).mo,$(PO_FILES))
 
@@ -53,6 +56,9 @@ pot:
 	    --package-name="$(NAME)" --copyright-holder="" \
 	    --msgid-bugs-address="$(URL)/issues" \
 	    --output="$(POT)" $(SOURCES)
+	@xgettext --from-code=UTF-8 --language=Python \
+	    --keyword=_ --keyword=C_:1c,2 --keyword=ngettext:1,2 \
+	    --join-existing --output="$(POT)" $(PY_SOURCES)
 	@printf "Extracted %s\n" "$(POT)"
 
 # Pull newly extracted strings into the existing catalogs, keeping the

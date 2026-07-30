@@ -41,14 +41,20 @@ send/receive files with Taildrop — no terminal required.
 - **Taildrop and Funnels** sit side by side on one menu row, each opening
   its own dialog.
 - **Nautilus integration** (on by default): right-click any file or folder
-  for "Taildrop". It is a real file-manager extension, symlinked into
-  Nautilus' own `nautilus-python/extensions` directory while the setting is
-  on and taken back out when it is off — no copies to keep in sync. The
+  for "Send with Taildrop". It is a real file-manager extension, symlinked
+  into Nautilus' own `nautilus-python/extensions` directory while the setting
+  is on and taken back out when it is off — no copies to keep in sync. The
   entry hands the selection to the extension over D-Bus
   (`org.gnome.Shell.Extensions.TailscaleGnome` on the `org.gnome.Shell`
-  bus name) and the native in-shell peer picker takes over. Needs the
-  `nautilus-python` package, and Nautilus reads that directory once at
-  startup, so quit it before expecting the entry to appear.
+  bus name) and the native in-shell peer picker takes over. It reads the
+  extension's own translations, so the menu entry is worded like the dialog
+  it opens.
+
+  Needs the `nautilus-python` package: without it the file manager loads no
+  Python extension at all, and preferences grey the switch out and say so.
+  Nautilus also reads its extensions directory once, at startup, so toggling
+  the setting offers to quit it — the change is then already in place the
+  next time a window is opened.
 - **Keyboard shortcuts**: toggle Tailscale, toggle exit node, open menu,
   open admin console, open Taildrop, open Funnels. All unbound by
   default — bind what you use.

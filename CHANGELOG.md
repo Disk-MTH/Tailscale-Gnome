@@ -7,11 +7,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - A real file-manager extension, `nautilus/tailscale-taildrop.py`, loaded by
-  nautilus-python out of Nautilus' own extensions directory. "Taildrop" now
-  sits in the context menu itself rather than three clicks down the Scripts
-  submenu, and it calls the same D-Bus method the shell extension already
-  exported, so the in-shell picker — the dialog the keyboard shortcut opens —
-  owns the whole interaction.
+  nautilus-python out of Nautilus' own extensions directory. "Send with
+  Taildrop" now sits in the context menu itself rather than three clicks down
+  the Scripts submenu, and it calls the same D-Bus method the shell extension
+  already exported, so the in-shell picker — the dialog the keyboard shortcut
+  opens — owns the whole interaction. Its entry and tooltip come out of the
+  extension's own gettext catalogues, found by resolving the symlink it was
+  loaded through, so the menu is worded like the dialog it opens.
+- Turning the integration on or off asks first, because it has to close the
+  file manager: Nautilus reads its extensions once at startup, so the setting
+  cannot reach a window already open. Confirming writes the setting and then
+  quits Nautilus (`nautilus -q`, plus `flatpak kill` when the Flatpak is
+  installed), which leaves the change already in place for the next window.
+- Preferences grey the switch out when nautilus-python is missing, with a
+  warning row naming the package. Nothing loads a Python file-manager
+  extension without it, and a live switch would have promised a menu entry
+  that could not appear. The probe looks for the loader module itself
+  (`libnautilus-python.so`, across the libdirs distributions use) rather than
+  asking a package manager.
 - The link is managed by the extension: made on enable while "Nautilus
   integration" is on, dropped on disable, and pointed at the extension
   directory rather than copied out of it, so an update needs no

@@ -23,6 +23,9 @@ import {
 // Pure module, no Shell imports: importing it here is what keeps the mode
 // nicks and the category-to-key map from drifting between the two processes.
 import { CATEGORY_KEY, NotifyMode } from "./lib/notify-policy.js";
+// Same reason: the preferences ask whether the integration is possible, the
+// shell acts on the answer, and both read it out of one place.
+import { hasPythonLoader } from "./lib/nautilus.js";
 
 const TAILSCALED_UNIT = "tailscaled.service";
 
@@ -357,20 +360,119 @@ function _makeTaildropGroup(settings) {
     const nautilusRow = new Adw.SwitchRow({
         title: _("Nautilus integration"),
         subtitle: _(
-            'Add "Taildrop" to the file manager\'s right-click menu. ' +
-                "Needs the nautilus-python package, and Nautilus has to be " +
-                "quit before it notices.",
+            'Add "Send with Taildrop" to the file manager\'s right-click menu.',
         ),
     });
-    settings.bind(
-        "nautilus-integration",
-        nautilusRow,
-        "active",
-        Gio.SettingsBindFlags.DEFAULT,
-    );
     group.add(nautilusRow);
 
+    // Not bound to the setting: flipping it asks first, and a bound switch
+    // has already written by the time there is anything to ask about. The
+    // guard is the same one the service row uses — it marks the writes we
+    // make ourselves, so setting the switch back after a Cancel does not read
+    // as a second toggle.
+    let guard = false;
+    const setActive = (v) => {
+        guard = true;
+        nautilusRow.active = v;
+        guard = false;
+    };
+    setActive(settings.get_boolean("nautilus-integration"));
+
+    // Follows the key rather than owning it: a `dconf write`, a settings
+    // reset, or a second preferences window all reach the switch this way.
+    const nautilusId = settings.connect("changed::nautilus-integration", () =>
+        setActive(settings.get_boolean("nautilus-integration")),
+    );
+    nautilusRow.connect("destroy", () => settings.disconnect(nautilusId));
+
+    // No loader, no integration: the file we link is a python file-manager
+    // extension, and nothing reads it without nautilus-python. Greying the
+    // switch out is the honest answer — leaving it live would let the user
+    // turn on a feature that cannot appear, with nothing to explain why.
+    if (!hasPythonLoader()) {
+        nautilusRow.sensitive = false;
+
+        const missingRow = new Adw.ActionRow({
+            title: _("nautilus-python is not installed"),
+            subtitle: _(
+                "The file manager needs it to load extensions. Install it " +
+                    "with your package manager, then reopen this window.",
+            ),
+            css_classes: ["warning"],
+        });
+        missingRow.add_prefix(
+            new Gtk.Image({
+                icon_name: "dialog-warning-symbolic",
+                valign: Gtk.Align.CENTER,
+                css_classes: ["warning"],
+            }),
+        );
+        group.add(missingRow);
+
+        return group;
+    }
+
+    nautilusRow.connect("notify::active", () => {
+        if (guard) return;
+
+        const wanted = nautilusRow.active;
+        const dialog = new Adw.AlertDialog({
+            heading: _("Quit the file manager?"),
+            // Said plainly because it is the whole reason for the prompt:
+            // Nautilus reads its extensions once, at startup, so the change
+            // cannot reach a window that is already open.
+            body: _(
+                "Nautilus loads its extensions when it starts, so it has to " +
+                    "be closed for this to take effect. Any open Nautilus " +
+                    "window will be closed, and the next one you open picks " +
+                    "up the change.",
+            ),
+        });
+        dialog.add_response("cancel", _("Cancel"));
+        dialog.add_response("quit", _("Quit Nautilus"));
+        dialog.set_response_appearance(
+            "quit",
+            Adw.ResponseAppearance.DESTRUCTIVE,
+        );
+        dialog.set_default_response("quit");
+        dialog.set_close_response("cancel");
+
+        dialog.choose(nautilusRow.get_root(), null, (dlg, res) => {
+            if (dlg.choose_finish(res) !== "quit") {
+                setActive(!wanted);
+                return;
+            }
+            // Written before the quit, not after: the shell extension makes
+            // or drops the link off this key, and nothing relaunches the file
+            // manager on its own, so by the time a window is opened again the
+            // link is already whichever way it should be.
+            settings.set_boolean("nautilus-integration", wanted);
+            _quitFileManagers();
+        });
+    });
+
     return group;
+}
+
+// `nautilus -q` asks the running instance to quit rather than signalling it,
+// so a copy in progress ends on its own terms. It exits quietly when nothing
+// is running, which is why there is nothing to check first.
+//
+// A Flatpak Nautilus is a different process in a different namespace and does
+// not hear `-q` from the host, hence the second call. There is no equivalent
+// for Snap: its confinement offers no "ask the app to quit", and killing it
+// outright is not ours to do.
+async function _quitFileManagers() {
+    await _spawn(["nautilus", "-q"]);
+
+    const flatpakApp = GLib.build_filenamev([
+        GLib.get_home_dir(),
+        ".var",
+        "app",
+        "org.gnome.Nautilus",
+    ]);
+    if (Gio.File.new_for_path(flatpakApp).query_exists(null))
+        await _spawn(["flatpak", "kill", "org.gnome.Nautilus"]);
 }
 
 // Adw.SwitchRow is `final` in libadwaita 1.4+, so we can't subclass it. Build

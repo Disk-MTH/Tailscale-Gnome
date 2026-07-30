@@ -21,6 +21,9 @@ into the journal on every start. Whichever the host runtime already loaded
 is the one that answers.
 """
 
+import gettext
+import os
+
 import gi
 
 gi.require_version("Gio", "2.0")
@@ -40,7 +43,23 @@ BUS_NAME = "org.gnome.Shell"
 OBJECT_PATH = "/org/gnome/Shell/Extensions/TailscaleGnome"
 INTERFACE = "org.gnome.Shell.Extensions.TailscaleGnome"
 
-LABEL = "Taildrop"
+# The shell extension's own catalogue, so the context menu is worded by the
+# same strings as the dialog it opens. __file__ here is the symlink sitting in
+# the file manager's extensions directory; resolving it leads back to the
+# extension directory, where locale/ sits one level up from this file.
+#
+# fallback=True is what keeps a missing catalogue from being fatal: an
+# exception raised at import time would cost the whole menu entry, and English
+# is a better answer than none.
+_LOCALE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "locale"
+)
+
+_ = gettext.translation(
+    "tailscale-gnome",
+    localedir=_LOCALE_DIR if os.path.isdir(_LOCALE_DIR) else None,
+    fallback=True,
+).gettext
 
 
 class TailscaleTaildropExtension(GObject.GObject, Nautilus.MenuProvider):
@@ -106,8 +125,8 @@ class TailscaleTaildropExtension(GObject.GObject, Nautilus.MenuProvider):
 
         item = Nautilus.MenuItem(
             name="TailscaleGnome::Taildrop",
-            label=LABEL,
-            tip="Send the selection to a Tailscale device",
+            label=_("Send with Taildrop"),
+            tip=_("Send the selection to a Tailscale device"),
         )
         item.connect("activate", self._activate, files)
 
