@@ -1,7 +1,7 @@
 {
     "uuid": "tailscale-gnome@diskmth.fr",
     "name": "Tailscale",
-    "description": "Manage Tailscale from GNOME Quick Settings without the CLI.\n\nCopies peer IPs and Funnel URLs to the clipboard on demand, when the user clicks the corresponding action.\n\nNot affiliated with or endorsed by Tailscale Inc. Tailscale is a registered trademark of Tailscale Inc.",
+    "description": "An intuitive, feature-rich, and elegant Tailscale integration for GNOME. Nothing more, nothing less. Not affiliated with Tailscale Inc.",
     "shell-version": ["49", "50"],
     "url": "https://github.com/Disk-MTH/Tailscale-Gnome",
     "settings-schema": "org.gnome.shell.extensions.tailscale-gnome",
