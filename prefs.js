@@ -18,6 +18,7 @@ import {
 
 import {
     fmt as _fmt,
+    hasTailscaleCli,
     spawn as _spawn,
 } from "./lib/util.js";
 // Pure module, no Shell imports: importing it here is what keeps the mode
@@ -733,6 +734,32 @@ function _makeAvailabilityRow(settings, def) {
     return row;
 }
 
+// Shown at the top of every page while the CLI is missing. The rows below
+// it are left alone on purpose: they are the *extension's* preferences —
+// which indicators to draw, what to notify about, which keys to bind — and
+// they stay meaningful whether or not Tailscale is installed. What is dead
+// in that state lives in the shell menu, and the menu says so itself.
+// The one thing this group cannot do is act: installing a package is the
+// distribution's business, not a button here.
+function _makeNotInstalledGroup() {
+    if (hasTailscaleCli()) return null;
+    const group = new Adw.PreferencesGroup();
+    const row = new Adw.ActionRow({
+        title: _("Tailscale is not installed"),
+        subtitle: _(
+            "The `tailscale` command was not found on PATH, so the menu has nothing to drive. Install it with your distribution's package manager; the extension picks it up on its own, with no reload.",
+        ),
+    });
+    row.add_prefix(
+        new Gtk.Image({
+            iconName: "dialog-warning-symbolic",
+            valign: Gtk.Align.CENTER,
+        }),
+    );
+    group.add(row);
+    return group;
+}
+
 function _makeAvailabilityGroup(settings) {
     const group = new Adw.PreferencesGroup({
         title: _("Availability"),
@@ -1138,6 +1165,12 @@ function _makeHelpPage(settings, metadata) {
     // No probe on open — the group shows the last poll's answer and follows
     // the key from there. The shell refreshes it every few seconds whether
     // this window is up or not.
+    // Ahead of Availability, which reads a tailnet's ACL out of the last
+    // poll: with no CLI there was no poll, and whatever it says is a
+    // leftover from the last machine state that could answer.
+    const missing = _makeNotInstalledGroup();
+    if (missing) page.add(missing);
+
     page.add(_makeAvailabilityGroup(settings));
 
     /* ------------------------------ Versions ----------------------------- */
@@ -1169,8 +1202,7 @@ function _makeHelpPage(settings, metadata) {
     // placeholder, which already says "we could not tell" — it goes to the
     // log rather than at the user, who did not ask for it and cannot act
     // on it.
-    const bin = settings.get_string("tailscale-binary") || "tailscale";
-    _spawn([bin, "version", "--daemon"])
+    _spawn(["tailscale", "version", "--daemon"])
         .then((r) => {
             const { version, clientOnly } = _parseTailscaleVersion(r.stdout);
             tailscaleRow.set(version);
@@ -1257,6 +1289,13 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         window.add(_makeNotificationsPage(settings));
         window.add(_makeShortcutsPage(settings));
         window.add(_makeHelpPage(settings, this.metadata));
+
+        // First group on the landing page, so the answer to "why is the
+        // menu empty" is the first thing here rather than something to
+        // find. Duplicated on Help because that is the page someone opens
+        // when they came looking for it.
+        const missing = _makeNotInstalledGroup();
+        if (missing) page.add(missing);
 
         /* --------------------------- Indicators ------------------------- */
         // Three independent switches rather than one: the exit-node warning
@@ -1370,16 +1409,6 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         pollRow.add_suffix(_resetButton(settings, "poll-interval"));
         advanced.add(pollRow);
 
-        const binaryRow = new Adw.EntryRow({ title: _("tailscale binary") });
-        settings.bind(
-            "tailscale-binary",
-            binaryRow,
-            "text",
-            Gio.SettingsBindFlags.DEFAULT,
-        );
-        binaryRow.add_suffix(_resetButton(settings, "tailscale-binary"));
-        advanced.add(binaryRow);
-
         /* ----------------------------- Reset all ------------------------ */
         // Global "reset everything" lives in its own group so it gets a
         // visual break from the dense list of settings above.
@@ -1402,10 +1431,9 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             //   Magic DNS off, accept routes off, shields up off,
             //   SSH server off, exit node cleared, any active funnels
             //   torn down.
-            const bin = settings.get_string("tailscale-binary") || "tailscale";
             try {
                 await _spawn([
-                    bin,
+                    "tailscale",
                     "set",
                     "--accept-dns=false",
                     "--accept-routes=false",
@@ -1419,7 +1447,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
             // `funnel reset` is its own subcommand; ignore failures (most
             // likely "no funnels to reset", which is exactly what we want).
             try {
-                await _spawn([bin, "funnel", "reset"]);
+                await _spawn(["tailscale", "funnel", "reset"]);
             } catch {}
 
             // The two availability keys were reset along with everything

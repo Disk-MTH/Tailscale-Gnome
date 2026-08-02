@@ -36,6 +36,13 @@ Nautilus integration (on by default) needs the `nautilus-python`
 package. Without it, the file manager loads no Python extension at
 all, and preferences grey the toggle out and say so.
 
+With no `tailscale` on `PATH` the extension goes inert rather than
+broken: the menu is stripped to one row saying so, the keybindings and
+the Nautilus entry refuse with the same message, preferences carry a
+warning at the top of General and Help, and nothing is ever spawned. It
+watches `PATH` at a slow tick from there, so installing the package
+brings the menu back on its own — no reload, no logout.
+
 ## Privileged operations
 
 On Linux the Tailscale daemon only accepts state-changing commands from
@@ -56,10 +63,10 @@ Safeguards:
 - Every elevated command is a **literal argument vector**, readable
   as-is in the source; nothing typed by a user, read from a file or
   built at runtime is ever concatenated into it (no `sh -c`).
-- Elevated calls hardcode the `tailscale` program name; `pkexec`
-  resolves it in its own trusted root `PATH`. The **Advanced →
-  tailscale binary** setting is deliberately ignored for privileged
-  calls, so a user-writable path can never be elevated.
+- The program name is always the bare `tailscale`, resolved on `PATH`
+  (in `pkexec`'s own trusted root `PATH` for elevated calls). No setting
+  can point it elsewhere, so a user-writable path is never run — let
+  alone elevated.
 
 ## Install
 
@@ -90,7 +97,6 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Nautilus integration               | on            |
 | General       | Start Tailscale at boot            | system        |
 | General       | Poll interval                      | 3s            |
-| General       | tailscale binary                   | `tailscale`   |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |

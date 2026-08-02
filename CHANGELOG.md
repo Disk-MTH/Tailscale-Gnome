@@ -6,6 +6,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## Unreleased
 
 ### Added
+- A first-class "Tailscale is not installed" state. `Gio.Subprocess.new`
+  throws when the program is not on `PATH`, and that rejection used to escape
+  the poll: the snapshot never took the error, so the pill read **Disconnected**
+  — as if Tailscale were installed and merely off — while every poll raised a
+  fresh `Failed to execute child process` banner, one every three seconds for
+  the whole session. The client now probes `PATH` before it spawns anything,
+  and answers with an empty snapshot flagged `installed: false`. That travels
+  on `state-changed` like every other fact, so it is diff-gated: reported once,
+  not on repeat.
+- Everything that drives a command is off in that state. The menu is stripped
+  to a single row naming the missing package; the toggle, the keybindings
+  (connect, exit node, admin console) and the Nautilus "Send with Taildrop"
+  entry all refuse with the same wording, since a hidden row stops nothing that
+  does not go through the row. Preferences carry a warning at the top of
+  General and Help — but keep their own settings live, because which indicators
+  to draw and which keys to bind mean the same thing either way.
+- The poll drops to 30s while there is nothing to poll, and the extension comes
+  back on its own the moment the package lands: no reload, no logout. The
+  Taildrop receiver, a child of the binary that went away, is re-armed from its
+  setting on the way back.
+- One notification on the transition, in both directions, and none for the
+  state. A machine that simply has no Tailscale said so through the panel
+  before the user could look; being told again at every login is nagging about
+  a fact rather than reporting an event. Losing the binary mid-session *is* an
+  event, and nothing else on screen would explain it.
+
 - A real file-manager extension, `nautilus/tailscale-taildrop.py`, loaded by
   nautilus-python out of Nautilus' own extensions directory. "Send with
   Taildrop" now sits in the context menu itself rather than three clicks down
@@ -33,6 +59,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   different `$XDG_DATA_HOME`.
 
 ### Removed
+- The **Advanced → tailscale binary** setting, and the `tailscale-binary`
+  key behind it. It only ever steered the unprivileged half of the
+  extension: the elevated calls hardcode the program name so `pkexec`
+  resolves it in its own trusted root `PATH`, and that is not going to
+  change. Pointing the setting at a differently-named binary therefore
+  left login, logout, operator and account switching talking to
+  `tailscale` while everything else talked to something else — a broken
+  extension with a plausible-looking configuration. The program name is
+  now the literal `tailscale` everywhere, resolved on `PATH`.
+
 - The two shell scripts, "Send with Taildrop" and "Send with Taildrop as
   ZIP", along with the Install / Remove buttons in preferences that copied
   them into `~/.local/share/nautilus/scripts`. Both re-implemented the D-Bus

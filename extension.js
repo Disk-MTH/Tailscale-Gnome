@@ -53,7 +53,6 @@ export default class TailscaleGnomeExtension extends Extension {
         Notifier.init(this._settings, { extension: this });
 
         this._client = new TailscaleClient({
-            binary:      this._settings.get_string('tailscale-binary') || 'tailscale',
             pollSeconds: this._settings.get_int('poll-interval'),
             settings:    this._settings,
         });
@@ -61,11 +60,6 @@ export default class TailscaleGnomeExtension extends Extension {
         this._settings.connectObject(
             'changed::poll-interval', () => {
                 this._client.setPollSeconds(this._settings.get_int('poll-interval'));
-            },
-            'changed::tailscale-binary', () => {
-                this._client.setBinary(
-                    this._settings.get_string('tailscale-binary') || 'tailscale',
-                );
             },
             'changed::nautilus-integration', () => this._syncNautilus(),
             ...SHORTCUT_KEYS.flatMap((key) => [
@@ -113,6 +107,10 @@ export default class TailscaleGnomeExtension extends Extension {
             'taildrop-disabled':     () => _('Taildrop disabled for this tailnet'),
             'funnel-enabled':        () => _('Funnel enabled for this tailnet'),
             'funnel-disabled':       () => _('Funnel disabled for this tailnet'),
+            // The CLI left or arrived on PATH mid-session. Only a session
+            // that watched it happen gets these — see watchers.js.
+            'tailscale-missing':     () => _('Tailscale is no longer installed'),
+            'tailscale-installed':   () => _('Tailscale is installed — the menu is back'),
         };
 
         this._quietToken = 0;
@@ -263,6 +261,16 @@ export default class TailscaleGnomeExtension extends Extension {
             this,
         );
 
+        // The receiver is a child of the CLI: losing the binary kills it,
+        // and the client cannot put it back on its own — nothing down
+        // there knows whether the user still wants files. Re-apply the
+        // setting the moment the binary returns.
+        let wasInstalled = this._client.snapshot.installed;
+        this._client.connectObject('state-changed', (_c, snap) => {
+            if (snap.installed && !wasInstalled) syncTaildrop();
+            wasInstalled = snap.installed;
+        }, this);
+
         // One-shot startup check: if the operator pref is missing once the
         // first poll has landed, fire a single polkit prompt. We avoid a
         // state-changed handler because login transiently flips
@@ -401,10 +409,25 @@ export default class TailscaleGnomeExtension extends Extension {
         this._boundShortcuts.add(key);
     }
 
+    // Keybindings reach past the menu, so every one of them that drives a
+    // command has to ask the same question the hidden rows answer by being
+    // hidden. Sending files and opening Funnels ask it on the other side,
+    // in the toggle, because the D-Bus entry point shares those paths.
+    _notInstalled() {
+        if (this._client.snapshot.installed !== false) return false;
+        Notifier.notify({
+            category: Category.CONNECTION,
+            level: 'error',
+            message: _('Tailscale is not installed'),
+        });
+        return true;
+    }
+
     _shortcutHandler(key) {
         switch (key) {
         case 'shortcut-toggle-tailscale':
             return () => {
+                if (this._notInstalled()) return;
                 const snap = this._client.snapshot;
                 const ready =
                     snap.canControl &&
@@ -441,6 +464,7 @@ export default class TailscaleGnomeExtension extends Extension {
             };
         case 'shortcut-toggle-exit-node':
             return () => {
+                if (this._notInstalled()) return;
                 const snap = this._client.snapshot;
                 if (snap.exitNodeID) {
                     Notifier.withFeedback(
@@ -461,7 +485,13 @@ export default class TailscaleGnomeExtension extends Extension {
         case 'shortcut-show-menu':
             return () => this._indicator.openMenu();
         case 'shortcut-open-admin-panel':
-            return () => openAdminPanel();
+            // Gated like the rest even though the URL would open: the menu
+            // hides its Admin panel button in this state, and a shortcut
+            // that still worked would just be the same button, invisible.
+            return () => {
+                if (this._notInstalled()) return;
+                openAdminPanel();
+            };
         case 'shortcut-send-file':
             return () => this._indicator.sendFiles();
         case 'shortcut-add-funnel':

@@ -284,3 +284,68 @@ suite('computeEvents — tailnet capabilities', () => {
         assertDeepEq(types(events), ['funnel-disabled']);
     });
 });
+
+suite('computeEvents — the CLI itself', () => {
+    const here = (over = {}) => snapshot({
+        installed: true,
+        accountName: 'tailnet-a',
+        taildropAvailable: true,
+        funnelsAvailable: true,
+        exitNodeID: 'n1',
+        currentExitNode: node(),
+        ...over,
+    });
+
+    // What the client hands over once the binary is gone: an empty
+    // snapshot, not an observation of one.
+    const gone = () => snapshot({
+        installed: false,
+        backendState: 'NoState',
+        accountName: null,
+        taildropAvailable: null,
+        funnelsAvailable: null,
+        exitNodeID: null,
+        currentExitNode: null,
+    });
+
+    test('losing the binary reports once, and only that', () => {
+        const t = seed(here());
+        const { events, track } = computeEvents(t, gone());
+        assertDeepEq(types(events), ['tailscale-missing']);
+        assertEq(events[0].level, 'error');
+        assertEq(events[0].category, 'connection');
+        // Every poll that follows lands here too and must stay quiet.
+        assertDeepEq(types(computeEvents(track, gone()).events), []);
+    });
+
+    // The account, the exit node and both capabilities all read as "gone"
+    // off that snapshot. None of them went anywhere; the binary did.
+    test('an empty snapshot does not report the world emptying with it', () => {
+        const t = seed(here());
+        const { events } = computeEvents(t, gone());
+        assertEq(events.length, 1);
+    });
+
+    test('the tracker keeps the world it had, so the return trip is quiet', () => {
+        const t = seed(here());
+        const away = computeEvents(t, gone()).track;
+        assertEq(away.accountName, 'tailnet-a');
+        assertEq(away.taildropAvailable, true);
+        const { events } = computeEvents(away, here());
+        assertDeepEq(types(events), ['tailscale-installed']);
+        assertEq(events[0].level, 'info');
+    });
+
+    // A machine that has never had Tailscale would otherwise be told so at
+    // every login, about a state the panel already shows.
+    test('the cold start reports nothing', () => {
+        assertDeepEq(types(computeEvents(EMPTY_TRACK, gone()).events), []);
+    });
+
+    // Snapshots built before this field existed, and the ones the other
+    // suites here still use, must not read as an uninstall.
+    test('an absent field is not a flip', () => {
+        const t = seed(snapshot({ accountName: 'tailnet-a' }));
+        assertDeepEq(types(computeEvents(t, snapshot()).events), []);
+    });
+});

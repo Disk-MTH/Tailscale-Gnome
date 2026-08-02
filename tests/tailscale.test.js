@@ -3,8 +3,12 @@
 
 // Snapshot parsing rules that don't need a live GNOME Shell session.
 
-import { assertEq, assertDeepEq, suite, test } from './harness.js';
-import { parseWroteLine, peersFromStatus } from '../lib/tailscale.js';
+import GLib from 'gi://GLib';
+
+import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
+import {
+    TailscaleClient, parseWroteLine, peersFromStatus,
+} from '../lib/tailscale.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
 // netmap. They are flagged `ShareeNode` precisely so clients hide them, and
@@ -130,5 +134,74 @@ suite('parseWroteLine', () => {
     test('ignores a wrote line it cannot fully account for', () => {
         // Rather than half-parse a format change into a broken path.
         assertEq(parseWroteLine('wrote something unexpected'), null);
+    });
+});
+
+suite('TailscaleClient — no CLI on PATH', () => {
+    // find_program_in_path reads PATH out of the environment, so PATH is
+    // the whole fixture: point it at a directory holding an executable
+    // called `tailscale` for the installed case, and at an empty one for
+    // the other. Restored on every exit path — a leaked PATH would take
+    // the rest of this file down with it and give no clue why.
+    function withPath(value, fn) {
+        const saved = GLib.getenv('PATH');
+        GLib.setenv('PATH', value, true);
+        try {
+            return fn();
+        } finally {
+            GLib.setenv('PATH', saved ?? '', true);
+        }
+    }
+
+    // Two directories under one temp root: `bin` with the stub, `empty`
+    // without. Built once — nothing here writes to them.
+    const root = GLib.dir_make_tmp('tailscale-gnome-test-XXXXXX');
+    const binDir = GLib.build_filenamev([root, 'bin']);
+    const emptyDir = GLib.build_filenamev([root, 'empty']);
+    GLib.mkdir_with_parents(binDir, 0o755);
+    GLib.mkdir_with_parents(emptyDir, 0o755);
+    const stub = GLib.build_filenamev([binDir, 'tailscale']);
+    GLib.file_set_contents(stub, '#!/bin/sh\nexit 0\n');
+    // Executable, because that is what find_program_in_path checks for —
+    // a readable file of the right name is not a hit.
+    GLib.chmod(stub, 0o755);
+
+    // The toggle renders from this very snapshot before the first poll
+    // lands. An optimistic default would show a working-but-disconnected
+    // Tailscale for as long as that takes.
+    test('the first snapshot says so before any poll has run', () => {
+        withPath(emptyDir, () => {
+            const c = new TailscaleClient();
+            assertEq(c.snapshot.installed, false);
+            assertEq(c.snapshot.running, false);
+            assertTrue(typeof c.snapshot.error === 'string');
+            c.destroy();
+        });
+    });
+
+    test('a CLI on PATH is not reported as missing', () => {
+        withPath(binDir, () => {
+            const c = new TailscaleClient();
+            assertEq(c.snapshot.installed, true);
+            assertEq(c.snapshot.error, null);
+            c.destroy();
+        });
+    });
+
+    // The transition is the event; the state is not. Every poll after the
+    // binary goes lands in the same place and must stay silent, or the
+    // user gets a banner every few seconds for the rest of the session.
+    test('settling into the missing state emits exactly once', () => {
+        withPath(binDir, () => {
+            const c = new TailscaleClient();
+            let emissions = 0;
+            c.connect('state-changed', () => emissions++);
+            c._goMissing();
+            c._goMissing();
+            c._goMissing();
+            assertEq(emissions, 1);
+            assertEq(c.snapshot.installed, false);
+            c.destroy();
+        });
     });
 });
