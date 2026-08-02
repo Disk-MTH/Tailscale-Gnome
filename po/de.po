@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 13:23+0200\n"
+"POT-Creation-Date: 2026-08-02 15:16+0200\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: German\n"
@@ -15,1116 +15,451 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: extension.js:92
-msgid "Connecting Tailscale — this may take a moment"
-msgstr "Tailscale wird verbunden — das kann einen Moment dauern"
+#: extension.js:335 lib/menu.js:86 lib/menu.js:468 lib/menu.js:577
+#: prefs/common.js:52
+msgid "Tailscale is not installed"
+msgstr "Tailscale ist nicht installiert"
 
-#: extension.js:93 extension.js:437 lib/menu.js:1991
-msgid "Tailscale connected"
-msgstr "Tailscale verbunden"
-
-#: extension.js:99
-msgid "Auto exit node lost"
-msgstr "Automatischer Exit-Node verloren"
-
-#: extension.js:100
-#, javascript-format
-msgid "Auto exit node: %s"
-msgstr "Automatischer Exit-Node: %s"
-
-#: extension.js:101
-#, javascript-format
-msgid "Auto exit node switched to %s"
-msgstr "Automatischer Exit-Node auf %s gewechselt"
-
-#: extension.js:102
-#, javascript-format
-msgid "Exit node %s went offline"
-msgstr "Exit-Node %s ist offline gegangen"
-
-#: extension.js:103
-#, javascript-format
-msgid "Exit node %s is back online"
-msgstr "Exit-Node %s ist wieder online"
-
-#: extension.js:104
-#, javascript-format
-msgid "Exit node %s was disabled"
-msgstr "Exit-Node %s wurde deaktiviert"
-
-#: extension.js:105
-#, javascript-format
-msgid "Exit node %s was re-enabled"
-msgstr "Exit-Node %s wurde wieder aktiviert"
-
-#: extension.js:106
-#, javascript-format
-msgid "Profile applied (%s)"
-msgstr "Profil angewendet (%s)"
-
-#: extension.js:112
-msgid "Taildrop enabled for this tailnet"
-msgstr "Taildrop für dieses Tailnet aktiviert"
-
-#: extension.js:113
-msgid "Taildrop disabled for this tailnet"
-msgstr "Taildrop für dieses Tailnet deaktiviert"
-
-#: extension.js:114
-msgid "Funnel enabled for this tailnet"
-msgstr "Funnel für dieses Tailnet aktiviert"
-
-#: extension.js:115
-msgid "Funnel disabled for this tailnet"
-msgstr "Funnel für dieses Tailnet deaktiviert"
-
-#: extension.js:419 lib/menu.js:456
+#: extension.js:356 lib/menu.js:89
 msgid "Login required"
 msgstr "Anmeldung erforderlich"
 
-#: extension.js:423
+#: extension.js:360
 msgid "Tailscale is not ready yet"
 msgstr "Tailscale ist noch nicht bereit"
 
-#: extension.js:429 lib/menu.js:1997
+#: extension.js:366 lib/menu.js:530
 msgid "Disconnecting Tailscale"
 msgstr "Tailscale wird getrennt"
 
-#: extension.js:430 lib/menu.js:1998
+#: extension.js:367 lib/menu.js:531
 msgid "Tailscale disconnected"
 msgstr "Tailscale getrennt"
 
-#: extension.js:436 lib/menu.js:1990
+#: extension.js:373 lib/menu.js:523
 msgid "Connecting Tailscale"
 msgstr "Tailscale wird verbunden"
 
-#: extension.js:448 lib/menu.js:2330
+#: extension.js:374 lib/menu.js:524 lib/watcher-messages.js:17
+msgid "Tailscale connected"
+msgstr "Tailscale verbunden"
+
+#: extension.js:386 lib/menu.js:888
 msgid "Clearing exit node"
 msgstr "Exit-Node wird entfernt"
 
-#: extension.js:449 lib/menu.js:2331
+#: extension.js:387 lib/menu.js:889
 msgid "Exit node cleared"
 msgstr "Exit-Node entfernt"
 
-#: extension.js:455 lib/menu.js:2342
+#: extension.js:393 lib/menu.js:900
 msgid "Selecting an exit node"
 msgstr "Exit-Node wird ausgewählt"
 
-#: extension.js:456 lib/menu.js:2343
+#: extension.js:394 lib/menu.js:901
 msgid "Exit node: auto"
 msgstr "Exit-Node: automatisch"
 
-#: prefs.js:79
-msgid "Disabled"
-msgstr "Deaktiviert"
-
-#: prefs.js:87
-msgid "Clear shortcut"
-msgstr "Tastenkürzel löschen"
-
-#: prefs.js:115
-msgid "Set shortcut"
-msgstr "Tastenkürzel festlegen"
-
-#: prefs.js:134
-msgid "Press a key combination"
-msgstr "Tastenkombination drücken"
-
-#: prefs.js:140
-msgid "Escape to cancel · Backspace to clear"
-msgstr "Esc zum Abbrechen · Rücktaste zum Löschen"
-
-#: prefs.js:184 prefs.js:548 prefs.js:790 lib/menu.js:1808 lib/notify.js:32
-msgid "Taildrop"
-msgstr "Taildrop"
-
-#: prefs.js:185
-msgid "Send and receive files between Tailscale nodes."
-msgstr "Dateien zwischen Tailscale-Geräten senden und empfangen."
-
-#: prefs.js:225
-msgid "Inbox folder (created if it does not exist)"
-msgstr "Empfangsordner (wird bei Bedarf erstellt)"
-
-#: prefs.js:241
-msgid "Path is empty or not writable without admin privileges."
-msgstr "Der Pfad ist leer oder ohne Administratorrechte nicht beschreibbar."
-
-#: prefs.js:292
-#, javascript-format
-msgid "Taildrop inbox set to %s"
-msgstr "Taildrop-Empfangsordner auf %s gesetzt"
-
-#: prefs.js:321
-msgid "Browse"
-msgstr "Durchsuchen"
-
-#: prefs.js:325
-msgid "Choose Taildrop inbox folder"
-msgstr "Taildrop-Empfangsordner wählen"
-
-#: prefs.js:345 prefs.js:672
-msgid "Reset to default"
-msgstr "Auf Standard zurücksetzen"
-
-#: prefs.js:361
-msgid "Nautilus integration"
-msgstr "Nautilus-Integration"
-
-#: prefs.js:363
-msgid "Add \"Send with Taildrop\" to the file manager's right-click menu."
-msgstr "Fügt „Mit Taildrop senden“ zum Kontextmenü der Dateiverwaltung hinzu."
-
-#: prefs.js:396
-msgid "nautilus-python is not installed"
-msgstr "nautilus-python ist nicht installiert"
-
-#: prefs.js:398
-msgid ""
-"The file manager needs it to load extensions. Install it with your package "
-"manager, then reopen this window."
-msgstr ""
-"Die Dateiverwaltung benötigt es, um Erweiterungen zu laden. Über die "
-"Paketverwaltung installieren und dieses Fenster erneut öffnen."
-
-#: prefs.js:420
-msgid "Quit the file manager?"
-msgstr "Dateiverwaltung beenden?"
-
-#: prefs.js:425
-msgid ""
-"Nautilus loads its extensions when it starts, so it has to be closed for "
-"this to take effect. Any open Nautilus window will be closed, and the next "
-"one you open picks up the change."
-msgstr ""
-"Nautilus lädt seine Erweiterungen beim Start, muss also beendet werden, "
-"damit diese Einstellung wirkt. Jedes offene Nautilus-Fenster wird "
-"geschlossen, und das nächste übernimmt die Änderung."
-
-#: prefs.js:431 lib/menu.js:891
-msgid "Cancel"
-msgstr "Abbrechen"
-
-#: prefs.js:432
-msgid "Quit Nautilus"
-msgstr "Nautilus beenden"
-
-#: prefs.js:482
-msgid "Start Tailscale at boot"
-msgstr "Tailscale beim Systemstart starten"
-
-#: prefs.js:483
-msgid "Enables tailscaled.service via systemctl."
-msgstr "Aktiviert tailscaled.service über systemctl."
-
-#: prefs.js:496
-msgid "tailscaled.service not found. Install Tailscale via your distribution."
-msgstr ""
-"tailscaled.service nicht gefunden. Tailscale über die Distribution "
-"installieren."
-
-#: prefs.js:518
-msgid "Could not change service state"
-msgstr "Dienststatus konnte nicht geändert werden"
-
-#: prefs.js:551
-msgid "Taildrop is disabled for this tailnet."
-msgstr "Taildrop ist für dieses Tailnet deaktiviert."
-
-#: prefs.js:554
-msgid ""
-"Taildrop requires the feature to be enabled for the tailnet and the source "
-"and destination devices to be owned by the same user. Devices owned by a tag "
-"or by different users are not eligible."
-msgstr ""
-"Taildrop setzt voraus, dass die Funktion für das Tailnet aktiviert ist und "
-"Quell- und Zielgerät demselben Benutzer gehören. Geräte, die einem Tag oder "
-"anderen Benutzern gehören, sind nicht zulässig."
-
-#: prefs.js:559 prefs.js:796 lib/notify.js:33
-msgid "Funnel"
-msgstr "Funnel"
-
-#: prefs.js:563
-msgid "Funnel is not enabled for this tailnet."
-msgstr "Funnel ist für dieses Tailnet nicht aktiviert."
-
-#: prefs.js:566
-msgid ""
-"Funnel requires HTTPS certificates to be enabled tailnet-wide and the "
-"\"funnel\" node attribute granted to the current user."
-msgstr ""
-"Funnel setzt voraus, dass HTTPS-Zertifikate tailnetweit aktiviert sind und "
-"dem aktuellen Benutzer das Knotenattribut „funnel“ gewährt wurde."
-
-#: prefs.js:692
-#, javascript-format
-msgid ""
-"%s\n"
-"\n"
-"Click to open: %s"
-msgstr ""
-"%s\n"
-"\n"
-"Zum Öffnen klicken: %s"
-
-#: prefs.js:705
-msgid "Open admin"
-msgstr "Verwaltung öffnen"
-
-#: prefs.js:725
-msgid "Available on this tailnet"
-msgstr "In diesem Tailnet verfügbar"
-
-#: prefs.js:726
-msgid "Not available on this tailnet"
-msgstr "In diesem Tailnet nicht verfügbar"
-
-#: prefs.js:738
-msgid "Availability"
-msgstr "Verfügbarkeit"
-
-#: prefs.js:740
-msgid ""
-"What this tailnet allows. Both depend on your tailnet's admin settings, not "
-"on anything you can change here. (Hover over the info icon for details)"
-msgstr ""
-"Was dieses Tailnet erlaubt. Beides hängt von den Verwaltungseinstellungen "
-"des Tailnets ab, nicht von hier änderbaren Optionen. (Für Details den "
-"Mauszeiger über das Info-Symbol bewegen)"
-
-#: prefs.js:763
-msgid "Tailscale connection"
-msgstr "Tailscale-Verbindung"
-
-#: prefs.js:764
-msgid "Connecting, disconnecting, and daemon startup."
-msgstr "Verbinden, Trennen und Start des Daemons."
-
-#: prefs.js:768
-msgid "Login and logout"
-msgstr "An- und Abmeldung"
-
-#: prefs.js:769
-msgid "Sign-in, sign-out, and operator changes."
-msgstr "Anmeldung, Abmeldung und Operator-Änderungen."
-
-#: prefs.js:773
-msgid "Profile switch"
-msgstr "Profilwechsel"
-
-#: prefs.js:775
-msgid "A single notification once the new profile is applied."
-msgstr ""
-"Eine einzelne Benachrichtigung, sobald das neue Profil angewendet wurde."
-
-#: prefs.js:779 lib/menu.js:1721 lib/menu.js:2296 lib/notify.js:30
-msgid "Exit node"
-msgstr "Exit-Node"
-
-#: prefs.js:780
-msgid "Selection, going offline, and automatic switches."
-msgstr "Auswahl, Offline-Gehen und automatische Wechsel."
-
-#: prefs.js:784
-msgid "Network settings"
-msgstr "Netzwerkeinstellungen"
-
-#: prefs.js:786
-msgid "Magic DNS, routes, shields up, SSH server, LAN access."
-msgstr "Magic DNS, Routen, Shields up, SSH-Server, LAN-Zugriff."
-
-#: prefs.js:792
-msgid "Files sent and received, receiver started and stopped."
-msgstr "Gesendete und empfangene Dateien, Start und Stopp des Empfangs."
-
-#: prefs.js:797
-msgid "Ports added and removed."
-msgstr "Hinzugefügte und entfernte Ports."
-
-#: prefs.js:801 prefs.js:828
-msgid "Errors"
-msgstr "Fehler"
-
-#: prefs.js:802
-msgid "Failures outside any category above."
-msgstr "Fehler außerhalb der Kategorien darüber."
-
-#: prefs.js:806
-msgid "Other"
-msgstr "Sonstiges"
-
-#: prefs.js:807
-msgid "Clipboard copies and manual refreshes."
-msgstr "Kopien in die Zwischenablage und manuelle Aktualisierungen."
-
-#: prefs.js:821
-msgid "All"
-msgstr "Alle"
-
-#: prefs.js:822
-msgid "Report everything this category produces"
-msgstr "Alles melden, was diese Kategorie erzeugt"
-
-#: prefs.js:829
-msgid "Report only failures and warnings"
-msgstr "Nur Fehler und Warnungen melden"
-
-#: prefs.js:835
-msgid "Off"
-msgstr "Keine"
-
-#: prefs.js:836
-msgid "Report nothing at all"
-msgstr "Gar nichts melden"
-
-#: prefs.js:869
-msgid "All events"
-msgstr "Alle Ereignisse"
-
-#: prefs.js:870
-msgid "Apply one setting to every category below."
-msgstr "Wendet eine Einstellung auf alle Kategorien darunter an."
-
-#: prefs.js:913
-msgid "Notifications"
-msgstr "Benachrichtigungen"
-
-#: prefs.js:919
-msgid "Presentation"
-msgstr "Darstellung"
-
-#: prefs.js:921
-msgid ""
-"Reports post as native GNOME notifications, stacking into a browsable "
-"history under a single Tailscale entry. How long a banner stays on screen is "
-"GNOME's own setting, not this extension's."
-msgstr ""
-"Meldungen erscheinen als native GNOME-Benachrichtigungen und sammeln sich "
-"unter einem einzigen Tailscale-Eintrag zu einem durchblätterbaren Verlauf. "
-"Wie lange ein Banner sichtbar bleibt, legt GNOME fest, nicht diese "
-"Erweiterung."
-
-#: prefs.js:927
-msgid "Minimum pending duration"
-msgstr "Mindestdauer des Wartezustands"
-
-#: prefs.js:929
-msgid ""
-"Milliseconds the pending state stays visible before showing the result (0 to "
-"3000). Prevents flicker on instant actions."
-msgstr ""
-"Millisekunden, die der Wartezustand vor dem Ergebnis sichtbar bleibt (0 bis "
-"3000). Verhindert Flackern bei sofortigen Aktionen."
-
-#: prefs.js:949
-msgid "Events"
-msgstr "Ereignisse"
-
-#: prefs.js:951
-msgid ""
-"How much each kind of event may report. All lets everything through, Errors "
-"keeps only failures and warnings, Off silences the category completely."
-msgstr ""
-"Wie viel jede Art von Ereignis melden darf. Alle lässt alles durch, Fehler "
-"behält nur Fehler und Warnungen, Keine bringt die Kategorie ganz zum "
-"Schweigen."
-
-#: prefs.js:972
-msgid "Connect / disconnect Tailscale"
-msgstr "Tailscale verbinden / trennen"
-
-#: prefs.js:976
-msgid "Toggle automatic exit node"
-msgstr "Automatischen Exit-Node umschalten"
-
-#: prefs.js:980
-msgid "Open the Tailscale menu"
-msgstr "Tailscale-Menü öffnen"
-
-#: prefs.js:984
-msgid "Open the Tailscale admin console"
-msgstr "Tailscale-Verwaltungskonsole öffnen"
-
-#: prefs.js:992
-msgid "Open Taildrop"
-msgstr "Taildrop öffnen"
-
-#: prefs.js:996
-msgid "Open Funnels"
-msgstr "Funnels öffnen"
-
-#: prefs.js:1002
-msgid "Shortcuts"
-msgstr "Tastenkürzel"
-
-#: prefs.js:1007
-msgid "Keyboard shortcuts"
-msgstr "Tastenkürzel"
-
-#: prefs.js:1009
-msgid "Click a row to capture a key combination. Backspace to clear."
-msgstr ""
-"Auf eine Zeile klicken, um eine Tastenkombination aufzuzeichnen. Rücktaste "
-"zum Löschen."
-
-#: prefs.js:1129
-msgid "Help"
-msgstr "Hilfe"
-
-#: prefs.js:1145
-msgid "About"
-msgstr "Über"
-
-#: prefs.js:1147
-msgid "What is running on this machine. Include it when reporting a problem."
-msgstr "Was auf diesem Rechner läuft. Einer Fehlermeldung bitte beilegen."
-
-#: prefs.js:1152
-msgid "Extension"
-msgstr "Erweiterung"
-
-#: prefs.js:1153
-msgid "Tailscale daemon"
-msgstr "Tailscale-Daemon"
-
-#: prefs.js:1154
-msgid "Operating system"
-msgstr "Betriebssystem"
-
-#: prefs.js:1155
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
-
-#: prefs.js:1179
-msgid "Daemon unreachable — this is the CLI version."
-msgstr "Daemon nicht erreichbar — dies ist die CLI-Version."
-
-#: prefs.js:1195
-msgid "Copy this information to the clipboard"
-msgstr "Diese Informationen in die Zwischenablage kopieren"
-
-#: prefs.js:1207
-msgid "Copied to clipboard"
-msgstr "In die Zwischenablage kopiert"
-
-#: prefs.js:1213
-msgid "Project"
-msgstr "Projekt"
-
-#: prefs.js:1218
-msgid "Source code"
-msgstr "Quellcode"
-
-#: prefs.js:1219
-msgid "Browse the extension's repository on GitHub."
-msgstr "Das Repository der Erweiterung auf GitHub ansehen."
-
-#: prefs.js:1225
-msgid "Report a problem"
-msgstr "Ein Problem melden"
-
-#: prefs.js:1226
-msgid "Open an issue on GitHub. Attach the information above."
-msgstr "Ein Issue auf GitHub eröffnen. Die Angaben darüber beifügen."
-
-#: prefs.js:1253
-msgid "General"
-msgstr "Allgemein"
-
-#: prefs.js:1269
-msgid "Indicators"
-msgstr "Anzeigen"
-
-#: prefs.js:1270
-msgid "Icons shown in the top bar, next to Wi-Fi."
-msgstr "Symbole in der oberen Leiste, neben WLAN."
-
-#: prefs.js:1275
-msgid "Show Tailscale panel indicator"
-msgstr "Tailscale-Panel-Indikator anzeigen"
-
-#: prefs.js:1276
-msgid "Small Tailscale icon shown while connected."
-msgstr "Kleines Tailscale-Symbol, solange verbunden."
-
-#: prefs.js:1288
-msgid "Show exit node active panel indicator"
-msgstr "Symbol für aktiven Exit-Node anzeigen"
-
-#: prefs.js:1290
-msgid "VPN icon shown while an exit node is selected and routing traffic."
-msgstr ""
-"VPN-Symbol, das erscheint, solange ein Exit-Node ausgewählt ist und den "
-"Verkehr leitet."
-
-#: prefs.js:1307
-msgid "Exit node active indicator colour"
-msgstr "Farbe des Symbols für aktiven Exit-Node"
-
-#: prefs.js:1311
-msgid "Custom colour. Reset to follow the theme again."
-msgstr "Eigene Farbe. Zurücksetzen, um wieder dem Thema zu folgen."
-
-#: prefs.js:1312
-msgid "Follows the panel's own colour, light or dark."
-msgstr "Folgt der Farbe der Leiste, hell wie dunkel."
-
-#: prefs.js:1317
-msgid "Show exit node status panel indicator"
-msgstr "Exit-Node-Statusanzeige einblenden"
-
-#: prefs.js:1319
-msgid ""
-"Warning icon shown when the selected exit node cannot route, which leaves "
-"the device without internet access."
-msgstr ""
-"Warnsymbol, wenn der gewählte Exit-Node nicht weiterleiten kann und das "
-"Gerät dadurch ohne Internetzugang bleibt."
-
-#: prefs.js:1336
-msgid "Exit node indicator colour"
-msgstr "Farbe der Exit-Node-Anzeige"
-
-#: prefs.js:1337
-msgid "Colour of the warning icon in the top bar."
-msgstr "Farbe des Warnsymbols in der oberen Leiste."
-
-#: prefs.js:1346
-msgid "Advanced"
-msgstr "Erweitert"
-
-#: prefs.js:1355
-msgid "Poll interval"
-msgstr "Abfrageintervall"
-
-#: prefs.js:1356
-msgid "Seconds between status refreshes (1 to 60)."
-msgstr "Sekunden zwischen Statusaktualisierungen (1 bis 60)."
-
-#: prefs.js:1373
-msgid "tailscale binary"
-msgstr "tailscale-Programmdatei"
-
-#: prefs.js:1388
-msgid "Reset all settings"
-msgstr "Alle Einstellungen zurücksetzen"
-
-#: prefs.js:1389
-msgid "Restore every setting to its default, on all pages."
-msgstr "Setzt jede Einstellung auf allen Seiten auf den Standardwert zurück."
-
-#: prefs.js:1392
-msgid "Reset all"
-msgstr "Alle zurücksetzen"
-
-#: prefs.js:1432
-msgid "All settings reset to defaults"
-msgstr "Alle Einstellungen wurden zurückgesetzt"
-
-#: lib/menu.js:101
+#: lib/menu.js:60
 msgid "Personal account"
 msgstr "Persönliches Konto"
 
-#: lib/menu.js:102
+#: lib/menu.js:61
 msgid "Guest account"
 msgstr "Gastkonto"
 
-#: lib/menu.js:103
+#: lib/menu.js:62
 msgid "Organisation account"
 msgstr "Organisationskonto"
 
-#: lib/menu.js:104
+#: lib/menu.js:63
 #, javascript-format
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
-#: lib/menu.js:141
-msgid "Copy"
-msgstr "Kopieren"
-
-#: lib/menu.js:184
-msgid "Copy IP"
-msgstr "IP kopieren"
-
-#: lib/menu.js:186
-#, javascript-format
-msgid "Copy %s"
-msgstr "%s kopieren"
-
-#: lib/menu.js:443 lib/menu.js:2213
+#: lib/menu.js:73 lib/menu.js:775
 #, javascript-format
 msgid "Could not open %s"
 msgstr "%s konnte nicht geöffnet werden"
 
-#: lib/menu.js:454
+#: lib/menu.js:87
 msgid "Tailscale unavailable"
 msgstr "Tailscale nicht verfügbar"
 
-#: lib/menu.js:455 lib/menu.js:2567
+#: lib/menu.js:88 lib/menu.js:1125
 msgid "Logged out"
 msgstr "Abgemeldet"
 
-#: lib/menu.js:457
+#: lib/menu.js:90
 msgid "Connected"
 msgstr "Verbunden"
 
-#: lib/menu.js:458
+#: lib/menu.js:91
 msgid "Disconnected"
 msgstr "Getrennt"
 
-#: lib/menu.js:602
-msgid "Accept routes"
-msgstr "Routen annehmen"
-
-#: lib/menu.js:850
-msgid "Send via Taildrop"
-msgstr "Über Taildrop senden"
-
-#: lib/menu.js:860 lib/menu.js:1192
-msgid "Send to:"
-msgstr "Senden an:"
-
-#: lib/menu.js:901
-msgid "Send"
-msgstr "Senden"
-
-#: lib/menu.js:977
-msgid "Send as zip"
-msgstr "Als ZIP senden"
-
-#: lib/menu.js:980
-msgid "Required: the selection contains a folder"
-msgstr "Erforderlich: die Auswahl enthält einen Ordner"
-
-#: lib/menu.js:1008
-msgid "Password (optional)"
-msgstr "Passwort (optional)"
-
-#: lib/menu.js:1014
-msgid "Spaces are not allowed in the password"
-msgstr "Leerzeichen sind im Passwort nicht erlaubt"
-
-#: lib/menu.js:1067 lib/menu.js:1116
-msgid "Add files"
-msgstr "Dateien hinzufügen"
-
-#: lib/menu.js:1076 lib/menu.js:1116
-msgid "Add folders"
-msgstr "Ordner hinzufügen"
-
-#: lib/menu.js:1197
-#, javascript-format
-msgid "Send %d item (measuring…) to:"
-msgid_plural "Send %d items (measuring…) to:"
-msgstr[0] "%d Element (wird ermittelt…) senden an:"
-msgstr[1] "%d Elemente (werden ermittelt…) senden an:"
-
-#: lib/menu.js:1202
-#, javascript-format
-msgid "Send %d item (%s) to:"
-msgid_plural "Send %d items (%s) to:"
-msgstr[0] "%d Element (%s) senden an:"
-msgstr[1] "%d Elemente (%s) senden an:"
-
-#: lib/menu.js:1252
-msgid "empty"
-msgstr "leer"
-
-#: lib/menu.js:1392
-msgid "Manage Funnels"
-msgstr "Funnels verwalten"
-
-#: lib/menu.js:1400
-msgid "Published"
-msgstr "Veröffentlicht"
-
-#: lib/menu.js:1426
-msgid "Publish a local port"
-msgstr "Einen lokalen Port veröffentlichen"
-
-#: lib/menu.js:1441
-msgid "Public port"
-msgstr "Öffentlicher Port"
-
-#: lib/menu.js:1453
-msgid "Every public port is in use. Remove one to publish another."
-msgstr ""
-"Alle öffentlichen Ports sind belegt. Entfernen Sie einen, um einen weiteren "
-"zu veröffentlichen."
-
-#: lib/menu.js:1460
-msgid "Close"
-msgstr "Schließen"
-
-#: lib/menu.js:1470
-msgid "Add"
-msgstr "Hinzufügen"
-
-#: lib/menu.js:1493
-msgid "Nothing is published yet."
-msgstr "Noch nichts veröffentlicht."
-
-#: lib/menu.js:1557
-#, javascript-format
-msgid "proxies %s"
-msgstr "leitet an %s weiter"
-
-#: lib/menu.js:1564
-msgid "Copy address"
-msgstr "Adresse kopieren"
-
-#: lib/menu.js:1573
-msgid "Remove funnel"
-msgstr "Funnel entfernen"
-
-#: lib/menu.js:1613
+#: lib/menu.js:120
 msgid "Loading…"
 msgstr "Wird geladen…"
 
-#: lib/menu.js:1705 lib/notify.js:29
+#: lib/menu.js:212 lib/notify.js:29
 msgid "Tailnet"
 msgstr "Tailnet"
 
-#: lib/menu.js:1714 lib/menu.js:2417
+#: lib/menu.js:221 lib/menu.js:975
 msgid "Peers"
 msgstr "Peers"
 
-#: lib/menu.js:1735
+#: lib/menu.js:228 lib/menu.js:854 lib/notify.js:30 prefs/notifications.js:44
+msgid "Exit node"
+msgstr "Exit-Node"
+
+#: lib/menu.js:242
 msgid "Magic DNS"
 msgstr "Magic DNS"
 
-#: lib/menu.js:1738
+#: lib/menu.js:245
 msgid "Enabling Magic DNS"
 msgstr "Magic DNS wird aktiviert"
 
-#: lib/menu.js:1738
+#: lib/menu.js:245
 msgid "Disabling Magic DNS"
 msgstr "Magic DNS wird deaktiviert"
 
-#: lib/menu.js:1739
+#: lib/menu.js:246
 msgid "Magic DNS: on"
 msgstr "Magic DNS: an"
 
-#: lib/menu.js:1739
+#: lib/menu.js:246
 msgid "Magic DNS: off"
 msgstr "Magic DNS: aus"
 
-#: lib/menu.js:1749
+#: lib/menu.js:256
 msgid "Enabling Accept routes"
 msgstr "Routen annehmen wird aktiviert"
 
-#: lib/menu.js:1749
+#: lib/menu.js:256
 msgid "Disabling Accept routes"
 msgstr "Routen annehmen wird deaktiviert"
 
-#: lib/menu.js:1750
+#: lib/menu.js:257
 msgid "Accept routes: on"
 msgstr "Routen annehmen: an"
 
-#: lib/menu.js:1750
+#: lib/menu.js:257
 msgid "Accept routes: off"
 msgstr "Routen annehmen: aus"
 
-#: lib/menu.js:1757
+#: lib/menu.js:264
 msgid "Accept files"
 msgstr "Dateien annehmen"
 
-#: lib/menu.js:1761
+#: lib/menu.js:268
 msgid "Shields up"
 msgstr "Shields up"
 
-#: lib/menu.js:1764
+#: lib/menu.js:271
 msgid "Enabling Shields up"
 msgstr "Shields up wird aktiviert"
 
-#: lib/menu.js:1764
+#: lib/menu.js:271
 msgid "Disabling Shields up"
 msgstr "Shields up wird deaktiviert"
 
-#: lib/menu.js:1765
+#: lib/menu.js:272
 msgid "Shields up: on"
 msgstr "Shields up: an"
 
-#: lib/menu.js:1765
+#: lib/menu.js:272
 msgid "Shields up: off"
 msgstr "Shields up: aus"
 
-#: lib/menu.js:1771
+#: lib/menu.js:278
 msgid "Run SSH server"
 msgstr "SSH-Server ausführen"
 
-#: lib/menu.js:1774
+#: lib/menu.js:281
 msgid "Enabling SSH server"
 msgstr "SSH-Server wird aktiviert"
 
-#: lib/menu.js:1774
+#: lib/menu.js:281
 msgid "Disabling SSH server"
 msgstr "SSH-Server wird deaktiviert"
 
-#: lib/menu.js:1775
+#: lib/menu.js:282
 msgid "SSH server: on"
 msgstr "SSH-Server: an"
 
-#: lib/menu.js:1775
+#: lib/menu.js:282
 msgid "SSH server: off"
 msgstr "SSH-Server: aus"
 
-#: lib/menu.js:1819
+#: lib/menu.js:315 lib/notify.js:32 prefs/help.js:29 prefs/notifications.js:55
+#: prefs/taildrop.js:46
+msgid "Taildrop"
+msgstr "Taildrop"
+
+#: lib/menu.js:326
 msgid "Funnels"
 msgstr "Funnels"
 
-#: lib/menu.js:1847
+#: lib/menu.js:354
 msgid "Extension settings"
 msgstr "Erweiterungseinstellungen"
 
-#: lib/menu.js:1877
+#: lib/menu.js:384
 msgid "Admin panel"
 msgstr "Verwaltungskonsole"
 
-#: lib/menu.js:1924
+#: lib/menu.js:431
 msgid "Operator not set"
 msgstr "Operator nicht festgelegt"
 
-#: lib/menu.js:1930
+#: lib/menu.js:437
 msgid "Set operator"
 msgstr "Operator festlegen"
 
-#: lib/menu.js:1936
+#: lib/menu.js:443
 msgid "Granting operator privilege"
 msgstr "Operator-Berechtigung wird erteilt"
 
-#: lib/menu.js:1937
+#: lib/menu.js:444
 msgid "Operator set"
 msgstr "Operator festgelegt"
 
-#: lib/menu.js:1969
+#: lib/menu.js:502
 msgid "Login required (see Account menu)"
 msgstr "Anmeldung erforderlich (siehe Menü „Konto“)"
 
-#: lib/menu.js:2065
+#: lib/menu.js:578
+msgid "Install the tailscale package, then this menu comes back on its own."
+msgstr ""
+"Installieren Sie das Paket tailscale, dann kommt dieses Menü von selbst "
+"zurück."
+
+#: lib/menu.js:626
 msgid "This device"
 msgstr "Dieses Gerät"
 
-#: lib/menu.js:2137
+#: lib/menu.js:699
 msgid "Funnel is disabled for this tailnet by your admin."
 msgstr "Funnel wurde für dieses Tailnet von der Verwaltung deaktiviert."
 
-#: lib/menu.js:2167
+#: lib/menu.js:729
 #, javascript-format
 msgid "Removing funnel %s"
 msgstr "Funnel %s wird entfernt"
 
-#: lib/menu.js:2168
+#: lib/menu.js:730
 #, javascript-format
 msgid "Funnel removed %s"
 msgstr "Funnel %s entfernt"
 
-#: lib/menu.js:2180
+#: lib/menu.js:742
 msgid "Invalid port number"
 msgstr "Ungültige Portnummer"
 
-#: lib/menu.js:2193
+#: lib/menu.js:755
 #, javascript-format
 msgid "Adding funnel %d:%d"
 msgstr "Funnel %d:%d wird hinzugefügt"
 
-#: lib/menu.js:2194
+#: lib/menu.js:756
 #, javascript-format
 msgid "Funnel added %d:%d"
 msgstr "Funnel %d:%d hinzugefügt"
 
-#: lib/menu.js:2219
+#: lib/menu.js:781
 msgid "Approve Funnel in the browser, then retry."
 msgstr "Funnel im Browser bestätigen und erneut versuchen."
 
-#: lib/menu.js:2252
+#: lib/menu.js:814
 msgid "1 route"
 msgstr "1 Route"
 
-#: lib/menu.js:2253
+#: lib/menu.js:815
 #, javascript-format
 msgid "%d routes"
 msgstr "%d Routen"
 
-#: lib/menu.js:2262
+#: lib/menu.js:824
 #, javascript-format
 msgid "via %s"
 msgstr "über %s"
 
-#: lib/menu.js:2278
+#: lib/menu.js:840
 msgid "Through exit node"
 msgstr "Über Exit-Node"
 
-#: lib/menu.js:2310
+#: lib/menu.js:868
 #, javascript-format
 msgid "Auto (%s)"
 msgstr "Automatisch (%s)"
 
-#: lib/menu.js:2311
+#: lib/menu.js:869
 msgid "Auto (None)"
 msgstr "Automatisch (keiner)"
 
-#: lib/menu.js:2314
+#: lib/menu.js:872
 #, javascript-format
 msgid "Offline (%s)"
 msgstr "Offline (%s)"
 
-#: lib/menu.js:2316
+#: lib/menu.js:874
 #, javascript-format
 msgid "Disabled (%s)"
 msgstr "Deaktiviert (%s)"
 
-#: lib/menu.js:2319 lib/menu.js:2326
+#: lib/menu.js:877 lib/menu.js:884
 msgid "None"
 msgstr "Keiner"
 
-#: lib/menu.js:2338
+#: lib/menu.js:896
 msgid "Auto"
 msgstr "Automatisch"
 
-#: lib/menu.js:2359
+#: lib/menu.js:917
 msgid "No approved exit nodes"
 msgstr "Keine freigegebenen Exit-Nodes"
 
-#: lib/menu.js:2381
+#: lib/menu.js:939
 #, javascript-format
 msgid "Routing through %s"
 msgstr "Weiterleitung über %s"
 
-#: lib/menu.js:2382
+#: lib/menu.js:940
 #, javascript-format
 msgid "Exit node: %s"
 msgstr "Exit-Node: %s"
 
-#: lib/menu.js:2397
+#: lib/menu.js:955
 msgid "Allow LAN access"
 msgstr "LAN-Zugriff erlauben"
 
-#: lib/menu.js:2400
+#: lib/menu.js:958
 msgid "Enabling LAN access"
 msgstr "LAN-Zugriff wird aktiviert"
 
-#: lib/menu.js:2400
+#: lib/menu.js:958
 msgid "Disabling LAN access"
 msgstr "LAN-Zugriff wird deaktiviert"
 
-#: lib/menu.js:2401
+#: lib/menu.js:959
 msgid "LAN access: on"
 msgstr "LAN-Zugriff: an"
 
-#: lib/menu.js:2401
+#: lib/menu.js:959
 msgid "LAN access: off"
 msgstr "LAN-Zugriff: aus"
 
-#: lib/menu.js:2422
+#: lib/menu.js:980
 msgid "No peers"
 msgstr "Keine Peers"
 
-#: lib/menu.js:2476
+#: lib/menu.js:1034
 msgid "No tailnet"
 msgstr "Kein Tailnet"
 
-#: lib/menu.js:2478
+#: lib/menu.js:1036
 #, javascript-format
 msgid "Tailnet: %s"
 msgstr "Tailnet: %s"
 
-#: lib/menu.js:2516
+#: lib/menu.js:1074
 #, javascript-format
 msgid "Switching to %s"
 msgstr "Wechsel zu %s"
 
-#: lib/menu.js:2517
+#: lib/menu.js:1075
 #, javascript-format
 msgid "Active tailnet: %s"
 msgstr "Aktives Tailnet: %s"
 
-#: lib/menu.js:2541
+#: lib/menu.js:1099
 msgid "Login"
 msgstr "Anmelden"
 
-#: lib/menu.js:2549
+#: lib/menu.js:1107
 msgid "Opening Tailscale login"
 msgstr "Tailscale-Anmeldung wird geöffnet"
 
-#: lib/menu.js:2550
+#: lib/menu.js:1108
 msgid "Login flow started"
 msgstr "Anmeldevorgang gestartet"
 
-#: lib/menu.js:2558
+#: lib/menu.js:1116
 msgid "Logout"
 msgstr "Abmelden"
 
-#: lib/menu.js:2566
+#: lib/menu.js:1124
 msgid "Logging out"
 msgstr "Abmeldung läuft"
 
-#: lib/menu.js:2618
+#: lib/menu.js:1176
 msgid "Accepting Taildrop files"
 msgstr "Taildrop-Dateien werden angenommen"
 
-#: lib/menu.js:2619
+#: lib/menu.js:1177
 msgid "Taildrop receiver stopped"
 msgstr "Taildrop-Empfang gestoppt"
 
-#: lib/menu.js:2636
+#: lib/menu.js:1200
 msgid "Taildrop is disabled for this tailnet by your admin."
 msgstr "Taildrop wurde für dieses Tailnet von der Verwaltung deaktiviert."
 
-#: lib/menu.js:2645
+#: lib/menu.js:1209
 msgid "No online peers available to receive files"
 msgstr "Keine Online-Peers zum Empfangen von Dateien verfügbar"
 
-#: lib/menu.js:2670
+#: lib/menu.js:1234
 #, javascript-format
 msgid "%d files"
 msgstr "%d Dateien"
 
-#: lib/menu.js:2673
+#: lib/menu.js:1237
 #, javascript-format
 msgid "%d devices"
 msgstr "%d Geräte"
 
-#: lib/menu.js:2693
+#: lib/menu.js:1257
 #, javascript-format
 msgid "Could not send to %s"
 msgstr "Senden an %s nicht möglich"
 
-#: lib/menu.js:2699
+#: lib/menu.js:1263
 #, javascript-format
 msgid "Sent to %d of %d devices"
 msgstr "An %d von %d Geräten gesendet"
 
-#: lib/menu.js:2712
+#: lib/menu.js:1276
 #, javascript-format
 msgid "Sent %s to %s"
 msgstr "%s an %s gesendet"
 
-#: lib/menu.js:2717
+#: lib/menu.js:1281
 #, javascript-format
 msgid "Sending %s to %s"
 msgstr "%s wird an %s gesendet"
 
-#: lib/menu.js:2726
+#: lib/menu.js:1290
 #, javascript-format
 msgid "Archiving %s"
 msgstr "%s wird archiviert"
 
-#: lib/menu.js:2737
+#: lib/menu.js:1301
 msgid "Could not create the archive"
 msgstr "Archiv konnte nicht erstellt werden"
 
-#: lib/menu.js:2836
+#: lib/menu.js:1400
 msgid "File chooser portal unavailable"
 msgstr "Dateiauswahl-Portal nicht verfügbar"
 
-#: lib/menu.js:2871
+#: lib/menu.js:1435
 #, javascript-format
 msgid "Received %s (%s) - click to open"
 msgstr "Empfangen: %s (%s) - zum Öffnen klicken"
 
-#: lib/menu.js:2891
+#: lib/menu.js:1449
 #, javascript-format
 msgid "Copied %s to clipboard"
 msgstr "%s in die Zwischenablage kopiert"
@@ -1141,13 +476,704 @@ msgstr "Konto"
 msgid "Network"
 msgstr "Netzwerk"
 
+#: lib/notify.js:33 prefs/help.js:43 prefs/notifications.js:61
+msgid "Funnel"
+msgstr "Funnel"
+
 #: lib/notify.js:34
 msgid "Error"
 msgstr "Fehler"
 
-#: lib/notify.js:208
+#: lib/notify.js:205
 msgid "Operation failed"
 msgstr "Vorgang fehlgeschlagen"
+
+#: lib/watcher-messages.js:16
+msgid "Connecting Tailscale — this may take a moment"
+msgstr "Tailscale wird verbunden — das kann einen Moment dauern"
+
+#: lib/watcher-messages.js:23
+msgid "Auto exit node lost"
+msgstr "Automatischer Exit-Node verloren"
+
+#: lib/watcher-messages.js:24
+#, javascript-format
+msgid "Auto exit node: %s"
+msgstr "Automatischer Exit-Node: %s"
+
+#: lib/watcher-messages.js:25
+#, javascript-format
+msgid "Auto exit node switched to %s"
+msgstr "Automatischer Exit-Node auf %s gewechselt"
+
+#: lib/watcher-messages.js:26
+#, javascript-format
+msgid "Exit node %s went offline"
+msgstr "Exit-Node %s ist offline gegangen"
+
+#: lib/watcher-messages.js:27
+#, javascript-format
+msgid "Exit node %s is back online"
+msgstr "Exit-Node %s ist wieder online"
+
+#: lib/watcher-messages.js:28
+#, javascript-format
+msgid "Exit node %s was disabled"
+msgstr "Exit-Node %s wurde deaktiviert"
+
+#: lib/watcher-messages.js:29
+#, javascript-format
+msgid "Exit node %s was re-enabled"
+msgstr "Exit-Node %s wurde wieder aktiviert"
+
+#: lib/watcher-messages.js:30
+#, javascript-format
+msgid "Profile applied (%s)"
+msgstr "Profil angewendet (%s)"
+
+#: lib/watcher-messages.js:36
+msgid "Taildrop enabled for this tailnet"
+msgstr "Taildrop für dieses Tailnet aktiviert"
+
+#: lib/watcher-messages.js:37
+msgid "Taildrop disabled for this tailnet"
+msgstr "Taildrop für dieses Tailnet deaktiviert"
+
+#: lib/watcher-messages.js:38
+msgid "Funnel enabled for this tailnet"
+msgstr "Funnel für dieses Tailnet aktiviert"
+
+#: lib/watcher-messages.js:39
+msgid "Funnel disabled for this tailnet"
+msgstr "Funnel für dieses Tailnet deaktiviert"
+
+#: lib/watcher-messages.js:42
+msgid "Tailscale is no longer installed"
+msgstr "Tailscale ist nicht mehr installiert"
+
+#: lib/watcher-messages.js:43
+msgid "Tailscale is installed — the menu is back"
+msgstr "Tailscale ist installiert — das Menü ist zurück"
+
+#: lib/menu/funnels-dialog.js:77
+msgid "Manage Funnels"
+msgstr "Funnels verwalten"
+
+#: lib/menu/funnels-dialog.js:85
+msgid "Published"
+msgstr "Veröffentlicht"
+
+#: lib/menu/funnels-dialog.js:111
+msgid "Publish a local port"
+msgstr "Einen lokalen Port veröffentlichen"
+
+#: lib/menu/funnels-dialog.js:126
+msgid "Public port"
+msgstr "Öffentlicher Port"
+
+#: lib/menu/funnels-dialog.js:138
+msgid "Every public port is in use. Remove one to publish another."
+msgstr ""
+"Alle öffentlichen Ports sind belegt. Entfernen Sie einen, um einen weiteren "
+"zu veröffentlichen."
+
+#: lib/menu/funnels-dialog.js:145
+msgid "Close"
+msgstr "Schließen"
+
+#: lib/menu/funnels-dialog.js:155
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: lib/menu/funnels-dialog.js:184
+msgid "Nothing is published yet."
+msgstr "Noch nichts veröffentlicht."
+
+#: lib/menu/funnels-dialog.js:248
+#, javascript-format
+msgid "proxies %s"
+msgstr "leitet an %s weiter"
+
+#: lib/menu/funnels-dialog.js:255
+msgid "Copy address"
+msgstr "Adresse kopieren"
+
+#: lib/menu/funnels-dialog.js:264
+msgid "Remove funnel"
+msgstr "Funnel entfernen"
+
+#: lib/menu/rows.js:112
+msgid "Copy"
+msgstr "Kopieren"
+
+#: lib/menu/rows.js:155
+msgid "Copy IP"
+msgstr "IP kopieren"
+
+#: lib/menu/rows.js:157
+#, javascript-format
+msgid "Copy %s"
+msgstr "%s kopieren"
+
+#: lib/menu/rows.js:291
+msgid "Accept routes"
+msgstr "Routen annehmen"
+
+#: lib/menu/send-dialog.js:260
+msgid "Send via Taildrop"
+msgstr "Über Taildrop senden"
+
+#: lib/menu/send-dialog.js:270 lib/menu/send-dialog.js:598
+msgid "Send to:"
+msgstr "Senden an:"
+
+#: lib/menu/send-dialog.js:301 prefs/taildrop.js:292
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: lib/menu/send-dialog.js:311
+msgid "Send"
+msgstr "Senden"
+
+#: lib/menu/send-dialog.js:383
+msgid "Send as zip"
+msgstr "Als ZIP senden"
+
+#: lib/menu/send-dialog.js:386
+msgid "Required: the selection contains a folder"
+msgstr "Erforderlich: die Auswahl enthält einen Ordner"
+
+#: lib/menu/send-dialog.js:414
+msgid "Password (optional)"
+msgstr "Passwort (optional)"
+
+#: lib/menu/send-dialog.js:420
+msgid "Spaces are not allowed in the password"
+msgstr "Leerzeichen sind im Passwort nicht erlaubt"
+
+#: lib/menu/send-dialog.js:473 lib/menu/send-dialog.js:522
+msgid "Add files"
+msgstr "Dateien hinzufügen"
+
+#: lib/menu/send-dialog.js:482 lib/menu/send-dialog.js:522
+msgid "Add folders"
+msgstr "Ordner hinzufügen"
+
+#: lib/menu/send-dialog.js:603
+#, javascript-format
+msgid "Send %d item (measuring…) to:"
+msgid_plural "Send %d items (measuring…) to:"
+msgstr[0] "%d Element (wird ermittelt…) senden an:"
+msgstr[1] "%d Elemente (werden ermittelt…) senden an:"
+
+#: lib/menu/send-dialog.js:608
+#, javascript-format
+msgid "Send %d item (%s) to:"
+msgid_plural "Send %d items (%s) to:"
+msgstr[0] "%d Element (%s) senden an:"
+msgstr[1] "%d Elemente (%s) senden an:"
+
+#: lib/menu/send-dialog.js:658
+msgid "empty"
+msgstr "leer"
+
+#: prefs/common.js:33 prefs/taildrop.js:207
+msgid "Reset to default"
+msgstr "Auf Standard zurücksetzen"
+
+#: prefs/common.js:54
+msgid ""
+"The `tailscale` command was not found on PATH, so the menu has nothing to "
+"drive. Install it with your distribution's package manager; the extension "
+"picks it up on its own, with no reload."
+msgstr ""
+"Der Befehl „tailscale“ wurde nicht im PATH gefunden, das Menü hat also "
+"nichts zu steuern. Installieren Sie ihn über die Paketverwaltung Ihrer "
+"Distribution; die Erweiterung erkennt ihn von selbst, ohne Neuladen."
+
+#: prefs/general.js:34
+msgid "Start Tailscale at boot"
+msgstr "Tailscale beim Systemstart starten"
+
+#: prefs/general.js:35
+msgid "Enables tailscaled.service via systemctl."
+msgstr "Aktiviert tailscaled.service über systemctl."
+
+#: prefs/general.js:48
+msgid "tailscaled.service not found. Install Tailscale via your distribution."
+msgstr ""
+"tailscaled.service nicht gefunden. Tailscale über die Distribution "
+"installieren."
+
+#: prefs/general.js:70
+msgid "Could not change service state"
+msgstr "Dienststatus konnte nicht geändert werden"
+
+#: prefs/general.js:171
+msgid "General"
+msgstr "Allgemein"
+
+#: prefs/general.js:190
+msgid "Indicators"
+msgstr "Anzeigen"
+
+#: prefs/general.js:191
+msgid "Icons shown in the top bar, next to Wi-Fi."
+msgstr "Symbole in der oberen Leiste, neben WLAN."
+
+#: prefs/general.js:196
+msgid "Show Tailscale panel indicator"
+msgstr "Tailscale-Panel-Indikator anzeigen"
+
+#: prefs/general.js:197
+msgid "Small Tailscale icon shown while connected."
+msgstr "Kleines Tailscale-Symbol, solange verbunden."
+
+#: prefs/general.js:209
+msgid "Show exit node active panel indicator"
+msgstr "Symbol für aktiven Exit-Node anzeigen"
+
+#: prefs/general.js:211
+msgid "VPN icon shown while an exit node is selected and routing traffic."
+msgstr ""
+"VPN-Symbol, das erscheint, solange ein Exit-Node ausgewählt ist und den "
+"Verkehr leitet."
+
+#: prefs/general.js:228
+msgid "Exit node active indicator colour"
+msgstr "Farbe des Symbols für aktiven Exit-Node"
+
+#: prefs/general.js:232
+msgid "Custom colour. Reset to follow the theme again."
+msgstr "Eigene Farbe. Zurücksetzen, um wieder dem Thema zu folgen."
+
+#: prefs/general.js:233
+msgid "Follows the panel's own colour, light or dark."
+msgstr "Folgt der Farbe der Leiste, hell wie dunkel."
+
+#: prefs/general.js:238
+msgid "Show exit node status panel indicator"
+msgstr "Exit-Node-Statusanzeige einblenden"
+
+#: prefs/general.js:240
+msgid ""
+"Warning icon shown when the selected exit node cannot route, which leaves "
+"the device without internet access."
+msgstr ""
+"Warnsymbol, wenn der gewählte Exit-Node nicht weiterleiten kann und das "
+"Gerät dadurch ohne Internetzugang bleibt."
+
+#: prefs/general.js:257
+msgid "Exit node indicator colour"
+msgstr "Farbe der Exit-Node-Anzeige"
+
+#: prefs/general.js:258
+msgid "Colour of the warning icon in the top bar."
+msgstr "Farbe des Warnsymbols in der oberen Leiste."
+
+#: prefs/general.js:267
+msgid "Advanced"
+msgstr "Erweitert"
+
+#: prefs/general.js:276
+msgid "Poll interval"
+msgstr "Abfrageintervall"
+
+#: prefs/general.js:277
+msgid "Seconds between status refreshes (1 to 60)."
+msgstr "Sekunden zwischen Statusaktualisierungen (1 bis 60)."
+
+#: prefs/general.js:299
+msgid "Reset all settings"
+msgstr "Alle Einstellungen zurücksetzen"
+
+#: prefs/general.js:300
+msgid "Restore every setting to its default, on all pages."
+msgstr "Setzt jede Einstellung auf allen Seiten auf den Standardwert zurück."
+
+#: prefs/general.js:303
+msgid "Reset all"
+msgstr "Alle zurücksetzen"
+
+#: prefs/general.js:344
+msgid "All settings reset to defaults"
+msgstr "Alle Einstellungen wurden zurückgesetzt"
+
+#: prefs/help.js:32
+msgid "Taildrop is disabled for this tailnet."
+msgstr "Taildrop ist für dieses Tailnet deaktiviert."
+
+#: prefs/help.js:35
+msgid ""
+"Taildrop requires the feature to be enabled for the tailnet and the source "
+"and destination devices to be owned by the same user. Devices owned by a tag "
+"or by different users are not eligible."
+msgstr ""
+"Taildrop setzt voraus, dass die Funktion für das Tailnet aktiviert ist und "
+"Quell- und Zielgerät demselben Benutzer gehören. Geräte, die einem Tag oder "
+"anderen Benutzern gehören, sind nicht zulässig."
+
+#: prefs/help.js:47
+msgid "Funnel is not enabled for this tailnet."
+msgstr "Funnel ist für dieses Tailnet nicht aktiviert."
+
+#: prefs/help.js:50
+msgid ""
+"Funnel requires HTTPS certificates to be enabled tailnet-wide and the "
+"\"funnel\" node attribute granted to the current user."
+msgstr ""
+"Funnel setzt voraus, dass HTTPS-Zertifikate tailnetweit aktiviert sind und "
+"dem aktuellen Benutzer das Knotenattribut „funnel“ gewährt wurde."
+
+#: prefs/help.js:76
+#, javascript-format
+msgid ""
+"%s\n"
+"\n"
+"Click to open: %s"
+msgstr ""
+"%s\n"
+"\n"
+"Zum Öffnen klicken: %s"
+
+#: prefs/help.js:89
+msgid "Open admin"
+msgstr "Verwaltung öffnen"
+
+#: prefs/help.js:109
+msgid "Available on this tailnet"
+msgstr "In diesem Tailnet verfügbar"
+
+#: prefs/help.js:110
+msgid "Not available on this tailnet"
+msgstr "In diesem Tailnet nicht verfügbar"
+
+#: prefs/help.js:121
+msgid "Availability"
+msgstr "Verfügbarkeit"
+
+#: prefs/help.js:123
+msgid ""
+"What this tailnet allows. Both depend on your tailnet's admin settings, not "
+"on anything you can change here. (Hover over the info icon for details)"
+msgstr ""
+"Was dieses Tailnet erlaubt. Beides hängt von den Verwaltungseinstellungen "
+"des Tailnets ab, nicht von hier änderbaren Optionen. (Für Details den "
+"Mauszeiger über das Info-Symbol bewegen)"
+
+#: prefs/help.js:234
+msgid "Help"
+msgstr "Hilfe"
+
+#: prefs/help.js:256
+msgid "About"
+msgstr "Über"
+
+#: prefs/help.js:258
+msgid "What is running on this machine. Include it when reporting a problem."
+msgstr "Was auf diesem Rechner läuft. Einer Fehlermeldung bitte beilegen."
+
+#: prefs/help.js:263
+msgid "Extension"
+msgstr "Erweiterung"
+
+#: prefs/help.js:264
+msgid "Tailscale daemon"
+msgstr "Tailscale-Daemon"
+
+#: prefs/help.js:265
+msgid "Operating system"
+msgstr "Betriebssystem"
+
+#: prefs/help.js:266
+msgid "GNOME Shell"
+msgstr "GNOME Shell"
+
+#: prefs/help.js:289
+msgid "Daemon unreachable — this is the CLI version."
+msgstr "Daemon nicht erreichbar — dies ist die CLI-Version."
+
+#: prefs/help.js:305
+msgid "Copy this information to the clipboard"
+msgstr "Diese Informationen in die Zwischenablage kopieren"
+
+#: prefs/help.js:317
+msgid "Copied to clipboard"
+msgstr "In die Zwischenablage kopiert"
+
+#: prefs/help.js:323
+msgid "Project"
+msgstr "Projekt"
+
+#: prefs/help.js:328
+msgid "Source code"
+msgstr "Quellcode"
+
+#: prefs/help.js:329
+msgid "Browse the extension's repository on GitHub."
+msgstr "Das Repository der Erweiterung auf GitHub ansehen."
+
+#: prefs/help.js:335
+msgid "Report a problem"
+msgstr "Ein Problem melden"
+
+#: prefs/help.js:336
+msgid "Open an issue on GitHub. Attach the information above."
+msgstr "Ein Issue auf GitHub eröffnen. Die Angaben darüber beifügen."
+
+#: prefs/notifications.js:28
+msgid "Tailscale connection"
+msgstr "Tailscale-Verbindung"
+
+#: prefs/notifications.js:29
+msgid "Connecting, disconnecting, and daemon startup."
+msgstr "Verbinden, Trennen und Start des Daemons."
+
+#: prefs/notifications.js:33
+msgid "Login and logout"
+msgstr "An- und Abmeldung"
+
+#: prefs/notifications.js:34
+msgid "Sign-in, sign-out, and operator changes."
+msgstr "Anmeldung, Abmeldung und Operator-Änderungen."
+
+#: prefs/notifications.js:38
+msgid "Profile switch"
+msgstr "Profilwechsel"
+
+#: prefs/notifications.js:40
+msgid "A single notification once the new profile is applied."
+msgstr ""
+"Eine einzelne Benachrichtigung, sobald das neue Profil angewendet wurde."
+
+#: prefs/notifications.js:45
+msgid "Selection, going offline, and automatic switches."
+msgstr "Auswahl, Offline-Gehen und automatische Wechsel."
+
+#: prefs/notifications.js:49
+msgid "Network settings"
+msgstr "Netzwerkeinstellungen"
+
+#: prefs/notifications.js:51
+msgid "Magic DNS, routes, shields up, SSH server, LAN access."
+msgstr "Magic DNS, Routen, Shields up, SSH-Server, LAN-Zugriff."
+
+#: prefs/notifications.js:57
+msgid "Files sent and received, receiver started and stopped."
+msgstr "Gesendete und empfangene Dateien, Start und Stopp des Empfangs."
+
+#: prefs/notifications.js:62
+msgid "Ports added and removed."
+msgstr "Hinzugefügte und entfernte Ports."
+
+#: prefs/notifications.js:66 prefs/notifications.js:93
+msgid "Errors"
+msgstr "Fehler"
+
+#: prefs/notifications.js:67
+msgid "Failures outside any category above."
+msgstr "Fehler außerhalb der Kategorien darüber."
+
+#: prefs/notifications.js:71
+msgid "Other"
+msgstr "Sonstiges"
+
+#: prefs/notifications.js:72
+msgid "Clipboard copies and manual refreshes."
+msgstr "Kopien in die Zwischenablage und manuelle Aktualisierungen."
+
+#: prefs/notifications.js:86
+msgid "All"
+msgstr "Alle"
+
+#: prefs/notifications.js:87
+msgid "Report everything this category produces"
+msgstr "Alles melden, was diese Kategorie erzeugt"
+
+#: prefs/notifications.js:94
+msgid "Report only failures and warnings"
+msgstr "Nur Fehler und Warnungen melden"
+
+#: prefs/notifications.js:100
+msgid "Off"
+msgstr "Keine"
+
+#: prefs/notifications.js:101
+msgid "Report nothing at all"
+msgstr "Gar nichts melden"
+
+#: prefs/notifications.js:134
+msgid "All events"
+msgstr "Alle Ereignisse"
+
+#: prefs/notifications.js:135
+msgid "Apply one setting to every category below."
+msgstr "Wendet eine Einstellung auf alle Kategorien darunter an."
+
+#: prefs/notifications.js:175
+msgid "Notifications"
+msgstr "Benachrichtigungen"
+
+#: prefs/notifications.js:181
+msgid "Presentation"
+msgstr "Darstellung"
+
+#: prefs/notifications.js:183
+msgid ""
+"Reports post as native GNOME notifications, stacking into a browsable "
+"history under a single Tailscale entry. How long a banner stays on screen is "
+"GNOME's own setting, not this extension's."
+msgstr ""
+"Meldungen erscheinen als native GNOME-Benachrichtigungen und sammeln sich "
+"unter einem einzigen Tailscale-Eintrag zu einem durchblätterbaren Verlauf. "
+"Wie lange ein Banner sichtbar bleibt, legt GNOME fest, nicht diese "
+"Erweiterung."
+
+#: prefs/notifications.js:192
+msgid "Minimum pending duration"
+msgstr "Mindestdauer des Wartezustands"
+
+#: prefs/notifications.js:194
+msgid ""
+"Milliseconds the pending state stays visible before showing the result (0 to "
+"3000). Prevents flicker on instant actions."
+msgstr ""
+"Millisekunden, die der Wartezustand vor dem Ergebnis sichtbar bleibt (0 bis "
+"3000). Verhindert Flackern bei sofortigen Aktionen."
+
+#: prefs/notifications.js:214
+msgid "Events"
+msgstr "Ereignisse"
+
+#: prefs/notifications.js:216
+msgid ""
+"How much each kind of event may report. All lets everything through, Errors "
+"keeps only failures and warnings, Off silences the category completely."
+msgstr ""
+"Wie viel jede Art von Ereignis melden darf. Alle lässt alles durch, Fehler "
+"behält nur Fehler und Warnungen, Keine bringt die Kategorie ganz zum "
+"Schweigen."
+
+#: prefs/shortcuts.js:23
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+#: prefs/shortcuts.js:31
+msgid "Clear shortcut"
+msgstr "Tastenkürzel löschen"
+
+#: prefs/shortcuts.js:56
+msgid "Set shortcut"
+msgstr "Tastenkürzel festlegen"
+
+#: prefs/shortcuts.js:75
+msgid "Press a key combination"
+msgstr "Tastenkombination drücken"
+
+#: prefs/shortcuts.js:81
+msgid "Escape to cancel · Backspace to clear"
+msgstr "Esc zum Abbrechen · Rücktaste zum Löschen"
+
+#: prefs/shortcuts.js:122
+msgid "Connect / disconnect Tailscale"
+msgstr "Tailscale verbinden / trennen"
+
+#: prefs/shortcuts.js:126
+msgid "Toggle automatic exit node"
+msgstr "Automatischen Exit-Node umschalten"
+
+#: prefs/shortcuts.js:130
+msgid "Open the Tailscale menu"
+msgstr "Tailscale-Menü öffnen"
+
+#: prefs/shortcuts.js:134
+msgid "Open the Tailscale admin console"
+msgstr "Tailscale-Verwaltungskonsole öffnen"
+
+#: prefs/shortcuts.js:142
+msgid "Open Taildrop"
+msgstr "Taildrop öffnen"
+
+#: prefs/shortcuts.js:146
+msgid "Open Funnels"
+msgstr "Funnels öffnen"
+
+#: prefs/shortcuts.js:152
+msgid "Shortcuts"
+msgstr "Tastenkürzel"
+
+#: prefs/shortcuts.js:157
+msgid "Keyboard shortcuts"
+msgstr "Tastenkürzel"
+
+#: prefs/shortcuts.js:159
+msgid "Click a row to capture a key combination. Backspace to clear."
+msgstr ""
+"Auf eine Zeile klicken, um eine Tastenkombination aufzuzeichnen. Rücktaste "
+"zum Löschen."
+
+#: prefs/taildrop.js:47
+msgid "Send and receive files between Tailscale nodes."
+msgstr "Dateien zwischen Tailscale-Geräten senden und empfangen."
+
+#: prefs/taildrop.js:88
+msgid "Inbox folder (created if it does not exist)"
+msgstr "Empfangsordner (wird bei Bedarf erstellt)"
+
+#: prefs/taildrop.js:104
+msgid "Path is empty or not writable without admin privileges."
+msgstr "Der Pfad ist leer oder ohne Administratorrechte nicht beschreibbar."
+
+#: prefs/taildrop.js:155
+#, javascript-format
+msgid "Taildrop inbox set to %s"
+msgstr "Taildrop-Empfangsordner auf %s gesetzt"
+
+#: prefs/taildrop.js:183
+msgid "Browse"
+msgstr "Durchsuchen"
+
+#: prefs/taildrop.js:187
+msgid "Choose Taildrop inbox folder"
+msgstr "Taildrop-Empfangsordner wählen"
+
+#: prefs/taildrop.js:223
+msgid "Nautilus integration"
+msgstr "Nautilus-Integration"
+
+#: prefs/taildrop.js:225
+msgid "Add \"Send with Taildrop\" to the file manager's right-click menu."
+msgstr "Fügt „Mit Taildrop senden“ zum Kontextmenü der Dateiverwaltung hinzu."
+
+#: prefs/taildrop.js:257
+msgid "nautilus-python is not installed"
+msgstr "nautilus-python ist nicht installiert"
+
+#: prefs/taildrop.js:259
+msgid ""
+"The file manager needs it to load extensions. Install it with your package "
+"manager, then reopen this window."
+msgstr ""
+"Die Dateiverwaltung benötigt es, um Erweiterungen zu laden. Über die "
+"Paketverwaltung installieren und dieses Fenster erneut öffnen."
+
+#: prefs/taildrop.js:281
+msgid "Quit the file manager?"
+msgstr "Dateiverwaltung beenden?"
+
+#: prefs/taildrop.js:286
+msgid ""
+"Nautilus loads its extensions when it starts, so it has to be closed for "
+"this to take effect. Any open Nautilus window will be closed, and the next "
+"one you open picks up the change."
+msgstr ""
+"Nautilus lädt seine Erweiterungen beim Start, muss also beendet werden, "
+"damit diese Einstellung wirkt. Jedes offene Nautilus-Fenster wird "
+"geschlossen, und das nächste übernimmt die Änderung."
+
+#: prefs/taildrop.js:293
+msgid "Quit Nautilus"
+msgstr "Nautilus beenden"
 
 #: nautilus/tailscale-taildrop.py:128
 msgid "Send with Taildrop"
@@ -1156,6 +1182,9 @@ msgstr "Mit Taildrop senden"
 #: nautilus/tailscale-taildrop.py:129
 msgid "Send the selection to a Tailscale device"
 msgstr "Die Auswahl an ein Tailscale-Gerät senden"
+
+#~ msgid "tailscale binary"
+#~ msgstr "tailscale-Programmdatei"
 
 #~ msgid ""
 #~ "Add \"Taildrop\" to the file manager's right-click menu. Needs the "

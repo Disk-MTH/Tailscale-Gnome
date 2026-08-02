@@ -64,13 +64,6 @@
                 show-indicator.</description>
         </key>
 
-        <key name="tailscale-binary" type="s">
-            <default>'tailscale'</default>
-            <summary>Path to the tailscale CLI binary</summary>
-            <description>Override if `tailscale` is not on PATH for the user
-                running gnome-shell.</description>
-        </key>
-
         <key name="shortcut-toggle-tailscale" type="as">
             <default><![CDATA[[]]]></default>
             <summary>Shortcut: connect / disconnect Tailscale</summary>

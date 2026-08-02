@@ -25,14 +25,17 @@
 /* Online / offline dot on peer rows. Same palette as the status pill. */
 .tailscale-peer-dot {
     margin-left: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
 }
 
 .tailscale-peer-dot.online {
-    color: #66d68a;
+    background-color: #66d68a;
 }
 
 .tailscale-peer-dot.offline {
-    color: #888888;
+    background-color: #888888;
 }
 
 /* Sub-menu node items: tag the active exit node. */
@@ -256,7 +259,6 @@
 
 .tailscale-zip-check {
     padding: 0 4px;
-    font-weight: bold;
     color: #66d68a;
 }
 /* Sits inside .tailscale-send-options, which already supplies the 4px

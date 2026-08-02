@@ -36,6 +36,13 @@ Nautilus integration (on by default) needs the `nautilus-python`
 package. Without it, the file manager loads no Python extension at
 all, and preferences grey the toggle out and say so.
 
+With no `tailscale` on `PATH` the extension goes inert rather than
+broken: the menu is stripped to one row saying so, the keybindings and
+the Nautilus entry refuse with the same message, preferences carry a
+warning at the top of General and Help, and nothing is ever spawned. It
+watches `PATH` at a slow tick from there, so installing the package
+brings the menu back on its own — no reload, no logout.
+
 ## Privileged operations
 
 On Linux the Tailscale daemon only accepts state-changing commands from
@@ -56,10 +63,26 @@ Safeguards:
 - Every elevated command is a **literal argument vector**, readable
   as-is in the source; nothing typed by a user, read from a file or
   built at runtime is ever concatenated into it (no `sh -c`).
-- Elevated calls hardcode the `tailscale` program name; `pkexec`
-  resolves it in its own trusted root `PATH`. The **Advanced →
-  tailscale binary** setting is deliberately ignored for privileged
-  calls, so a user-writable path can never be elevated.
+- The program name is always the bare `tailscale`, resolved on `PATH`
+  (in `pkexec`'s own trusted root `PATH` for elevated calls). No setting
+  can point it elsewhere, so a user-writable path is never run — let
+  alone elevated.
+
+## Clipboard access
+
+The extension **writes** to the clipboard and never reads from it. Every
+write is a direct answer to a click on a copy button, and puts exactly
+what that button sits next to on the clipboard:
+
+| Button | What it copies |
+| ------ | -------------- |
+| Copy, on the device row or a peer row | That device's Tailscale IP, or its Magic DNS name when Magic DNS is on |
+| Copy address, on a Funnel row | The public `https://…` URL that funnel serves |
+| Copy, in preferences → Help | The four version lines shown above it, for a bug report |
+
+Nothing is copied in the background, none of it leaves the machine, and
+no keyboard shortcut ships bound — every shortcut defaults to unset, and
+none of the six touch the clipboard at all.
 
 ## Install
 
@@ -90,7 +113,6 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Nautilus integration               | on            |
 | General       | Start Tailscale at boot            | system        |
 | General       | Poll interval                      | 3s            |
-| General       | tailscale binary                   | `tailscale`   |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
@@ -118,19 +140,33 @@ started.
 
 ## Project layout
 
+The two processes are kept apart on disk: `lib/` is loaded only by GNOME
+Shell, `prefs/` only by the preferences window, and `lib/util.js` and
+`lib/notify-policy.js` are the sole modules both may import — so neither
+pulls in the other's toolkit.
+
 ```
-extension.js            # entry point, indicator + shortcuts
-prefs.js                # Adw preferences dialog
-lib/
+extension.js            # entry point: lifecycle, shortcuts, D-Bus
+prefs.js                # preferences entry point, one page per file below
+lib/                    # GNOME Shell process
 ├── tailscale.js        # CLI wrapper + poller
 ├── indicator.js        # panel icon
-├── menu.js             # Quick Settings toggle + submenus
+├── menu.js             # Quick Settings toggle
+├── menu/
+│   ├── rows.js         # the rows every submenu is built from
+│   ├── send-dialog.js  # Taildrop send flow + archiving
+│   └── funnels-dialog.js
 ├── watchers.js         # snapshot diffing into semantic events
+├── watcher-messages.js # those events, turned into translated wording
+├── quiet-window.js     # the silence held open around an account switch
 ├── notify-policy.js    # category, level and quiet-window rules
 ├── notify.js           # notification entry point
 ├── tray.js             # notification backend (MessageTray.Source)
 ├── nautilus.js         # symlinks the file-manager extension in and out
 └── util.js             # helpers shared by shell and prefs processes
+prefs/                  # preferences process
+├── common.js           # settings watcher, reset button, not-installed group
+├── general.js  taildrop.js  notifications.js  shortcuts.js  help.js
 nautilus/               # the nautilus-python extension itself
 icons/  schemas/  stylesheet.css
 ```

@@ -14,10 +14,11 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
-import { openAdminPanel, statusText } from './lib/menu.js';
+import { openAdminPanel } from './lib/menu.js';
 import { Notifier, Category } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
-import { fmt as _fmt } from './lib/util.js';
+import { watcherMessage } from './lib/watcher-messages.js';
+import { QuietWindow } from './lib/quiet-window.js';
 import * as NautilusIntegration from './lib/nautilus.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
@@ -53,21 +54,27 @@ export default class TailscaleGnomeExtension extends Extension {
         Notifier.init(this._settings, { extension: this });
 
         this._client = new TailscaleClient({
-            binary:      this._settings.get_string('tailscale-binary') || 'tailscale',
             pollSeconds: this._settings.get_int('poll-interval'),
             settings:    this._settings,
         });
+        this._watcher = new SnapshotWatcher();
+        this._quiet = new QuietWindow();
+        // A pending connection resolves in place, so its handle outlives the
+        // event that created it.
+        this._connHandle = null;
+        // The receiver is a child of the CLI: losing the binary kills it, and
+        // the client cannot put it back on its own — nothing down there knows
+        // whether the user still wants files. _onState watches this to
+        // re-apply the setting the moment the binary returns.
+        this._wasInstalled = this._client.snapshot.installed;
 
         this._settings.connectObject(
-            'changed::poll-interval', () => {
-                this._client.setPollSeconds(this._settings.get_int('poll-interval'));
-            },
-            'changed::tailscale-binary', () => {
-                this._client.setBinary(
-                    this._settings.get_string('tailscale-binary') || 'tailscale',
-                );
-            },
+            'changed::poll-interval', () =>
+                this._client.setPollSeconds(this._settings.get_int('poll-interval')),
             'changed::nautilus-integration', () => this._syncNautilus(),
+            'changed::taildrop-accept', () => this._syncTaildrop(),
+            'changed::feature-taildrop-available', () => this._syncTaildrop(),
+            'changed::taildrop-inbox', () => this._bounceTaildrop(),
             ...SHORTCUT_KEYS.flatMap((key) => [
                 `changed::${key}`,
                 () => this._rebindShortcut(key),
@@ -85,194 +92,24 @@ export default class TailscaleGnomeExtension extends Extension {
         for (const key of SHORTCUT_KEYS)
             this._rebindShortcut(key);
 
-        // Snapshot-derived notifications. The watcher is a pure diff; this
-        // table is where its events become user-facing copy, which is why
-        // watchers.js carries no gettext import.
-        const WATCHER_COPY = {
-            'connection-starting':   () => _('Connecting Tailscale — this may take a moment'),
-            'connection-established': () => _('Tailscale connected'),
-            // A Starting phase that resolved to anything other than Running:
-            // reuse the pill's status vocabulary (Login required / Logged
-            // out / Tailscale unavailable / …) off the live snapshot, rather
-            // than a single generic string that ignores why it ended.
-            'connection-ended':      () => statusText(this._client.snapshot),
-            'exit-node-lost':        () => _('Auto exit node lost'),
-            'exit-node-acquired':    (d) => _fmt(_('Auto exit node: %s'), d.name),
-            'exit-node-switched':    (d) => _fmt(_('Auto exit node switched to %s'), d.name),
-            'exit-node-offline':     (d) => _fmt(_('Exit node %s went offline'), d.name),
-            'exit-node-online':      (d) => _fmt(_('Exit node %s is back online'), d.name),
-            'exit-node-disabled':    (d) => _fmt(_('Exit node %s was disabled'), d.name),
-            'exit-node-reenabled':   (d) => _fmt(_('Exit node %s was re-enabled'), d.name),
-            'account-switched':      (d) => _fmt(_('Profile applied (%s)'), d.name),
-            // Nobody in this session asked for these: the tailnet's ACL
-            // moved under us, and the visible effect is a block of the menu
-            // appearing or vanishing. A switch between tailnets flips them
-            // too, but that runs inside the account-switch quiet window, so
-            // only a genuine admin change reaches the user.
-            'taildrop-enabled':      () => _('Taildrop enabled for this tailnet'),
-            'taildrop-disabled':     () => _('Taildrop disabled for this tailnet'),
-            'funnel-enabled':        () => _('Funnel enabled for this tailnet'),
-            'funnel-disabled':       () => _('Funnel disabled for this tailnet'),
-        };
-
-        this._quietToken = 0;
-        this._quietDebounceId = 0;
-        this._quietCeilingId = 0;
-
-        const closeQuiet = () => {
-            if (this._quietDebounceId) {
-                GLib.source_remove(this._quietDebounceId);
-                this._quietDebounceId = 0;
-            }
-            if (this._quietCeilingId) {
-                GLib.source_remove(this._quietCeilingId);
-                this._quietCeilingId = 0;
-            }
-            if (this._quietToken) {
-                Notifier.endQuiet(this._quietToken);
-                this._quietToken = 0;
-            }
-        };
-
-        const armQuietDebounce = () => {
-            if (!this._quietToken) return;
-            if (this._quietDebounceId) {
-                GLib.source_remove(this._quietDebounceId);
-                this._quietDebounceId = 0;
-            }
-            const settleMs = this._settings.get_int('poll-interval') * 2000;
-            this._quietDebounceId = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT, settleMs, () => {
-                    this._quietDebounceId = 0;
-                    closeQuiet();
-                    return GLib.SOURCE_REMOVE;
-                });
-        };
-
-        // Opened on an account switch: the daemon churns for a few seconds
-        // afterwards (exit node, backendState) and none of that noise is worth
-        // reporting. Closed by a debounce re-armed on every snapshot, so it
-        // survives a slow daemon, and by a hard ceiling so a daemon that never
-        // settles cannot leave the extension permanently silent.
-        const openQuietWindow = () => {
-            closeQuiet();   // a switch during a switch restarts the window
-            this._quietToken = Notifier.beginQuiet();
-            this._quietCeilingId = GLib.timeout_add_seconds(
-                GLib.PRIORITY_DEFAULT, 30, () => {
-                    this._quietCeilingId = 0;
-                    closeQuiet();
-                    return GLib.SOURCE_REMOVE;
-                });
-            armQuietDebounce();
-        };
-
-        this._watcher = new SnapshotWatcher();
-        // A pending connection resolves in place, so its handle outlives the
-        // event that created it.
-        this._connHandle = null;
-        // The two availability keys are a mirror of what the last poll saw,
-        // not a cache anyone has to refresh: the preferences window runs in
-        // its own process and cannot read the snapshot, and the Taildrop
-        // receiver is driven off gsettings. Only a real answer is written —
-        // a status we could not read leaves the last one standing.
-        const mirrorAvailability = (snap) => {
-            for (const [key, value] of [
-                ['feature-taildrop-available', snap.taildropAvailable],
-                ['feature-funnels-available', snap.funnelsAvailable],
-            ]) {
-                if (typeof value !== 'boolean') continue;
-                if (this._settings.get_boolean(key) === value) continue;
-                this._settings.set_boolean(key, value);
-            }
-        };
-
-        this._client.connectObject('state-changed', (_c, snap) => {
-            mirrorAvailability(snap);
-            for (const ev of this._watcher.feed(snap)) {
-                const message = WATCHER_COPY[ev.type](ev.data);
-                if (ev.type === 'account-switched') {
-                    // Unconditional: the daemon churns after a switch whoever
-                    // started it, and admin ACLs differ per tailnet, so the
-                    // availability flip that follows is not news either.
-                    openQuietWindow();
-                    // A menu-driven switch is already reported by its own
-                    // withFeedback. An external `tailscale switch` has none, so
-                    // there this notification is the only account of it.
-                    if (Notifier.isCategoryBusy(Category.PROFILE_SWITCH))
-                        continue;
-                }
-                if (ev.type === 'connection-starting') {
-                    this._connHandle = Notifier.notify({
-                        category: ev.category,
-                        level: ev.level,
-                        message,
-                        spontaneous: ev.spontaneous,
-                    });
-                    continue;
-                }
-                if (this._connHandle && ev.type.startsWith('connection-')) {
-                    this._connHandle.update({ level: ev.level, message });
-                    this._connHandle = null;
-                    continue;
-                }
-                Notifier.notify({
-                    category: ev.category,
-                    level: ev.level,
-                    message,
-                    spontaneous: ev.spontaneous,
-                });
-            }
-        }, this);
-
+        this._client.connectObject(
+            'state-changed', (_c, snap) => this._onState(snap), this);
         this._client.start();
 
-        // Every snapshot during the window pushes the close back, so the
-        // window lasts as long as the daemon keeps changing its mind.
-        this._client.connectObject(
-            'state-changed', () => armQuietDebounce(),
-            this,
-        );
-
-        // Restore Taildrop receiver state. The setting is the source of
+        // Restore the Taildrop receiver state. The setting is the source of
         // truth across reloads; the receiver subprocess is owned by the
-        // client and gets killed on `disable()` via client.destroy().
-        // The receiver only runs when the user-facing accept toggle is on
-        // AND the tailnet actually allows Taildrop — a receiver on a tailnet
-        // that forbids it would never receive anything.
-        const syncTaildrop = () => {
-            const availableOn = this._settings.get_boolean('feature-taildrop-available');
-            const acceptOn    = this._settings.get_boolean('taildrop-accept');
-            const inbox       = this._settings.get_string('taildrop-inbox');
-            this._client.setAcceptFiles(availableOn && acceptOn, inbox);
-        };
-        syncTaildrop();
-        this._settings.connectObject(
-            'changed::taildrop-accept', syncTaildrop,
-            'changed::feature-taildrop-available', syncTaildrop,
-            'changed::taildrop-inbox', () => {
-                // Inbox path changed: bounce the receiver if it's running so
-                // the new directory takes effect.
-                const availableOn = this._settings.get_boolean('feature-taildrop-available');
-                const acceptOn    = this._settings.get_boolean('taildrop-accept');
-                if (availableOn && acceptOn) {
-                    this._client.setAcceptFiles(false);
-                    this._client.setAcceptFiles(true,
-                        this._settings.get_string('taildrop-inbox'));
-                }
-            },
-            this,
-        );
+        // client and gets killed on disable() via client.destroy().
+        this._syncTaildrop();
 
         // One-shot startup check: if the operator pref is missing once the
         // first poll has landed, fire a single polkit prompt. We avoid a
         // state-changed handler because login transiently flips
-        // canControl=false while the pkexec child runs, and a listener
-        // would race it with its own prompt. Skipped while logged out:
-        // login restores the operator by itself (--operator flag), so
-        // prompting before a login would just double the elevations.
-        // After startup, the user's own actions (clicking the toggle, the
-        // menu "Set operator" button, etc.) handle every re-prompt
-        // explicitly.
+        // canControl=false while the pkexec child runs, and a listener would
+        // race it with its own prompt. Skipped while logged out: login
+        // restores the operator by itself (--operator flag), so prompting
+        // before a login would just double the elevations. After startup,
+        // the user's own actions (clicking the toggle, the menu "Set
+        // operator" button, etc.) handle every re-prompt explicitly.
         this._startupCheckId = GLib.timeout_add_seconds(
             GLib.PRIORITY_DEFAULT, 2, () => {
                 this._startupCheckId = 0;
@@ -292,6 +129,136 @@ export default class TailscaleGnomeExtension extends Extension {
         // twice, three clicks deeper.
         NautilusIntegration.purgeLegacyScripts();
         this._syncNautilus();
+    }
+
+    disable() {
+        this._unexportDbus();
+
+        // Unlinked unconditionally, setting or no setting: the link resolves
+        // into this directory, and an extension uninstalled while disabled
+        // would otherwise leave a dangling entry for nautilus-python to trip
+        // over on every start.
+        NautilusIntegration.uninstall(this.path);
+
+        this._settings.disconnectObject(this);
+        this._client.disconnectObject(this);
+
+        if (this._startupCheckId) {
+            GLib.source_remove(this._startupCheckId);
+            this._startupCheckId = 0;
+        }
+
+        for (const key of this._boundShortcuts)
+            Main.wm.removeKeybinding(key);
+        this._boundShortcuts.clear();
+
+        this._indicator.destroy();
+        this._indicator = null;
+
+        this._client.destroy();
+        this._client = null;
+
+        this._quiet.close();
+        this._quiet = null;
+        this._connHandle = null;
+        this._watcher = null;
+
+        Notifier.destroy();
+
+        this._settings = null;
+    }
+
+    /* ------------------------------ snapshots ---------------------------- */
+
+    // How long the daemon must go quiet after an account switch before the
+    // window closes: two poll cycles, so a slow daemon still gets a full one
+    // to settle in.
+    _settleMs() {
+        return this._settings.get_int('poll-interval') * 2000;
+    }
+
+    // The two availability keys are a mirror of what the last poll saw, not a
+    // cache anyone has to refresh: the preferences window runs in its own
+    // process and cannot read the snapshot, and the Taildrop receiver is
+    // driven off gsettings. Only a real answer is written — a status we could
+    // not read leaves the last one standing.
+    _mirrorAvailability(snap) {
+        for (const [key, value] of [
+            ['feature-taildrop-available', snap.taildropAvailable],
+            ['feature-funnels-available', snap.funnelsAvailable],
+        ]) {
+            if (typeof value !== 'boolean') continue;
+            if (this._settings.get_boolean(key) === value) continue;
+            this._settings.set_boolean(key, value);
+        }
+    }
+
+    _onState(snap) {
+        this._mirrorAvailability(snap);
+
+        for (const ev of this._watcher.feed(snap)) {
+            const message = watcherMessage(ev, snap);
+            if (ev.type === 'account-switched') {
+                // Unconditional: the daemon churns after a switch whoever
+                // started it, and admin ACLs differ per tailnet, so the
+                // availability flip that follows is not news either.
+                this._quiet.open(this._settleMs());
+                // A menu-driven switch is already reported by its own
+                // withFeedback. An external `tailscale switch` has none, so
+                // there this notification is the only account of it.
+                if (Notifier.isCategoryBusy(Category.PROFILE_SWITCH))
+                    continue;
+            }
+            if (ev.type === 'connection-starting') {
+                this._connHandle = Notifier.notify({
+                    category: ev.category,
+                    level: ev.level,
+                    message,
+                    spontaneous: ev.spontaneous,
+                });
+                continue;
+            }
+            if (this._connHandle && ev.type.startsWith('connection-')) {
+                this._connHandle.update({ level: ev.level, message });
+                this._connHandle = null;
+                continue;
+            }
+            Notifier.notify({
+                category: ev.category,
+                level: ev.level,
+                message,
+                spontaneous: ev.spontaneous,
+            });
+        }
+
+        // Every snapshot during the window pushes the close back, so the
+        // window lasts as long as the daemon keeps changing its mind.
+        this._quiet.postpone(this._settleMs());
+
+        if (snap.installed && !this._wasInstalled) this._syncTaildrop();
+        this._wasInstalled = snap.installed;
+    }
+
+    /* ------------------------------- Taildrop ---------------------------- */
+
+    // The receiver only runs when the user-facing accept toggle is on AND the
+    // tailnet actually allows Taildrop — a receiver on a tailnet that forbids
+    // it would never receive anything.
+    _syncTaildrop() {
+        const available = this._settings.get_boolean('feature-taildrop-available');
+        const accept    = this._settings.get_boolean('taildrop-accept');
+        this._client.setAcceptFiles(available && accept,
+            this._settings.get_string('taildrop-inbox'));
+    }
+
+    // Inbox path changed: bounce a running receiver so the new directory
+    // takes effect. Nothing to bounce when it was not running.
+    _bounceTaildrop() {
+        if (!this._settings.get_boolean('feature-taildrop-available')) return;
+        if (!this._settings.get_boolean('taildrop-accept')) return;
+        this._client.setAcceptFiles(false);
+        this._client.setAcceptFiles(
+            true, this._settings.get_string('taildrop-inbox'));
     }
 
     /* --------------------------- file manager --------------------------- */
@@ -333,51 +300,6 @@ export default class TailscaleGnomeExtension extends Extension {
         }
     }
 
-    disable() {
-        this._unexportDbus();
-
-        // Unlinked unconditionally, setting or no setting: the link resolves
-        // into this directory, and an extension uninstalled while disabled
-        // would otherwise leave a dangling entry for nautilus-python to trip
-        // over on every start.
-        NautilusIntegration.uninstall(this.path);
-
-        this._settings.disconnectObject(this);
-        this._client.disconnectObject(this);
-
-        if (this._startupCheckId) {
-            GLib.source_remove(this._startupCheckId);
-            this._startupCheckId = 0;
-        }
-
-        for (const key of this._boundShortcuts)
-            Main.wm.removeKeybinding(key);
-        this._boundShortcuts.clear();
-
-        this._indicator.destroy();
-        this._indicator = null;
-
-        this._client.destroy();
-        this._client = null;
-
-        this._connHandle = null;
-        this._watcher = null;
-
-        if (this._quietDebounceId) {
-            GLib.source_remove(this._quietDebounceId);
-            this._quietDebounceId = 0;
-        }
-        if (this._quietCeilingId) {
-            GLib.source_remove(this._quietCeilingId);
-            this._quietCeilingId = 0;
-        }
-        this._quietToken = 0;
-
-        Notifier.destroy();
-
-        this._settings = null;
-    }
-
     /* ----------------------------- shortcuts ---------------------------- */
 
     _rebindShortcut(key) {
@@ -401,10 +323,25 @@ export default class TailscaleGnomeExtension extends Extension {
         this._boundShortcuts.add(key);
     }
 
+    // Keybindings reach past the menu, so every one of them that drives a
+    // command has to ask the same question the hidden rows answer by being
+    // hidden. Sending files and opening Funnels ask it on the other side,
+    // in the toggle, because the D-Bus entry point shares those paths.
+    _notInstalled() {
+        if (this._client.snapshot.installed !== false) return false;
+        Notifier.notify({
+            category: Category.CONNECTION,
+            level: 'error',
+            message: _('Tailscale is not installed'),
+        });
+        return true;
+    }
+
     _shortcutHandler(key) {
         switch (key) {
         case 'shortcut-toggle-tailscale':
             return () => {
+                if (this._notInstalled()) return;
                 const snap = this._client.snapshot;
                 const ready =
                     snap.canControl &&
@@ -441,6 +378,7 @@ export default class TailscaleGnomeExtension extends Extension {
             };
         case 'shortcut-toggle-exit-node':
             return () => {
+                if (this._notInstalled()) return;
                 const snap = this._client.snapshot;
                 if (snap.exitNodeID) {
                     Notifier.withFeedback(
@@ -461,7 +399,13 @@ export default class TailscaleGnomeExtension extends Extension {
         case 'shortcut-show-menu':
             return () => this._indicator.openMenu();
         case 'shortcut-open-admin-panel':
-            return () => openAdminPanel();
+            // Gated like the rest even though the URL would open: the menu
+            // hides its Admin panel button in this state, and a shortcut
+            // that still worked would just be the same button, invisible.
+            return () => {
+                if (this._notInstalled()) return;
+                openAdminPanel();
+            };
         case 'shortcut-send-file':
             return () => this._indicator.sendFiles();
         case 'shortcut-add-funnel':

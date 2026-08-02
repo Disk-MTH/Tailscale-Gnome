@@ -13,7 +13,11 @@ ZIPNAME     := $(UUID).shell-extension.zip
 # GNOME Shell 45+ binds it to <extension>/locale/ on its own.
 DOMAIN      := tailscale-gnome
 POT         := po/$(DOMAIN).pot
-SOURCES     := extension.js prefs.js $(wildcard lib/*.js)
+# One level of subdirectory too: make's wildcard has no `**`, and the menu
+# rows and dialogs (lib/menu/) and the preference pages (prefs/) carry
+# translatable strings of their own.
+SOURCES     := extension.js prefs.js $(wildcard lib/*.js) $(wildcard lib/*/*.js) \
+               $(wildcard prefs/*.js)
 # The file-manager extension is python, and shares the catalogue so its
 # context-menu entry is worded by the same strings as the dialog it opens.
 PY_SOURCES  := $(wildcard nautilus/*.py)
@@ -82,10 +86,10 @@ translations: $(MO_FILES)
 install: schemas translations
 	@mkdir -p "$(USER_EXTDIR)"
 	@cp -r metadata.json extension.js prefs.js stylesheet.css "$(USER_EXTDIR)/"
-	@rm -rf "$(USER_EXTDIR)/lib" "$(USER_EXTDIR)/icons" \
+	@rm -rf "$(USER_EXTDIR)/lib" "$(USER_EXTDIR)/prefs" "$(USER_EXTDIR)/icons" \
 	        "$(USER_EXTDIR)/schemas" "$(USER_EXTDIR)/nautilus" \
 	        "$(USER_EXTDIR)/locale"
-	@cp -r lib icons schemas nautilus "$(USER_EXTDIR)/"
+	@cp -r lib prefs icons schemas nautilus "$(USER_EXTDIR)/"
 	@rm -rf "$(USER_EXTDIR)/nautilus/__pycache__"
 	@cp -r locale "$(USER_EXTDIR)/" 2>/dev/null || true
 	@cp -r LICENSE README.md CHANGELOG.md "$(USER_EXTDIR)/" 2>/dev/null || true
@@ -131,7 +135,7 @@ pack: translations
 	@rm -f "$(ZIPNAME)"
 	@cd "$(CURDIR)" && zip -qr "$(ZIPNAME)" \
 	    metadata.json extension.js prefs.js stylesheet.css \
-	    lib nautilus \
+	    lib prefs nautilus \
 	    icons/hicolor \
 	    locale \
 	    schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml \
