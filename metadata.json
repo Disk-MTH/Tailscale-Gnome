@@ -1,7 +1,7 @@
 {
     "uuid": "tailscale-gnome@diskmth.fr",
     "name": "Tailscale",
-    "description": "An intuitive, feature-rich, and elegant Tailscale integration for GNOME. Nothing more, nothing less. Not affiliated with Tailscale Inc.",
+    "description": "An intuitive, feature-rich, and elegant Tailscale integration for GNOME. Nothing more, nothing less. Clicking a copy button writes the address or Funnel URL next to it to the clipboard; nothing is ever read from it. Not affiliated with Tailscale Inc.",
     "shell-version": ["49", "50"],
     "url": "https://github.com/Disk-MTH/Tailscale-Gnome",
     "settings-schema": "org.gnome.shell.extensions.tailscale-gnome",

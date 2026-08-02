@@ -68,6 +68,22 @@ Safeguards:
   can point it elsewhere, so a user-writable path is never run — let
   alone elevated.
 
+## Clipboard access
+
+The extension **writes** to the clipboard and never reads from it. Every
+write is a direct answer to a click on a copy button, and puts exactly
+what that button sits next to on the clipboard:
+
+| Button | What it copies |
+| ------ | -------------- |
+| Copy, on the device row or a peer row | That device's Tailscale IP, or its Magic DNS name when Magic DNS is on |
+| Copy address, on a Funnel row | The public `https://…` URL that funnel serves |
+| Copy, in preferences → Help | The four version lines shown above it, for a bug report |
+
+Nothing is copied in the background, none of it leaves the machine, and
+no keyboard shortcut ships bound — every shortcut defaults to unset, and
+none of the six touch the clipboard at all.
+
 ## Install
 
 ```bash
@@ -124,19 +140,33 @@ started.
 
 ## Project layout
 
+The two processes are kept apart on disk: `lib/` is loaded only by GNOME
+Shell, `prefs/` only by the preferences window, and `lib/util.js` and
+`lib/notify-policy.js` are the sole modules both may import — so neither
+pulls in the other's toolkit.
+
 ```
-extension.js            # entry point, indicator + shortcuts
-prefs.js                # Adw preferences dialog
-lib/
+extension.js            # entry point: lifecycle, shortcuts, D-Bus
+prefs.js                # preferences entry point, one page per file below
+lib/                    # GNOME Shell process
 ├── tailscale.js        # CLI wrapper + poller
 ├── indicator.js        # panel icon
-├── menu.js             # Quick Settings toggle + submenus
+├── menu.js             # Quick Settings toggle
+├── menu/
+│   ├── rows.js         # the rows every submenu is built from
+│   ├── send-dialog.js  # Taildrop send flow + archiving
+│   └── funnels-dialog.js
 ├── watchers.js         # snapshot diffing into semantic events
+├── watcher-messages.js # those events, turned into translated wording
+├── quiet-window.js     # the silence held open around an account switch
 ├── notify-policy.js    # category, level and quiet-window rules
 ├── notify.js           # notification entry point
 ├── tray.js             # notification backend (MessageTray.Source)
 ├── nautilus.js         # symlinks the file-manager extension in and out
 └── util.js             # helpers shared by shell and prefs processes
+prefs/                  # preferences process
+├── common.js           # settings watcher, reset button, not-installed group
+├── general.js  taildrop.js  notifications.js  shortcuts.js  help.js
 nautilus/               # the nautilus-python extension itself
 icons/  schemas/  stylesheet.css
 ```

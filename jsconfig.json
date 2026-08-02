@@ -10,6 +10,6 @@
         "strict": false,
         "lib": ["ESNext"]
     },
-    "include": ["extension.js", "prefs.js", "lib/**/*.js"],
+    "include": ["extension.js", "prefs.js", "lib/**/*.js", "prefs/**/*.js"],
     "exclude": ["node_modules", "build", "dist", "schemas/gschemas.compiled"]
 }
