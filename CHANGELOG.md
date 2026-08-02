@@ -3,9 +3,30 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased
+## [1.0.0] - 2026-08-02
 
 ### Added
+- Native GNOME notifications, configured from a new Notifications preferences
+  page. They stack into a browsable history under a single Tailscale entry,
+  which GNOME itself caps at ten before evicting the oldest.
+- A second exit-node panel icon, for an exit node that is routing, beside the
+  one that already reported an exit node that cannot. It has its own switch
+  and its own colour, which defaults to none at all — the icon then takes the
+  panel's own ink and follows a light or dark theme without being told to.
+- Nine notification categories, each set to All, Errors or Off independently,
+  with a tenth control at the top of the list that applies one answer to all
+  of them at once. Errors keeps a category's failures and warnings while
+  dropping its successes, which is what the single global failures override
+  used to approximate for every category at the same time — badly, since one
+  category wanting its errors kept forced them on everywhere.
+- A Help page in the preferences, carrying the extension, daemon, operating
+  system and GNOME Shell versions — copied to the clipboard in one click —
+  beside links to the project's source and its issue tracker.
+- Clicking the notification for a received Taildrop file reveals it in the
+  file manager, selected inside its folder, via
+  `org.freedesktop.FileManager1` (falling back to opening the folder when no
+  file manager implements it). The message says so — "click to open".
+
 - A first-class "Tailscale is not installed" state. `Gio.Subprocess.new`
   throws when the program is not on `PATH`, and that rejection used to escape
   the poll: the snapshot never took the error, so the pill read **Disconnected**
@@ -58,53 +79,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Flatpak and Snap sandboxes when either is present, each of which sees a
   different `$XDG_DATA_HOME`.
 
-### Removed
-- The **Advanced → tailscale binary** setting, and the `tailscale-binary`
-  key behind it. It only ever steered the unprivileged half of the
-  extension: the elevated calls hardcode the program name so `pkexec`
-  resolves it in its own trusted root `PATH`, and that is not going to
-  change. Pointing the setting at a differently-named binary therefore
-  left login, logout, operator and account switching talking to
-  `tailscale` while everything else talked to something else — a broken
-  extension with a plausible-looking configuration. The program name is
-  now the literal `tailscale` everywhere, resolved on `PATH`.
-
-- The two shell scripts, "Send with Taildrop" and "Send with Taildrop as
-  ZIP", along with the Install / Remove buttons in preferences that copied
-  them into `~/.local/share/nautilus/scripts`. Both re-implemented the D-Bus
-  call in bash, and zipping is a switch inside the send dialog now. Copies
-  left by 0.2.x are deleted on enable so the same action does not appear
-  twice.
-
-### Fixed
-- "Extension settings" and "Admin panel" lost their bold along with
-  "Taildrop" and "Funnels", which was one row too many: the two that leave
-  the menu keep the weight, and only the pair that acts inside it drops it.
-
-## [1.0.0] - 2026-07-30
-
-### Added
-- Native GNOME notifications, configured from a new Notifications preferences
-  page. They stack into a browsable history under a single Tailscale entry,
-  which GNOME itself caps at ten before evicting the oldest.
-- A second exit-node panel icon, for an exit node that is routing, beside the
-  one that already reported an exit node that cannot. It has its own switch
-  and its own colour, which defaults to none at all — the icon then takes the
-  panel's own ink and follows a light or dark theme without being told to.
-- Nine notification categories, each set to All, Errors or Off independently,
-  with a tenth control at the top of the list that applies one answer to all
-  of them at once. Errors keeps a category's failures and warnings while
-  dropping its successes, which is what the single global failures override
-  used to approximate for every category at the same time — badly, since one
-  category wanting its errors kept forced them on everywhere.
-- A Help page in the preferences, carrying the extension, daemon, operating
-  system and GNOME Shell versions — copied to the clipboard in one click —
-  beside links to the project's source and its issue tracker.
-- Clicking the notification for a received Taildrop file reveals it in the
-  file manager, selected inside its folder, via
-  `org.freedesktop.FileManager1` (falling back to opening the folder when no
-  file manager implements it). The message says so — "click to open".
-
 ### Fixed
 - Switching accounts produced a burst of notifications, one per setting that
   flipped. It now reports once, when the new profile has been applied.
@@ -127,6 +101,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Sending as a zip crashed instead of sending: the archive options were
   handed to the Funnel port dialog rather than to the Taildrop one, so the
   send path received `undefined` where it destructured `{ asZip, password }`.
+
+- "Extension settings" and "Admin panel" lost their bold along with
+  "Taildrop" and "Funnels", which was one row too many: the two that leave
+  the menu keep the weight, and only the pair that acts inside it drops it.
+
+- A tailnet renamed in the admin console kept its old name on screen. The
+  snapshot comparison that decides whether the menu is worth redrawing looked
+  at the account behind a profile but not at the tailnet name — which is the
+  string the rows and the submenu header are actually drawn from — so the new
+  name reached the snapshot and stopped there, until some unrelated field
+  happened to change and forced a redraw. A peer's Magic DNS name and OS were
+  missing from the same comparison and are now compared too.
 
 ### Changed
 - The extension is licensed GPL-2.0-or-later, replacing MIT. It is built
@@ -225,6 +211,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   only thing that row offers which is not about an existing funnel, and it
   now costs one click rather than two.
 
+- The description names the clipboard again, as the review guidelines require
+  it to: the copy buttons write a device address or a Funnel URL, and nothing
+  is ever read back. The disclosure had been there since 0.2.0 and was lost
+  when the description was shortened.
+- The source is laid out to match the two processes it runs in. The Quick
+  Settings menu is split into `lib/menu/` — the rows, the Taildrop dialog and
+  the Funnel dialog — and every preferences page into its own file under
+  `prefs/`, which the shell process never loads. Both entry points shrank to
+  the lifecycle they own: `extension.js` to 417 lines, `prefs.js` to 30.
+- Pass over the whole codebase against the GNOME best-practices reference and
+  the review tooling: dead code dropped (a signal emitted but never listened
+  to, two unused methods), lifecycle flags replaced by the released references
+  themselves, glyphs used as icons replaced by real icons, and repeated
+  connect/disconnect pairs folded into one helper.
+
 ### Removed
 - The toast backend, and with it the choice of how notifications are
   presented. `lib/toast.js`, its OSD stylesheet block, the `notification-mode`
@@ -244,6 +245,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Taildrop and Funnel keep their admin-availability detection: the
   preferences show it as a status rather than a switch, since an ACL is not
   something a checkbox can grant.
+
+- The **Advanced → tailscale binary** setting, and the `tailscale-binary`
+  key behind it. It only ever steered the unprivileged half of the
+  extension: the elevated calls hardcode the program name so `pkexec`
+  resolves it in its own trusted root `PATH`, and that is not going to
+  change. Pointing the setting at a differently-named binary therefore
+  left login, logout, operator and account switching talking to
+  `tailscale` while everything else talked to something else — a broken
+  extension with a plausible-looking configuration. The program name is
+  now the literal `tailscale` everywhere, resolved on `PATH`.
+
+- The two shell scripts, "Send with Taildrop" and "Send with Taildrop as
+  ZIP", along with the Install / Remove buttons in preferences that copied
+  them into `~/.local/share/nautilus/scripts`. Both re-implemented the D-Bus
+  call in bash, and zipping is a switch inside the send dialog now. Copies
+  left by 0.2.x are deleted on enable so the same action does not appear
+  twice.
 
 ## [0.2.1] - 2026-07-14
 
