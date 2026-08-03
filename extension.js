@@ -12,7 +12,7 @@ import Shell from 'gi://Shell';
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-import { TailscaleClient } from './lib/tailscale.js';
+import { TailscaleClient, backendStatus } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
 import { openAdminPanel, requireBackend } from './lib/menu.js';
 import { Notifier, Category } from './lib/notify.js';
@@ -94,6 +94,12 @@ export default class TailscaleGnomeExtension extends Extension {
 
         this._client.connectObject(
             'state-changed', (_c, snap) => this._onState(snap), this);
+        // Seeded rather than left to the first 'state-changed'. On a machine
+        // with no Tailscale there is no first one: the client's constructor
+        // already probed PATH, so _goMissing() finds nothing to change and
+        // stays silent by design. Without this the key would keep whatever
+        // the last session that could answer wrote into it.
+        this._mirrorState(this._client.snapshot);
         this._client.start();
 
         // Restore the Taildrop receiver state. The setting is the source of
@@ -177,12 +183,12 @@ export default class TailscaleGnomeExtension extends Extension {
         return this._settings.get_int('poll-interval') * 2000;
     }
 
-    // The two availability keys are a mirror of what the last poll saw, not a
+    // The three mirrored keys are a mirror of what the last poll saw, not a
     // cache anyone has to refresh: the preferences window runs in its own
     // process and cannot read the snapshot, and the Taildrop receiver is
-    // driven off gsettings. Only a real answer is written — a status we could
-    // not read leaves the last one standing.
-    _mirrorAvailability(snap) {
+    // driven off gsettings. Only a real answer is written — an availability
+    // we could not read leaves the last one standing.
+    _mirrorState(snap) {
         for (const [key, value] of [
             ['feature-taildrop-available', snap.taildropAvailable],
             ['feature-funnels-available', snap.funnelsAvailable],
@@ -191,10 +197,16 @@ export default class TailscaleGnomeExtension extends Extension {
             if (this._settings.get_boolean(key) === value) continue;
             this._settings.set_boolean(key, value);
         }
+
+        // No such caution here: backendStatus() answers off fields that are
+        // always set, and "we could not tell" is itself one of its answers.
+        const status = backendStatus(snap);
+        if (this._settings.get_string('backend-status') !== status)
+            this._settings.set_string('backend-status', status);
     }
 
     _onState(snap) {
-        this._mirrorAvailability(snap);
+        this._mirrorState(snap);
 
         for (const ev of this._watcher.feed(snap)) {
             const message = watcherMessage(ev, snap);

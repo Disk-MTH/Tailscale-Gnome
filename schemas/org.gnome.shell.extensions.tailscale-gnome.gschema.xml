@@ -8,6 +8,12 @@
         <value nick="off" value="2"/>
     </enum>
 
+    <enum id="org.gnome.shell.extensions.tailscale-gnome.backend-status">
+        <value nick="ready" value="0"/>
+        <value nick="not-installed" value="1"/>
+        <value nick="not-running" value="2"/>
+    </enum>
+
     <schema id="org.gnome.shell.extensions.tailscale-gnome"
             path="/org/gnome/shell/extensions/tailscale-gnome/">
 
@@ -148,6 +154,19 @@
                 ACL on its own. Read by the preferences window, which runs
                 in its own process and cannot see the snapshot the menu
                 itself gates on.</description>
+        </key>
+        <key name="backend-status"
+             enum="org.gnome.shell.extensions.tailscale-gnome.backend-status">
+            <default>'ready'</default>
+            <summary>Mirror: whether the backend can be driven</summary>
+            <description>Written by the extension on every poll:
+                "not-installed" when the `tailscale` command is not on
+                PATH, "not-running" when it is but the daemon does not
+                answer, "ready" otherwise. Not a preference — the menu
+                gates on the snapshot directly. Like the two availability
+                keys above, it exists for the preferences window, which
+                runs in its own process and cannot see a
+                snapshot.</description>
         </key>
 
         <key name="min-pending-duration" type="u">
