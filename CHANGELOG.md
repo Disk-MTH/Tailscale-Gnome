@@ -3,71 +3,7 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
-
-### Changed
-- The Quick Settings menu no longer opens when the `tailscale` command is
-  missing from PATH or the `tailscaled` daemon does not answer. The button
-  stays in the panel, without its arrow, and clicking it opens the
-  preferences window instead; see below for what that window shows in this
-  state. It used to open onto a banner and a dozen controls that could not
-  run. The keyboard shortcut that opens the menu answers the same way, since
-  it reaches past the arrow that is no longer there.
-- The preferences window opens on its Help page alone in those two states,
-  and the page now says whether the package is missing or the service is
-  stopped rather than only the former, along with the command that fixes
-  it. The other three pages come back on their own once Tailscale answers,
-  with no need to reopen the window.
-- The other keybindings, and the Nautilus entry, still refuse with a
-  notification rather than opening a window: they were aimed at an action,
-  not at the menu, and a preferences window nobody asked for would be worse
-  than a line of text.
-- The two exit-node indicators are one row each, "connected" and
-  "disconnected", carrying the switch and the colour together with a reset
-  for each. They used to be four rows whose titles said "active" and
-  "status", which named the code rather than what is on screen. The
-  descriptions say what the icon means and nothing else, in all three
-  translations.
-- Three notification and Help strings use a colon where they used an em
-  dash: "Connecting Tailscale", "Tailscale is installed" and "Daemon
-  unreachable". No em dash is left in any translatable string, in any of the
-  four languages.
-- The Nautilus integration is off by default. It reaches outside the
-  extension's own directory and quits the file manager to take effect, so it
-  is now opted into rather than out of.
-
-### Added
-- A reset button on the Nautilus integration, the one row in preferences
-  that was missing one. It asks before quitting the file manager, exactly as
-  the switch beside it does, and only when restoring the default would
-  actually change what Nautilus shows.
-
-### Fixed
-- Opening the preferences no longer writes white into the connected
-  exit-node indicator colour. The colour button emitted a change while it
-  was only being filled in with the stored value, and the key whose default
-  is "no colour, follow the panel" was overwritten with the `#ffffff` the
-  button shows in its place, so an icon that followed a light or dark theme
-  became a hard white the first time the window was opened. Reset that row
-  once to get the theme-following default back.
-- The "Tailscale daemon" version on the Help page is re-read when the
-  backend comes back, instead of keeping the answer it got when the window
-  was built. Installing the package or starting the service used to leave
-  that one row stale (showing "-", or the CLI version with a "Daemon
-  unreachable" note) while every other live part of the window had already
-  caught up. The note is now cleared as well as set, so it cannot outlive
-  the state it described.
-
-### Removed
-- The "Tailscale is not installed" banner inside the menu, and the row class
-  behind it. The menu it lived in no longer opens.
-- The "Start Tailscale at boot" toggle, and with it the last elevated call
-  that was not `tailscale` itself: `pkexec systemctl enable/disable --now
-  tailscaled.service`. Enabling a system service at boot is the
-  distribution's business, it is one `systemctl` line away, and the toggle
-  was the only control on the page that did not answer to a setting.
-
-## [1.0.0] - 2026-08-02
+## [1.0.0] - 2026-08-03
 
 ### Added
 - Native GNOME notifications, configured from a new Notifications preferences
@@ -142,6 +78,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   re-install. Three flavours are covered: the distro package, plus the
   Flatpak and Snap sandboxes when either is present, each of which sees a
   different `$XDG_DATA_HOME`.
+- A reset button on the Nautilus integration, the one row in preferences
+  that was missing one. It asks before quitting the file manager, exactly as
+  the switch beside it does, and only when restoring the default would
+  actually change what Nautilus shows.
 
 ### Fixed
 - Switching accounts produced a burst of notifications, one per setting that
@@ -177,6 +117,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   name reached the snapshot and stopped there, until some unrelated field
   happened to change and forced a redraw. A peer's Magic DNS name and OS were
   missing from the same comparison and are now compared too.
+- Opening the preferences no longer writes white into the connected
+  exit-node indicator colour. The colour button emitted a change while it
+  was only being filled in with the stored value, and the key whose default
+  is "no colour, follow the panel" was overwritten with the `#ffffff` the
+  button shows in its place, so an icon that followed a light or dark theme
+  became a hard white the first time the window was opened. Reset that row
+  once to get the theme-following default back.
+- The "Tailscale daemon" version on the Help page is re-read when the
+  backend comes back, instead of keeping the answer it got when the window
+  was built. Installing the package or starting the service used to leave
+  that one row stale (showing "-", or the CLI version with a "Daemon
+  unreachable" note) while every other live part of the window had already
+  caught up. The note is now cleared as well as set, so it cannot outlive
+  the state it described.
 
 ### Changed
 - The extension is licensed GPL-2.0-or-later, replacing MIT. It is built
@@ -289,6 +243,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   to, two unused methods), lifecycle flags replaced by the released references
   themselves, glyphs used as icons replaced by real icons, and repeated
   connect/disconnect pairs folded into one helper.
+- The Quick Settings menu no longer opens when the `tailscale` command is
+  missing from PATH or the `tailscaled` daemon does not answer. The button
+  stays in the panel, without its arrow, and clicking it opens the
+  preferences window instead; see below for what that window shows in this
+  state. It used to open onto a banner and a dozen controls that could not
+  run. The keyboard shortcut that opens the menu answers the same way, since
+  it reaches past the arrow that is no longer there.
+- The preferences window opens on its Help page alone in those two states,
+  and the page now says whether the package is missing or the service is
+  stopped rather than only the former, along with the command that fixes
+  it. The other three pages come back on their own once Tailscale answers,
+  with no need to reopen the window.
+- The other keybindings, and the Nautilus entry, still refuse with a
+  notification rather than opening a window: they were aimed at an action,
+  not at the menu, and a preferences window nobody asked for would be worse
+  than a line of text.
+- The two exit-node indicators are one row each, "connected" and
+  "disconnected", carrying the switch and the colour together with a reset
+  for each. They used to be four rows whose titles said "active" and
+  "status", which named the code rather than what is on screen. The
+  descriptions say what the icon means and nothing else, in all three
+  translations.
+- Three notification and Help strings use a colon where they used an em
+  dash: "Connecting Tailscale", "Tailscale is installed" and "Daemon
+  unreachable". No em dash is left in any translatable string, in any of the
+  four languages.
+- The Nautilus integration is off by default. It reaches outside the
+  extension's own directory and quits the file manager to take effect, so it
+  is now opted into rather than out of.
 
 ### Removed
 - The toast backend, and with it the choice of how notifications are
@@ -326,6 +309,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   call in bash, and zipping is a switch inside the send dialog now. Copies
   left by 0.2.x are deleted on enable so the same action does not appear
   twice.
+- The "Tailscale is not installed" banner inside the menu, and the row class
+  behind it. The menu it lived in no longer opens.
+- The "Start Tailscale at boot" toggle, and with it the last elevated call
+  that was not `tailscale` itself: `pkexec systemctl enable/disable --now
+  tailscaled.service`. Enabling a system service at boot is the
+  distribution's business, it is one `systemctl` line away, and the toggle
+  was the only control on the page that did not answer to a setting.
 
 ## [0.2.1] - 2026-07-14
 
