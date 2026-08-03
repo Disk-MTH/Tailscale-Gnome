@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-03 13:38+0200\n"
+"POT-Creation-Date: 2026-08-03 14:25+0200\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: German\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: extension.js:360 lib/menu.js:118
+#: extension.js:363 lib/menu.js:99
 msgid "Login required"
 msgstr "Anmeldung erforderlich"
 
@@ -23,436 +23,298 @@ msgstr "Anmeldung erforderlich"
 msgid "Tailscale is not ready yet"
 msgstr "Tailscale ist noch nicht bereit"
 
-#: extension.js:370 lib/menu.js:567
-msgid "Disconnecting Tailscale"
-msgstr "Tailscale wird getrennt"
-
-#: extension.js:371 lib/menu.js:568
-msgid "Tailscale disconnected"
-msgstr "Tailscale getrennt"
-
-#: extension.js:377 lib/menu.js:560
-msgid "Connecting Tailscale"
-msgstr "Tailscale wird verbunden"
-
-#: extension.js:378 lib/menu.js:561 lib/watcher-messages.js:17
-msgid "Tailscale connected"
-msgstr "Tailscale verbunden"
-
-#: extension.js:391 lib/menu.js:919
+#: extension.js:378 lib/menu/sections.js:149
 msgid "Clearing exit node"
 msgstr "Exit-Node wird entfernt"
 
-#: extension.js:392 lib/menu.js:920
+#: extension.js:379 lib/menu/sections.js:150
 msgid "Exit node cleared"
 msgstr "Exit-Node entfernt"
 
-#: extension.js:398 lib/menu.js:931
+#: extension.js:385 lib/menu/sections.js:161
 msgid "Selecting an exit node"
 msgstr "Exit-Node wird ausgewählt"
 
-#: extension.js:399 lib/menu.js:932
+#: extension.js:386 lib/menu/sections.js:162
 msgid "Exit node: auto"
 msgstr "Exit-Node: automatisch"
 
-#: lib/menu.js:61
-msgid "Personal account"
-msgstr "Persönliches Konto"
-
-#: lib/menu.js:62
-msgid "Guest account"
-msgstr "Gastkonto"
-
-#: lib/menu.js:63
-msgid "Organisation account"
-msgstr "Organisationskonto"
-
-#: lib/menu.js:64
-#, javascript-format
-msgid "%s (%s)"
-msgstr "%s (%s)"
-
-#: lib/menu.js:74 lib/menu.js:806
+#: lib/menu.js:55 lib/menu.js:831
 #, javascript-format
 msgid "Could not open %s"
 msgstr "%s konnte nicht geöffnet werden"
 
-#: lib/menu.js:83 prefs/common.js:86
+#: lib/menu.js:64 prefs/common.js:86
 msgid "Tailscale is not installed"
 msgstr "Tailscale ist nicht installiert"
 
-#: lib/menu.js:84 prefs/common.js:95
+#: lib/menu.js:65 prefs/common.js:95
 msgid "Tailscale is not running"
 msgstr "Tailscale läuft nicht"
 
-#: lib/menu.js:117 lib/menu.js:1156
+#: lib/menu.js:98 lib/menu/sections.js:386
 msgid "Logged out"
 msgstr "Abgemeldet"
 
-#: lib/menu.js:119
+#: lib/menu.js:100
 msgid "Connected"
 msgstr "Verbunden"
 
-#: lib/menu.js:120
+#: lib/menu.js:101
 msgid "Disconnected"
 msgstr "Getrennt"
 
-#: lib/menu.js:149
+#: lib/menu.js:139
+msgid "Connecting Tailscale"
+msgstr "Tailscale wird verbunden"
+
+#: lib/menu.js:140 lib/watcher-messages.js:17
+msgid "Tailscale connected"
+msgstr "Tailscale verbunden"
+
+#: lib/menu.js:146
+msgid "Disconnecting Tailscale"
+msgstr "Tailscale wird getrennt"
+
+#: lib/menu.js:147
+msgid "Tailscale disconnected"
+msgstr "Tailscale getrennt"
+
+#: lib/menu.js:179
 msgid "Loading…"
 msgstr "Wird geladen…"
 
-#: lib/menu.js:237 lib/notify.js:29
+#: lib/menu.js:267 lib/notify.js:29
 msgid "Tailnet"
 msgstr "Tailnet"
 
-#: lib/menu.js:246 lib/menu.js:1006
+#: lib/menu.js:276 lib/menu/sections.js:236
 msgid "Peers"
 msgstr "Peers"
 
-#: lib/menu.js:253 lib/menu.js:885 lib/notify.js:30 prefs/notifications.js:44
+#: lib/menu.js:283 lib/notify.js:30 lib/menu/sections.js:115
+#: prefs/notifications.js:44
 msgid "Exit node"
 msgstr "Exit-Node"
 
-#: lib/menu.js:267
+#: lib/menu.js:297
 msgid "Magic DNS"
 msgstr "Magic DNS"
 
-#: lib/menu.js:270
+#: lib/menu.js:300
 msgid "Enabling Magic DNS"
 msgstr "Magic DNS wird aktiviert"
 
-#: lib/menu.js:270
+#: lib/menu.js:300
 msgid "Disabling Magic DNS"
 msgstr "Magic DNS wird deaktiviert"
 
-#: lib/menu.js:271
+#: lib/menu.js:301
 msgid "Magic DNS: on"
 msgstr "Magic DNS: an"
 
-#: lib/menu.js:271
+#: lib/menu.js:301
 msgid "Magic DNS: off"
 msgstr "Magic DNS: aus"
 
-#: lib/menu.js:281
+#: lib/menu.js:311
 msgid "Enabling Accept routes"
 msgstr "Routen annehmen wird aktiviert"
 
-#: lib/menu.js:281
+#: lib/menu.js:311
 msgid "Disabling Accept routes"
 msgstr "Routen annehmen wird deaktiviert"
 
-#: lib/menu.js:282
+#: lib/menu.js:312
 msgid "Accept routes: on"
 msgstr "Routen annehmen: an"
 
-#: lib/menu.js:282
+#: lib/menu.js:312
 msgid "Accept routes: off"
 msgstr "Routen annehmen: aus"
 
-#: lib/menu.js:289
+#: lib/menu.js:319
 msgid "Accept files"
 msgstr "Dateien annehmen"
 
-#: lib/menu.js:293
+#: lib/menu.js:323
 msgid "Shields up"
 msgstr "Shields up"
 
-#: lib/menu.js:296
+#: lib/menu.js:326
 msgid "Enabling Shields up"
 msgstr "Shields up wird aktiviert"
 
-#: lib/menu.js:296
+#: lib/menu.js:326
 msgid "Disabling Shields up"
 msgstr "Shields up wird deaktiviert"
 
-#: lib/menu.js:297
+#: lib/menu.js:327
 msgid "Shields up: on"
 msgstr "Shields up: an"
 
-#: lib/menu.js:297
+#: lib/menu.js:327
 msgid "Shields up: off"
 msgstr "Shields up: aus"
 
-#: lib/menu.js:303
+#: lib/menu.js:333
 msgid "Run SSH server"
 msgstr "SSH-Server ausführen"
 
-#: lib/menu.js:306
+#: lib/menu.js:336
 msgid "Enabling SSH server"
 msgstr "SSH-Server wird aktiviert"
 
-#: lib/menu.js:306
+#: lib/menu.js:336
 msgid "Disabling SSH server"
 msgstr "SSH-Server wird deaktiviert"
 
-#: lib/menu.js:307
+#: lib/menu.js:337
 msgid "SSH server: on"
 msgstr "SSH-Server: an"
 
-#: lib/menu.js:307
+#: lib/menu.js:337
 msgid "SSH server: off"
 msgstr "SSH-Server: aus"
 
-#: lib/menu.js:340 lib/notify.js:32 prefs/help.js:29 prefs/notifications.js:55
+#: lib/menu.js:370 lib/notify.js:32 prefs/help.js:29 prefs/notifications.js:55
 #: prefs/taildrop.js:46
 msgid "Taildrop"
 msgstr "Taildrop"
 
-#: lib/menu.js:351
+#: lib/menu.js:381
 msgid "Funnels"
 msgstr "Funnels"
 
-#: lib/menu.js:379
+#: lib/menu.js:409
 msgid "Extension settings"
 msgstr "Erweiterungseinstellungen"
 
-#: lib/menu.js:397
+#: lib/menu.js:427
 msgid "Admin panel"
 msgstr "Verwaltungskonsole"
 
-#: lib/menu.js:444
+#: lib/menu.js:474
 msgid "Operator not set"
 msgstr "Operator nicht festgelegt"
 
-#: lib/menu.js:450
+#: lib/menu.js:480
 msgid "Set operator"
 msgstr "Operator festlegen"
 
-#: lib/menu.js:456
+#: lib/menu.js:486
 msgid "Granting operator privilege"
 msgstr "Operator-Berechtigung wird erteilt"
 
-#: lib/menu.js:457
+#: lib/menu.js:487
 msgid "Operator set"
 msgstr "Operator festgelegt"
 
-#: lib/menu.js:539
+#: lib/menu.js:559
 msgid "Login required (see Account menu)"
 msgstr "Anmeldung erforderlich (siehe Menü „Konto“)"
 
-#: lib/menu.js:657
+#: lib/menu.js:667
 msgid "This device"
 msgstr "Dieses Gerät"
 
-#: lib/menu.js:730
+#: lib/menu.js:755
 msgid "Funnel is disabled for this tailnet by your admin."
 msgstr "Funnel wurde für dieses Tailnet von der Verwaltung deaktiviert."
 
-#: lib/menu.js:760
+#: lib/menu.js:785
 #, javascript-format
 msgid "Removing funnel %s"
 msgstr "Funnel %s wird entfernt"
 
-#: lib/menu.js:761
+#: lib/menu.js:786
 #, javascript-format
 msgid "Funnel removed %s"
 msgstr "Funnel %s entfernt"
 
-#: lib/menu.js:773
+#: lib/menu.js:798
 msgid "Invalid port number"
 msgstr "Ungültige Portnummer"
 
-#: lib/menu.js:786
+#: lib/menu.js:811
 #, javascript-format
 msgid "Adding funnel %d:%d"
 msgstr "Funnel %d:%d wird hinzugefügt"
 
-#: lib/menu.js:787
+#: lib/menu.js:812
 #, javascript-format
 msgid "Funnel added %d:%d"
 msgstr "Funnel %d:%d hinzugefügt"
 
-#: lib/menu.js:812
+#: lib/menu.js:837
 msgid "Approve Funnel in the browser, then retry."
 msgstr "Funnel im Browser bestätigen und erneut versuchen."
 
-#: lib/menu.js:845
-msgid "1 route"
-msgstr "1 Route"
-
-#: lib/menu.js:846
-#, javascript-format
-msgid "%d routes"
-msgstr "%d Routen"
-
-#: lib/menu.js:855
-#, javascript-format
-msgid "via %s"
-msgstr "über %s"
-
-#: lib/menu.js:871
-msgid "Through exit node"
-msgstr "Über Exit-Node"
-
-#: lib/menu.js:899
-#, javascript-format
-msgid "Auto (%s)"
-msgstr "Automatisch (%s)"
-
-#: lib/menu.js:900
-msgid "Auto (None)"
-msgstr "Automatisch (keiner)"
-
-#: lib/menu.js:903
-#, javascript-format
-msgid "Offline (%s)"
-msgstr "Offline (%s)"
-
-#: lib/menu.js:905
-#, javascript-format
-msgid "Disabled (%s)"
-msgstr "Deaktiviert (%s)"
-
-#: lib/menu.js:908 lib/menu.js:915
-msgid "None"
-msgstr "Keiner"
-
-#: lib/menu.js:927
-msgid "Auto"
-msgstr "Automatisch"
-
-#: lib/menu.js:948
-msgid "No approved exit nodes"
-msgstr "Keine freigegebenen Exit-Nodes"
-
-#: lib/menu.js:970
-#, javascript-format
-msgid "Routing through %s"
-msgstr "Weiterleitung über %s"
-
-#: lib/menu.js:971
-#, javascript-format
-msgid "Exit node: %s"
-msgstr "Exit-Node: %s"
-
-#: lib/menu.js:986
-msgid "Allow LAN access"
-msgstr "LAN-Zugriff erlauben"
-
-#: lib/menu.js:989
-msgid "Enabling LAN access"
-msgstr "LAN-Zugriff wird aktiviert"
-
-#: lib/menu.js:989
-msgid "Disabling LAN access"
-msgstr "LAN-Zugriff wird deaktiviert"
-
-#: lib/menu.js:990
-msgid "LAN access: on"
-msgstr "LAN-Zugriff: an"
-
-#: lib/menu.js:990
-msgid "LAN access: off"
-msgstr "LAN-Zugriff: aus"
-
-#: lib/menu.js:1011
-msgid "No peers"
-msgstr "Keine Peers"
-
-#: lib/menu.js:1065
-msgid "No tailnet"
-msgstr "Kein Tailnet"
-
-#: lib/menu.js:1067
-#, javascript-format
-msgid "Tailnet: %s"
-msgstr "Tailnet: %s"
-
-#: lib/menu.js:1105
-#, javascript-format
-msgid "Switching to %s"
-msgstr "Wechsel zu %s"
-
-#: lib/menu.js:1106
-#, javascript-format
-msgid "Active tailnet: %s"
-msgstr "Aktives Tailnet: %s"
-
-#: lib/menu.js:1130
-msgid "Login"
-msgstr "Anmelden"
-
-#: lib/menu.js:1138
-msgid "Opening Tailscale login"
-msgstr "Tailscale-Anmeldung wird geöffnet"
-
-#: lib/menu.js:1139
-msgid "Login flow started"
-msgstr "Anmeldevorgang gestartet"
-
-#: lib/menu.js:1147
-msgid "Logout"
-msgstr "Abmelden"
-
-#: lib/menu.js:1155
-msgid "Logging out"
-msgstr "Abmeldung läuft"
-
-#: lib/menu.js:1207
+#: lib/menu.js:886
 msgid "Accepting Taildrop files"
 msgstr "Taildrop-Dateien werden angenommen"
 
-#: lib/menu.js:1208
+#: lib/menu.js:887
 msgid "Taildrop receiver stopped"
 msgstr "Taildrop-Empfang gestoppt"
 
-#: lib/menu.js:1232
+#: lib/menu.js:911
 msgid "Taildrop is disabled for this tailnet by your admin."
 msgstr "Taildrop wurde für dieses Tailnet von der Verwaltung deaktiviert."
 
-#: lib/menu.js:1241
+#: lib/menu.js:920
 msgid "No online peers available to receive files"
 msgstr "Keine Online-Peers zum Empfangen von Dateien verfügbar"
 
-#: lib/menu.js:1266
+#: lib/menu.js:945
 #, javascript-format
 msgid "%d files"
 msgstr "%d Dateien"
 
-#: lib/menu.js:1269
+#: lib/menu.js:948
 #, javascript-format
 msgid "%d devices"
 msgstr "%d Geräte"
 
-#: lib/menu.js:1289
+#: lib/menu.js:968
 #, javascript-format
 msgid "Could not send to %s"
 msgstr "Senden an %s nicht möglich"
 
-#: lib/menu.js:1295
+#: lib/menu.js:974
 #, javascript-format
 msgid "Sent to %d of %d devices"
 msgstr "An %d von %d Geräten gesendet"
 
-#: lib/menu.js:1308
+#: lib/menu.js:987
 #, javascript-format
 msgid "Sent %s to %s"
 msgstr "%s an %s gesendet"
 
-#: lib/menu.js:1313
+#: lib/menu.js:992
 #, javascript-format
 msgid "Sending %s to %s"
 msgstr "%s wird an %s gesendet"
 
-#: lib/menu.js:1322
+#: lib/menu.js:1001
 #, javascript-format
 msgid "Archiving %s"
 msgstr "%s wird archiviert"
 
-#: lib/menu.js:1333
+#: lib/menu.js:1012
 msgid "Could not create the archive"
 msgstr "Archiv konnte nicht erstellt werden"
 
-#: lib/menu.js:1432
+#: lib/menu.js:1111
 msgid "File chooser portal unavailable"
 msgstr "Dateiauswahl-Portal nicht verfügbar"
 
-#: lib/menu.js:1467
+#: lib/menu.js:1146
 #, javascript-format
 msgid "Received %s (%s) - click to open"
 msgstr "Empfangen: %s (%s) - zum Öffnen klicken"
 
-#: lib/menu.js:1481
+#: lib/menu.js:1160
 #, javascript-format
 msgid "Copied %s to clipboard"
 msgstr "%s in die Zwischenablage kopiert"
@@ -595,22 +457,161 @@ msgstr "Adresse kopieren"
 msgid "Remove funnel"
 msgstr "Funnel entfernen"
 
-#: lib/menu/rows.js:112
+#: lib/menu/rows.js:114
 msgid "Copy"
 msgstr "Kopieren"
 
-#: lib/menu/rows.js:155
+#: lib/menu/rows.js:157
 msgid "Copy IP"
 msgstr "IP kopieren"
 
-#: lib/menu/rows.js:157
+#: lib/menu/rows.js:159
 #, javascript-format
 msgid "Copy %s"
 msgstr "%s kopieren"
 
-#: lib/menu/rows.js:266
+#: lib/menu/rows.js:248
 msgid "Accept routes"
 msgstr "Routen annehmen"
+
+#: lib/menu/sections.js:42
+msgid "Personal account"
+msgstr "Persönliches Konto"
+
+#: lib/menu/sections.js:43
+msgid "Guest account"
+msgstr "Gastkonto"
+
+#: lib/menu/sections.js:44
+msgid "Organisation account"
+msgstr "Organisationskonto"
+
+#: lib/menu/sections.js:45
+#, javascript-format
+msgid "%s (%s)"
+msgstr "%s (%s)"
+
+#: lib/menu/sections.js:75
+msgid "1 route"
+msgstr "1 Route"
+
+#: lib/menu/sections.js:76
+#, javascript-format
+msgid "%d routes"
+msgstr "%d Routen"
+
+#: lib/menu/sections.js:85
+#, javascript-format
+msgid "via %s"
+msgstr "über %s"
+
+#: lib/menu/sections.js:101
+msgid "Through exit node"
+msgstr "Über Exit-Node"
+
+#: lib/menu/sections.js:129
+#, javascript-format
+msgid "Auto (%s)"
+msgstr "Automatisch (%s)"
+
+#: lib/menu/sections.js:130
+msgid "Auto (None)"
+msgstr "Automatisch (keiner)"
+
+#: lib/menu/sections.js:133
+#, javascript-format
+msgid "Offline (%s)"
+msgstr "Offline (%s)"
+
+#: lib/menu/sections.js:135
+#, javascript-format
+msgid "Disabled (%s)"
+msgstr "Deaktiviert (%s)"
+
+#: lib/menu/sections.js:138 lib/menu/sections.js:145
+msgid "None"
+msgstr "Keiner"
+
+#: lib/menu/sections.js:157
+msgid "Auto"
+msgstr "Automatisch"
+
+#: lib/menu/sections.js:178
+msgid "No approved exit nodes"
+msgstr "Keine freigegebenen Exit-Nodes"
+
+#: lib/menu/sections.js:200
+#, javascript-format
+msgid "Routing through %s"
+msgstr "Weiterleitung über %s"
+
+#: lib/menu/sections.js:201
+#, javascript-format
+msgid "Exit node: %s"
+msgstr "Exit-Node: %s"
+
+#: lib/menu/sections.js:216
+msgid "Allow LAN access"
+msgstr "LAN-Zugriff erlauben"
+
+#: lib/menu/sections.js:219
+msgid "Enabling LAN access"
+msgstr "LAN-Zugriff wird aktiviert"
+
+#: lib/menu/sections.js:219
+msgid "Disabling LAN access"
+msgstr "LAN-Zugriff wird deaktiviert"
+
+#: lib/menu/sections.js:220
+msgid "LAN access: on"
+msgstr "LAN-Zugriff: an"
+
+#: lib/menu/sections.js:220
+msgid "LAN access: off"
+msgstr "LAN-Zugriff: aus"
+
+#: lib/menu/sections.js:241
+msgid "No peers"
+msgstr "Keine Peers"
+
+#: lib/menu/sections.js:295
+msgid "No tailnet"
+msgstr "Kein Tailnet"
+
+#: lib/menu/sections.js:297
+#, javascript-format
+msgid "Tailnet: %s"
+msgstr "Tailnet: %s"
+
+#: lib/menu/sections.js:335
+#, javascript-format
+msgid "Switching to %s"
+msgstr "Wechsel zu %s"
+
+#: lib/menu/sections.js:336
+#, javascript-format
+msgid "Active tailnet: %s"
+msgstr "Aktives Tailnet: %s"
+
+#: lib/menu/sections.js:360
+msgid "Login"
+msgstr "Anmelden"
+
+#: lib/menu/sections.js:368
+msgid "Opening Tailscale login"
+msgstr "Tailscale-Anmeldung wird geöffnet"
+
+#: lib/menu/sections.js:369
+msgid "Login flow started"
+msgstr "Anmeldevorgang gestartet"
+
+#: lib/menu/sections.js:377
+msgid "Logout"
+msgstr "Abmelden"
+
+#: lib/menu/sections.js:385
+msgid "Logging out"
+msgstr "Abmeldung läuft"
 
 #: lib/menu/send-dialog.js:260
 msgid "Send via Taildrop"
