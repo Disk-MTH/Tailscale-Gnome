@@ -39,13 +39,15 @@ all, and preferences grey the toggle out and say so.
 With no `tailscale` on `PATH`, or with the `tailscaled` daemon not
 answering, the extension goes inert rather than broken. The panel button
 stays but loses its arrow: there is nothing behind it that could run, so
-clicking it says which of the two states it is in instead of opening
-onto controls that would all be refused. The keybindings and the
-Nautilus entry answer the same way, preferences open on Help alone with
-a warning naming the state, and nothing is ever spawned. It keeps
-polling from there — at a slow tick while the binary is missing — so
-installing the package or starting the service brings the menu and the
-other preference pages back on their own. No reload, no logout.
+clicking it opens the preferences window instead of opening onto
+controls that would all be refused. That window is reduced to its Help
+page, which names which of the two states this is and the command that
+fixes it. The keybinding that opens the menu lands there too; the ones
+aimed at an action, and the Nautilus entry, refuse with a notification
+instead. Nothing is ever spawned. It keeps polling from there — at a
+slow tick while the binary is missing — so installing the package or
+starting the service brings the menu and the other preference pages back
+on their own. No reload, no logout.
 
 ## Privileged operations
 

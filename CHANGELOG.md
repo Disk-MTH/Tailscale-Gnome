@@ -8,14 +8,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - The Quick Settings menu no longer opens when the `tailscale` command is
   missing from PATH or the `tailscaled` daemon does not answer. The button
-  stays in the panel, without its arrow, and clicking it says which of the
-  two states it is in. It used to open onto a banner and a dozen controls
-  that could not run. The keyboard shortcut that opens the menu answers the
-  same way, since it reaches past the arrow that is no longer there.
+  stays in the panel, without its arrow, and clicking it opens the
+  preferences window instead — see below for what that window shows in this
+  state. It used to open onto a banner and a dozen controls that could not
+  run. The keyboard shortcut that opens the menu answers the same way, since
+  it reaches past the arrow that is no longer there.
 - The preferences window opens on its Help page alone in those two states,
   and the page now says whether the package is missing or the service is
-  stopped rather than only the former. The other three pages come back on
-  their own once Tailscale answers, with no need to reopen the window.
+  stopped rather than only the former, along with the command that fixes
+  it. The other three pages come back on their own once Tailscale answers,
+  with no need to reopen the window.
+- The other keybindings, and the Nautilus entry, still refuse with a
+  notification rather than opening a window: they were aimed at an action,
+  not at the menu, and a preferences window nobody asked for would be worse
+  than a line of text.
 
 ### Removed
 - The "Tailscale is not installed" banner inside the menu, and the row class
