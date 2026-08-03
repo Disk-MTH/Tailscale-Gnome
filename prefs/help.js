@@ -15,7 +15,7 @@ import Pango from "gi://Pango";
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
 import { fmt as _fmt, spawn as _spawn } from "../lib/util.js";
-import { makeNotInstalledGroup, watchSetting } from "./common.js";
+import { makeBackendGroup, watchSetting } from "./common.js";
 
 // Taildrop and Funnel can be forbidden tailnet-wide by an administrator.
 // That is a fact to report, not a setting: each row shows what the shell's
@@ -238,17 +238,19 @@ export function makeHelpPage(settings, metadata) {
     const repoUrl = metadata.url || "https://github.com/Disk-MTH/Tailscale-Gnome";
 
     /* --------------------------- Availability ---------------------------- */
-    // First on the page, ahead of the versions: it answers "why can I not
+    // The backend group comes first, ahead of Availability, which reads a
+    // tailnet's ACL out of the last poll: with no backend there was no
+    // poll, and whatever the ACL says is a leftover from the last machine
+    // state that could answer. It is also the only group left on the only
+    // page left while the backend is down, which is what makes this page
+    // worth keeping open in that state at all.
+    page.add(makeBackendGroup(settings));
+
+    // Then Availability, ahead of the versions: it answers "why can I not
     // see this feature", which is the question that brings someone here.
     // No probe on open — the group shows the last poll's answer and follows
     // the key from there. The shell refreshes it every few seconds whether
     // this window is up or not.
-    // Ahead of Availability, which reads a tailnet's ACL out of the last
-    // poll: with no CLI there was no poll, and whatever it says is a
-    // leftover from the last machine state that could answer.
-    const missing = makeNotInstalledGroup();
-    if (missing) page.add(missing);
-
     page.add(_makeAvailabilityGroup(settings));
 
     /* ------------------------------ Versions ----------------------------- */

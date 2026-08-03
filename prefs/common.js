@@ -38,25 +38,30 @@ export function resetButton(settings, key) {
     return btn;
 }
 
-// Shown at the top of every page while the CLI is missing. The rows below
-// it are left alone on purpose: they are the *extension's* preferences —
-// which indicators to draw, what to notify about, which keys to bind — and
-// they stay meaningful whether or not Tailscale is installed. What is dead
-// in that state lives in the shell menu, and the menu says so itself.
-// The one thing this group cannot do is act: installing a package is the
-// distribution's business, not a button here.
-export function makeNotInstalledGroup() {
-    if (hasTailscaleCli()) return null;
+// What the shell's last poll saw, as far as this process can tell. The
+// mirror can be stale — the extension may be disabled, and then nothing is
+// polling — but a PATH walk cannot, and that is the case worth being right
+// about: a window that hid its pages on a key written last week would be a
+// bug with no visible cause.
+export function readBackendStatus(settings) {
+    if (!hasTailscaleCli()) return "not-installed";
+    return settings.get_string("backend-status");
+}
+
+// Shown at the top of the pages that survive while the backend cannot be
+// driven. The rows below it are left alone on purpose: they are the
+// *extension's* preferences — which indicators to draw, what to notify
+// about, which keys to bind — and they stay meaningful either way. What is
+// dead in that state lives in the shell menu, and the menu says so itself.
+// The one thing this group cannot do is act: installing a package and
+// starting a service are the distribution's business, not a button here.
+//
+// It hides itself rather than not existing, so the same instance can follow
+// the key through an install or a `systemctl start` without the page it
+// sits on being rebuilt around it.
+export function makeBackendGroup(settings) {
     const group = new Adw.PreferencesGroup();
-    const row = new Adw.ActionRow({
-        title: _("Tailscale is not installed"),
-        subtitle: _(
-            "The `tailscale` command was not found on PATH, so the menu has " +
-                "nothing to drive. Install it with your distribution's " +
-                "package manager; the extension picks it up on its own, " +
-                "with no reload.",
-        ),
-    });
+    const row = new Adw.ActionRow();
     row.add_prefix(
         new Gtk.Image({
             iconName: "dialog-warning-symbolic",
@@ -64,5 +69,30 @@ export function makeNotInstalledGroup() {
         }),
     );
     group.add(row);
+
+    const sync = () => {
+        const status = readBackendStatus(settings);
+        group.visible = status !== "ready";
+        if (status === "ready") return;
+        if (status === "not-installed") {
+            row.title = _("Tailscale is not installed");
+            row.subtitle = _(
+                "The `tailscale` command was not found on PATH, so the menu has " +
+                    "nothing to drive. Install it with your distribution's " +
+                    "package manager; the extension picks it up on its own, " +
+                    "with no reload.",
+            );
+            return;
+        }
+        row.title = _("Tailscale is not running");
+        row.subtitle = _(
+            "The `tailscale` command is there, but the tailscaled daemon does " +
+                "not answer, so the menu has nothing to drive. Start it with " +
+                "`systemctl enable --now tailscaled`; the extension picks it " +
+                "up on its own, with no reload.",
+        );
+    };
+    watchSetting(group, settings, "backend-status", sync);
+    sync();
     return group;
 }

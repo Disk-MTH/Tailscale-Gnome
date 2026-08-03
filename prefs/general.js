@@ -12,7 +12,7 @@ import Gtk from "gi://Gtk";
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
 import { spawn as _spawn } from "../lib/util.js";
-import { makeNotInstalledGroup, resetButton, watchSetting } from "./common.js";
+import { makeBackendGroup, resetButton, watchSetting } from "./common.js";
 import { makeTaildropGroup } from "./taildrop.js";
 
 const TAILSCALED_UNIT = "tailscaled.service";
@@ -172,12 +172,12 @@ export function makeGeneralPage(settings) {
         iconName: "preferences-system-symbolic",
     });
 
-    // First group on the landing page, so the answer to "why is the
-    // menu empty" is the first thing here rather than something to
-    // find. Duplicated on Help because that is the page someone opens
-    // when they came looking for it.
-    const missing = makeNotInstalledGroup();
-    if (missing) page.add(missing);
+    // Only ever seen when the mirror is stale — this page is not in the
+    // window at all while the backend is down. That is exactly when it
+    // earns its place: with the extension disabled nothing is polling, and
+    // the PATH walk behind the group is the only thing still telling the
+    // truth about a `tailscale` that has gone.
+    page.add(makeBackendGroup(settings));
 
     /* --------------------------- Indicators ------------------------- */
     // Three independent switches rather than one: the exit-node warning
