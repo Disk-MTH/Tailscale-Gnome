@@ -6,9 +6,10 @@
 import GLib from 'gi://GLib';
 
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
+import { TailscaleClient } from '../lib/tailscale.js';
 import {
-    TailscaleClient, backendStatus, parseWroteLine, peersFromStatus,
-} from '../lib/tailscale.js';
+    backendStatus, parseWroteLine, peersFromStatus,
+} from '../lib/tailscale-parse.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
 // netmap. They are flagged `ShareeNode` precisely so clients hide them, and

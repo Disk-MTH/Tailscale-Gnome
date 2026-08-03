@@ -12,7 +12,8 @@ import Shell from 'gi://Shell';
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-import { TailscaleClient, backendStatus } from './lib/tailscale.js';
+import { TailscaleClient } from './lib/tailscale.js';
+import { backendStatus } from './lib/tailscale-parse.js';
 import { TailscaleIndicator } from './lib/indicator.js';
 import {
     openAdminPanel, requireBackend, connectionBlocker, setConnection,
