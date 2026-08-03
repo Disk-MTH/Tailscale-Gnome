@@ -7,7 +7,7 @@ import GLib from 'gi://GLib';
 
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import {
-    TailscaleClient, parseWroteLine, peersFromStatus,
+    TailscaleClient, backendStatus, parseWroteLine, peersFromStatus,
 } from '../lib/tailscale.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
@@ -203,5 +203,51 @@ suite('TailscaleClient — no CLI on PATH', () => {
             assertEq(c.snapshot.installed, false);
             c.destroy();
         });
+    });
+});
+
+suite('backendStatus', () => {
+    test('a missing binary outranks the error it sets', () => {
+        assertEq(backendStatus({
+            installed: false,
+            error: 'tailscale: not found in PATH',
+        }), 'not-installed');
+    });
+
+    test('an unreadable status is a daemon we cannot drive', () => {
+        assertEq(backendStatus({ installed: true, error: 'no-status' }),
+            'not-running');
+    });
+
+    test('a stderr line from a failed poll says the same thing', () => {
+        assertEq(backendStatus({
+            installed: true,
+            error: 'failed to connect to local tailscaled',
+        }), 'not-running');
+    });
+
+    test('a healthy snapshot is ready', () => {
+        assertEq(backendStatus({ installed: true, error: null }), 'ready');
+    });
+
+    // The two states the gate must NOT catch: both are answered from
+    // inside the menu, by a toggle and a Login button the user would no
+    // longer be able to reach.
+    test('`tailscale down` is still ready', () => {
+        assertEq(backendStatus({
+            installed: true,
+            error: null,
+            backendState: 'Stopped',
+            running: false,
+        }), 'ready');
+    });
+
+    test('NeedsLogin is still ready', () => {
+        assertEq(backendStatus({
+            installed: true,
+            error: null,
+            backendState: 'NeedsLogin',
+            loggedOut: true,
+        }), 'ready');
     });
 });
