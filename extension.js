@@ -14,7 +14,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { TailscaleClient } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
-import { openAdminPanel } from './lib/menu.js';
+import { openAdminPanel, requireBackend } from './lib/menu.js';
 import { Notifier, Category } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
 import { watcherMessage } from './lib/watcher-messages.js';
@@ -324,24 +324,16 @@ export default class TailscaleGnomeExtension extends Extension {
     }
 
     // Keybindings reach past the menu, so every one of them that drives a
-    // command has to ask the same question the hidden rows answer by being
-    // hidden. Sending files and opening Funnels ask it on the other side,
-    // in the toggle, because the D-Bus entry point shares those paths.
-    _notInstalled() {
-        if (this._client.snapshot.installed !== false) return false;
-        Notifier.notify({
-            category: Category.CONNECTION,
-            level: 'error',
-            message: _('Tailscale is not installed'),
-        });
-        return true;
-    }
-
+    // command has to ask requireBackend the question the missing arrow
+    // answers by being missing. Sending files and opening Funnels ask it on
+    // the other side, in the toggle, because the D-Bus entry point shares
+    // those paths.
     _shortcutHandler(key) {
         switch (key) {
         case 'shortcut-toggle-tailscale':
             return () => {
-                if (this._notInstalled()) return;
+                if (!requireBackend(this._client.snapshot, Category.CONNECTION))
+                    return;
                 const snap = this._client.snapshot;
                 const ready =
                     snap.canControl &&
@@ -378,7 +370,8 @@ export default class TailscaleGnomeExtension extends Extension {
             };
         case 'shortcut-toggle-exit-node':
             return () => {
-                if (this._notInstalled()) return;
+                if (!requireBackend(this._client.snapshot, Category.CONNECTION))
+                    return;
                 const snap = this._client.snapshot;
                 if (snap.exitNodeID) {
                     Notifier.withFeedback(
@@ -403,7 +396,8 @@ export default class TailscaleGnomeExtension extends Extension {
             // hides its Admin panel button in this state, and a shortcut
             // that still worked would just be the same button, invisible.
             return () => {
-                if (this._notInstalled()) return;
+                if (!requireBackend(this._client.snapshot, Category.CONNECTION))
+                    return;
                 openAdminPanel();
             };
         case 'shortcut-send-file':
