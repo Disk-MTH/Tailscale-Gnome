@@ -36,12 +36,16 @@ Nautilus integration (on by default) needs the `nautilus-python`
 package. Without it, the file manager loads no Python extension at
 all, and preferences grey the toggle out and say so.
 
-With no `tailscale` on `PATH` the extension goes inert rather than
-broken: the menu is stripped to one row saying so, the keybindings and
-the Nautilus entry refuse with the same message, preferences carry a
-warning at the top of General and Help, and nothing is ever spawned. It
-watches `PATH` at a slow tick from there, so installing the package
-brings the menu back on its own — no reload, no logout.
+With no `tailscale` on `PATH`, or with the `tailscaled` daemon not
+answering, the extension goes inert rather than broken. The panel button
+stays but loses its arrow: there is nothing behind it that could run, so
+clicking it says which of the two states it is in instead of opening
+onto controls that would all be refused. The keybindings and the
+Nautilus entry answer the same way, preferences open on Help alone with
+a warning naming the state, and nothing is ever spawned. It keeps
+polling from there — at a slow tick while the binary is missing — so
+installing the package or starting the service brings the menu and the
+other preference pages back on their own. No reload, no logout.
 
 ## Privileged operations
 
