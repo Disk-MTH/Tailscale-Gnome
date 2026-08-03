@@ -12,17 +12,7 @@
     margin-left: 6px;
 }
 
-.tailscale-status-pill.online {
-    background-color: rgba(64, 200, 120, 0.18);
-    color: #66d68a;
-}
-
-.tailscale-status-pill.offline {
-    background-color: rgba(220, 80, 80, 0.18);
-    color: #e07b7b;
-}
-
-/* Online / offline dot on peer rows. Same palette as the status pill. */
+/* Online / offline dot on peer rows. */
 .tailscale-peer-dot {
     margin-left: 6px;
     width: 8px;

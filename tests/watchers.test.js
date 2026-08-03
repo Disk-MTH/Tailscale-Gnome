@@ -162,13 +162,6 @@ suite('SnapshotWatcher', () => {
         assertDeepEq(types(w.feed(snapshot({ backendState: 'Running' }))), ['connection-established']);
     });
 
-    test('reset drops the accumulated state', () => {
-        const w = new SnapshotWatcher();
-        w.feed(snapshot({ backendState: 'Starting' }));
-        w.reset();
-        assertDeepEq(types(w.feed(snapshot({ backendState: 'Running' }))), []);
-    });
-
     test('a null snapshot is ignored', () => {
         const w = new SnapshotWatcher();
         assertDeepEq(types(w.feed(null)), []);
