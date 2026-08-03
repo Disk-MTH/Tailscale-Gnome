@@ -14,7 +14,9 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { TailscaleClient, backendStatus } from './lib/tailscale.js';
 import { TailscaleIndicator } from './lib/indicator.js';
-import { openAdminPanel, requireBackend } from './lib/menu.js';
+import {
+    openAdminPanel, requireBackend, connectionBlocker, setConnection,
+} from './lib/menu.js';
 import { Notifier, Category } from './lib/notify.js';
 import { SnapshotWatcher } from './lib/watchers.js';
 import { watcherMessage } from './lib/watcher-messages.js';
@@ -264,13 +266,12 @@ export default class TailscaleGnomeExtension extends Extension {
     }
 
     // Inbox path changed: bounce a running receiver so the new directory
-    // takes effect. Nothing to bounce when it was not running.
+    // takes effect. Stopping first is what makes this a bounce; _syncTaildrop
+    // then decides whether anything should come back up, so the conditions
+    // for running a receiver stay written down in exactly one place.
     _bounceTaildrop() {
-        if (!this._settings.get_boolean('feature-taildrop-available')) return;
-        if (!this._settings.get_boolean('taildrop-accept')) return;
         this._client.setAcceptFiles(false);
-        this._client.setAcceptFiles(
-            true, this._settings.get_string('taildrop-inbox'));
+        this._syncTaildrop();
     }
 
     /* --------------------------- file manager --------------------------- */
@@ -344,41 +345,26 @@ export default class TailscaleGnomeExtension extends Extension {
         switch (key) {
         case 'shortcut-toggle-tailscale':
             return () => {
-                if (!requireBackend(this._client.snapshot, Category.CONNECTION))
-                    return;
                 const snap = this._client.snapshot;
-                const ready =
-                    snap.canControl &&
-                    !snap.loggedOut &&
-                    snap.backendState !== 'NeedsLogin' &&
-                    snap.backendState !== 'NoState';
-                if (!ready) {
-                    // Same priority as the toggle click: logged out beats
-                    // operator-missing, since login restores the operator
-                    // by itself.
-                    if (snap.loggedOut || snap.backendState === 'NeedsLogin')
-                        Notifier.notify({ category: Category.CONNECTION, level: 'info', message: _('Login required') });
-                    else if (!snap.canControl)
-                        this._client.setOperator();
-                    else
-                        Notifier.notify({ category: Category.CONNECTION, level: 'info', message: _('Tailscale is not ready yet') });
+                if (!requireBackend(snap, Category.CONNECTION)) return;
+                // Same diagnosis as the toggle click, worded for a user who
+                // has no menu open: there is no Account menu to point at.
+                const blocker = connectionBlocker(snap);
+                if (blocker === 'needs-operator') {
+                    this._client.setOperator();
                     return;
                 }
-                if (snap.running) {
-                    Notifier.withFeedback(
-                        Category.CONNECTION,
-                        _('Disconnecting Tailscale'),
-                        _('Tailscale disconnected'),
-                        () => this._client.down(),
-                    );
-                } else {
-                    Notifier.withFeedback(
-                        Category.CONNECTION,
-                        _('Connecting Tailscale'),
-                        _('Tailscale connected'),
-                        () => this._client.up(),
-                    );
+                if (blocker) {
+                    Notifier.notify({
+                        category: Category.CONNECTION,
+                        level: 'info',
+                        message: blocker === 'needs-login'
+                            ? _('Login required')
+                            : _('Tailscale is not ready yet'),
+                    });
+                    return;
                 }
+                setConnection(this._client, !snap.running);
             };
         case 'shortcut-toggle-exit-node':
             return () => {
