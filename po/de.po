@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-02 15:16+0200\n"
+"POT-Creation-Date: 2026-08-03 12:12+0200\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: German\n"
@@ -15,227 +15,220 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: extension.js:335 lib/menu.js:86 lib/menu.js:468 lib/menu.js:577
-#: prefs/common.js:52
-msgid "Tailscale is not installed"
-msgstr "Tailscale ist nicht installiert"
-
-#: extension.js:356 lib/menu.js:89
+#: extension.js:360 lib/menu.js:118
 msgid "Login required"
 msgstr "Anmeldung erforderlich"
 
-#: extension.js:360
+#: extension.js:364
 msgid "Tailscale is not ready yet"
 msgstr "Tailscale ist noch nicht bereit"
 
-#: extension.js:366 lib/menu.js:530
+#: extension.js:370 lib/menu.js:536
 msgid "Disconnecting Tailscale"
 msgstr "Tailscale wird getrennt"
 
-#: extension.js:367 lib/menu.js:531
+#: extension.js:371 lib/menu.js:537
 msgid "Tailscale disconnected"
 msgstr "Tailscale getrennt"
 
-#: extension.js:373 lib/menu.js:523
+#: extension.js:377 lib/menu.js:529
 msgid "Connecting Tailscale"
 msgstr "Tailscale wird verbunden"
 
-#: extension.js:374 lib/menu.js:524 lib/watcher-messages.js:17
+#: extension.js:378 lib/menu.js:530 lib/watcher-messages.js:17
 msgid "Tailscale connected"
 msgstr "Tailscale verbunden"
 
-#: extension.js:386 lib/menu.js:888
+#: extension.js:391 lib/menu.js:888
 msgid "Clearing exit node"
 msgstr "Exit-Node wird entfernt"
 
-#: extension.js:387 lib/menu.js:889
+#: extension.js:392 lib/menu.js:889
 msgid "Exit node cleared"
 msgstr "Exit-Node entfernt"
 
-#: extension.js:393 lib/menu.js:900
+#: extension.js:398 lib/menu.js:900
 msgid "Selecting an exit node"
 msgstr "Exit-Node wird ausgewählt"
 
-#: extension.js:394 lib/menu.js:901
+#: extension.js:399 lib/menu.js:901
 msgid "Exit node: auto"
 msgstr "Exit-Node: automatisch"
 
-#: lib/menu.js:60
+#: lib/menu.js:61
 msgid "Personal account"
 msgstr "Persönliches Konto"
 
-#: lib/menu.js:61
+#: lib/menu.js:62
 msgid "Guest account"
 msgstr "Gastkonto"
 
-#: lib/menu.js:62
+#: lib/menu.js:63
 msgid "Organisation account"
 msgstr "Organisationskonto"
 
-#: lib/menu.js:63
+#: lib/menu.js:64
 #, javascript-format
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
-#: lib/menu.js:73 lib/menu.js:775
+#: lib/menu.js:74 lib/menu.js:775
 #, javascript-format
 msgid "Could not open %s"
 msgstr "%s konnte nicht geöffnet werden"
 
-#: lib/menu.js:87
-msgid "Tailscale unavailable"
-msgstr "Tailscale nicht verfügbar"
+#: lib/menu.js:83 prefs/common.js:78
+msgid "Tailscale is not installed"
+msgstr "Tailscale ist nicht installiert"
 
-#: lib/menu.js:88 lib/menu.js:1125
+#: lib/menu.js:84 prefs/common.js:87
+msgid "Tailscale is not running"
+msgstr "Tailscale läuft nicht"
+
+#: lib/menu.js:117 lib/menu.js:1125
 msgid "Logged out"
 msgstr "Abgemeldet"
 
-#: lib/menu.js:90
+#: lib/menu.js:119
 msgid "Connected"
 msgstr "Verbunden"
 
-#: lib/menu.js:91
+#: lib/menu.js:120
 msgid "Disconnected"
 msgstr "Getrennt"
 
-#: lib/menu.js:120
+#: lib/menu.js:149
 msgid "Loading…"
 msgstr "Wird geladen…"
 
-#: lib/menu.js:212 lib/notify.js:29
+#: lib/menu.js:237 lib/notify.js:29
 msgid "Tailnet"
 msgstr "Tailnet"
 
-#: lib/menu.js:221 lib/menu.js:975
+#: lib/menu.js:246 lib/menu.js:975
 msgid "Peers"
 msgstr "Peers"
 
-#: lib/menu.js:228 lib/menu.js:854 lib/notify.js:30 prefs/notifications.js:44
+#: lib/menu.js:253 lib/menu.js:854 lib/notify.js:30 prefs/notifications.js:44
 msgid "Exit node"
 msgstr "Exit-Node"
 
-#: lib/menu.js:242
+#: lib/menu.js:267
 msgid "Magic DNS"
 msgstr "Magic DNS"
 
-#: lib/menu.js:245
+#: lib/menu.js:270
 msgid "Enabling Magic DNS"
 msgstr "Magic DNS wird aktiviert"
 
-#: lib/menu.js:245
+#: lib/menu.js:270
 msgid "Disabling Magic DNS"
 msgstr "Magic DNS wird deaktiviert"
 
-#: lib/menu.js:246
+#: lib/menu.js:271
 msgid "Magic DNS: on"
 msgstr "Magic DNS: an"
 
-#: lib/menu.js:246
+#: lib/menu.js:271
 msgid "Magic DNS: off"
 msgstr "Magic DNS: aus"
 
-#: lib/menu.js:256
+#: lib/menu.js:281
 msgid "Enabling Accept routes"
 msgstr "Routen annehmen wird aktiviert"
 
-#: lib/menu.js:256
+#: lib/menu.js:281
 msgid "Disabling Accept routes"
 msgstr "Routen annehmen wird deaktiviert"
 
-#: lib/menu.js:257
+#: lib/menu.js:282
 msgid "Accept routes: on"
 msgstr "Routen annehmen: an"
 
-#: lib/menu.js:257
+#: lib/menu.js:282
 msgid "Accept routes: off"
 msgstr "Routen annehmen: aus"
 
-#: lib/menu.js:264
+#: lib/menu.js:289
 msgid "Accept files"
 msgstr "Dateien annehmen"
 
-#: lib/menu.js:268
+#: lib/menu.js:293
 msgid "Shields up"
 msgstr "Shields up"
 
-#: lib/menu.js:271
+#: lib/menu.js:296
 msgid "Enabling Shields up"
 msgstr "Shields up wird aktiviert"
 
-#: lib/menu.js:271
+#: lib/menu.js:296
 msgid "Disabling Shields up"
 msgstr "Shields up wird deaktiviert"
 
-#: lib/menu.js:272
+#: lib/menu.js:297
 msgid "Shields up: on"
 msgstr "Shields up: an"
 
-#: lib/menu.js:272
+#: lib/menu.js:297
 msgid "Shields up: off"
 msgstr "Shields up: aus"
 
-#: lib/menu.js:278
+#: lib/menu.js:303
 msgid "Run SSH server"
 msgstr "SSH-Server ausführen"
 
-#: lib/menu.js:281
+#: lib/menu.js:306
 msgid "Enabling SSH server"
 msgstr "SSH-Server wird aktiviert"
 
-#: lib/menu.js:281
+#: lib/menu.js:306
 msgid "Disabling SSH server"
 msgstr "SSH-Server wird deaktiviert"
 
-#: lib/menu.js:282
+#: lib/menu.js:307
 msgid "SSH server: on"
 msgstr "SSH-Server: an"
 
-#: lib/menu.js:282
+#: lib/menu.js:307
 msgid "SSH server: off"
 msgstr "SSH-Server: aus"
 
-#: lib/menu.js:315 lib/notify.js:32 prefs/help.js:29 prefs/notifications.js:55
+#: lib/menu.js:340 lib/notify.js:32 prefs/help.js:29 prefs/notifications.js:55
 #: prefs/taildrop.js:46
 msgid "Taildrop"
 msgstr "Taildrop"
 
-#: lib/menu.js:326
+#: lib/menu.js:351
 msgid "Funnels"
 msgstr "Funnels"
 
-#: lib/menu.js:354
+#: lib/menu.js:379
 msgid "Extension settings"
 msgstr "Erweiterungseinstellungen"
 
-#: lib/menu.js:384
+#: lib/menu.js:409
 msgid "Admin panel"
 msgstr "Verwaltungskonsole"
 
-#: lib/menu.js:431
+#: lib/menu.js:456
 msgid "Operator not set"
 msgstr "Operator nicht festgelegt"
 
-#: lib/menu.js:437
+#: lib/menu.js:462
 msgid "Set operator"
 msgstr "Operator festlegen"
 
-#: lib/menu.js:443
+#: lib/menu.js:468
 msgid "Granting operator privilege"
 msgstr "Operator-Berechtigung wird erteilt"
 
-#: lib/menu.js:444
+#: lib/menu.js:469
 msgid "Operator set"
 msgstr "Operator festgelegt"
 
-#: lib/menu.js:502
+#: lib/menu.js:508
 msgid "Login required (see Account menu)"
 msgstr "Anmeldung erforderlich (siehe Menü „Konto“)"
-
-#: lib/menu.js:578
-msgid "Install the tailscale package, then this menu comes back on its own."
-msgstr ""
-"Installieren Sie das Paket tailscale, dann kommt dieses Menü von selbst "
-"zurück."
 
 #: lib/menu.js:626
 msgid "This device"
@@ -403,63 +396,63 @@ msgstr "Taildrop-Dateien werden angenommen"
 msgid "Taildrop receiver stopped"
 msgstr "Taildrop-Empfang gestoppt"
 
-#: lib/menu.js:1200
+#: lib/menu.js:1201
 msgid "Taildrop is disabled for this tailnet by your admin."
 msgstr "Taildrop wurde für dieses Tailnet von der Verwaltung deaktiviert."
 
-#: lib/menu.js:1209
+#: lib/menu.js:1210
 msgid "No online peers available to receive files"
 msgstr "Keine Online-Peers zum Empfangen von Dateien verfügbar"
 
-#: lib/menu.js:1234
+#: lib/menu.js:1235
 #, javascript-format
 msgid "%d files"
 msgstr "%d Dateien"
 
-#: lib/menu.js:1237
+#: lib/menu.js:1238
 #, javascript-format
 msgid "%d devices"
 msgstr "%d Geräte"
 
-#: lib/menu.js:1257
+#: lib/menu.js:1258
 #, javascript-format
 msgid "Could not send to %s"
 msgstr "Senden an %s nicht möglich"
 
-#: lib/menu.js:1263
+#: lib/menu.js:1264
 #, javascript-format
 msgid "Sent to %d of %d devices"
 msgstr "An %d von %d Geräten gesendet"
 
-#: lib/menu.js:1276
+#: lib/menu.js:1277
 #, javascript-format
 msgid "Sent %s to %s"
 msgstr "%s an %s gesendet"
 
-#: lib/menu.js:1281
+#: lib/menu.js:1282
 #, javascript-format
 msgid "Sending %s to %s"
 msgstr "%s wird an %s gesendet"
 
-#: lib/menu.js:1290
+#: lib/menu.js:1291
 #, javascript-format
 msgid "Archiving %s"
 msgstr "%s wird archiviert"
 
-#: lib/menu.js:1301
+#: lib/menu.js:1302
 msgid "Could not create the archive"
 msgstr "Archiv konnte nicht erstellt werden"
 
-#: lib/menu.js:1400
+#: lib/menu.js:1401
 msgid "File chooser portal unavailable"
 msgstr "Dateiauswahl-Portal nicht verfügbar"
 
-#: lib/menu.js:1435
+#: lib/menu.js:1436
 #, javascript-format
 msgid "Received %s (%s) - click to open"
 msgstr "Empfangen: %s (%s) - zum Öffnen klicken"
 
-#: lib/menu.js:1449
+#: lib/menu.js:1450
 #, javascript-format
 msgid "Copied %s to clipboard"
 msgstr "%s in die Zwischenablage kopiert"
@@ -615,7 +608,7 @@ msgstr "IP kopieren"
 msgid "Copy %s"
 msgstr "%s kopieren"
 
-#: lib/menu/rows.js:291
+#: lib/menu/rows.js:266
 msgid "Accept routes"
 msgstr "Routen annehmen"
 
@@ -681,7 +674,7 @@ msgstr "leer"
 msgid "Reset to default"
 msgstr "Auf Standard zurücksetzen"
 
-#: prefs/common.js:54
+#: prefs/common.js:80
 msgid ""
 "The `tailscale` command was not found on PATH, so the menu has nothing to "
 "drive. Install it with your distribution's package manager; the extension "
@@ -690,6 +683,17 @@ msgstr ""
 "Der Befehl „tailscale“ wurde nicht im PATH gefunden, das Menü hat also "
 "nichts zu steuern. Installieren Sie ihn über die Paketverwaltung Ihrer "
 "Distribution; die Erweiterung erkennt ihn von selbst, ohne Neuladen."
+
+#: prefs/common.js:89
+msgid ""
+"The `tailscale` command is there, but the tailscaled daemon does not answer, "
+"so the menu has nothing to drive. Start it with `systemctl enable --now "
+"tailscaled`; the extension picks it up on its own, with no reload."
+msgstr ""
+"Der Befehl „tailscale“ ist vorhanden, aber der Dienst tailscaled antwortet "
+"nicht, das Menü hat also nichts zu steuern. Starten Sie ihn mit „systemctl "
+"enable --now tailscaled“; die Erweiterung erkennt das von selbst, ohne "
+"Neuladen."
 
 #: prefs/general.js:34
 msgid "Start Tailscale at boot"
@@ -865,59 +869,59 @@ msgstr ""
 msgid "Help"
 msgstr "Hilfe"
 
-#: prefs/help.js:256
+#: prefs/help.js:258
 msgid "About"
 msgstr "Über"
 
-#: prefs/help.js:258
+#: prefs/help.js:260
 msgid "What is running on this machine. Include it when reporting a problem."
 msgstr "Was auf diesem Rechner läuft. Einer Fehlermeldung bitte beilegen."
 
-#: prefs/help.js:263
+#: prefs/help.js:265
 msgid "Extension"
 msgstr "Erweiterung"
 
-#: prefs/help.js:264
+#: prefs/help.js:266
 msgid "Tailscale daemon"
 msgstr "Tailscale-Daemon"
 
-#: prefs/help.js:265
+#: prefs/help.js:267
 msgid "Operating system"
 msgstr "Betriebssystem"
 
-#: prefs/help.js:266
+#: prefs/help.js:268
 msgid "GNOME Shell"
 msgstr "GNOME Shell"
 
-#: prefs/help.js:289
+#: prefs/help.js:291
 msgid "Daemon unreachable — this is the CLI version."
 msgstr "Daemon nicht erreichbar — dies ist die CLI-Version."
 
-#: prefs/help.js:305
+#: prefs/help.js:307
 msgid "Copy this information to the clipboard"
 msgstr "Diese Informationen in die Zwischenablage kopieren"
 
-#: prefs/help.js:317
+#: prefs/help.js:319
 msgid "Copied to clipboard"
 msgstr "In die Zwischenablage kopiert"
 
-#: prefs/help.js:323
+#: prefs/help.js:325
 msgid "Project"
 msgstr "Projekt"
 
-#: prefs/help.js:328
+#: prefs/help.js:330
 msgid "Source code"
 msgstr "Quellcode"
 
-#: prefs/help.js:329
+#: prefs/help.js:331
 msgid "Browse the extension's repository on GitHub."
 msgstr "Das Repository der Erweiterung auf GitHub ansehen."
 
-#: prefs/help.js:335
+#: prefs/help.js:337
 msgid "Report a problem"
 msgstr "Ein Problem melden"
 
-#: prefs/help.js:336
+#: prefs/help.js:338
 msgid "Open an issue on GitHub. Attach the information above."
 msgstr "Ein Issue auf GitHub eröffnen. Die Angaben darüber beifügen."
 
@@ -1182,6 +1186,14 @@ msgstr "Mit Taildrop senden"
 #: nautilus/tailscale-taildrop.py:129
 msgid "Send the selection to a Tailscale device"
 msgstr "Die Auswahl an ein Tailscale-Gerät senden"
+
+#~ msgid "Tailscale unavailable"
+#~ msgstr "Tailscale nicht verfügbar"
+
+#~ msgid "Install the tailscale package, then this menu comes back on its own."
+#~ msgstr ""
+#~ "Installieren Sie das Paket tailscale, dann kommt dieses Menü von selbst "
+#~ "zurück."
 
 #~ msgid "tailscale binary"
 #~ msgstr "tailscale-Programmdatei"
