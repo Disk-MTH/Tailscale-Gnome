@@ -66,7 +66,7 @@
 /* Taildrop | Funnels only. The shell paints every `.button` bold, while
    `.popup-menu-item` sets itself back to normal; these two sit among the
    toggle rows and read as part of that list, so they drop the weight. The
-   pair at the very bottom keeps it — Extension settings and Admin panel
+   pair at the very bottom keeps it: Extension settings and Admin panel
    leave the menu rather than act inside it, and the bold says so. */
 .tailscale-transfer-buttons .button {
     font-weight: normal;
@@ -115,13 +115,13 @@
 
    One gutter runs down the whole dialog: every block is inset 4px from the
    content edge, so the things that paint a background (rows, buttons, the
-   password entry) share one left edge, and every piece of text — headings,
-   subtitles, row labels — lands on 14px, being 4px of block inset plus the
+   password entry) share one left edge, and every piece of text (headings,
+   subtitles, row labels) lands on 14px, being 4px of block inset plus the
    10px of padding a row carries. Anything added here has to pick one of
    those two numbers; mixing in a third is what made the earlier layout
    look ragged. */
 /* 4px, not 8: a subtitle cannot be pulled closer to the list it announces
-   than the dialog's own spacing allows — St clamps margins at zero, so
+   than the dialog's own spacing allows: St clamps margins at zero, so
    there is no negative to claw the gap back with. The floor is set low
    here instead, and every block that wants more air asks for it in its own
    padding. */
@@ -219,8 +219,8 @@
     padding: 5px 10px;
     spacing: 8px;
 }
-/* Says which rows are folders — the thing that decides whether zipping is
-   optional — without spending a column on the word. */
+/* Says which rows are folders (the thing that decides whether zipping is
+   optional) without spending a column on the word. */
 .tailscale-file-icon {
     opacity: 0.7;
 }
@@ -262,7 +262,7 @@
     color: #66d68a;
 }
 /* Sits inside .tailscale-send-options, which already supplies the 4px
-   block inset — hence no horizontal padding of its own. */
+   block inset, hence no horizontal padding of its own. */
 .tailscale-send-password {
     spacing: 3px;
     padding: 2px 0 0 0;
@@ -282,7 +282,7 @@
 /* The published address in a Funnels dialog row. Fixed width for the same
    reason .tailscale-file-name has one: a long tailnet hostname gives way to
    the copy and remove buttons rather than widening the dialog. What is
-   clipped stays reachable — the copy button hands over the whole URL. */
+   clipped stays reachable: the copy button hands over the whole URL. */
 .tailscale-funnel-url {
     width: 320px;
 }

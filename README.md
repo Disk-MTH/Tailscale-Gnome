@@ -32,7 +32,7 @@ Connect, switch accounts, manage exit nodes, expose services with Funnel, and se
 File pickers use the XDG Desktop Portal (`org.freedesktop.portal.FileChooser`), which ships with every GNOME session, no external
 dialog tool is spawned.
 
-Nautilus integration (on by default) needs the `nautilus-python`
+Nautilus integration (off by default) needs the `nautilus-python`
 package. Without it, the file manager loads no Python extension at
 all, and preferences grey the toggle out and say so.
 
@@ -44,8 +44,8 @@ controls that would all be refused. That window is reduced to its Help
 page, which names which of the two states this is and the command that
 fixes it. The keybinding that opens the menu lands there too; the ones
 aimed at an action, and the Nautilus entry, refuse with a notification
-instead. Nothing is ever spawned. It keeps polling from there — at a
-slow tick while the binary is missing — so installing the package or
+instead. Nothing is ever spawned. It keeps polling from there (at a
+slow tick while the binary is missing), so installing the package or
 starting the service brings the menu and the other preference pages back
 on their own. No reload, no logout.
 
@@ -62,7 +62,6 @@ extension therefore runs a **small, fixed set** of commands through
 | `pkexec tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
 | `pkexec tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
 | `pkexec tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
-| `pkexec systemctl enable/disable --now tailscaled.service` | Only from the **Start Tailscale at boot** toggle in preferences. |
 
 Safeguards:
 
@@ -71,7 +70,7 @@ Safeguards:
   built at runtime is ever concatenated into it (no `sh -c`).
 - The program name is always the bare `tailscale`, resolved on `PATH`
   (in `pkexec`'s own trusted root `PATH` for elevated calls). No setting
-  can point it elsewhere, so a user-writable path is never run — let
+  can point it elsewhere, so a user-writable path is never run, let
   alone elevated.
 
 ## Clipboard access
@@ -87,7 +86,7 @@ what that button sits next to on the clipboard:
 | Copy, in preferences → Help | The four version lines shown above it, for a bug report |
 
 Nothing is copied in the background, none of it leaves the machine, and
-no keyboard shortcut ships bound — every shortcut defaults to unset, and
+no keyboard shortcut ships bound: every shortcut defaults to unset, and
 none of the six touch the clipboard at all.
 
 ## Install
@@ -111,13 +110,10 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | Page          | Setting                            | Default       |
 | ------------- | ---------------------------------- | ------------- |
 | General       | Show panel indicator               | on            |
-| General       | Show exit node active indicator    | on            |
-| General       | Exit node active indicator colour  | theme         |
-| General       | Show exit node status indicator    | on            |
-| General       | Exit node indicator colour         | `#e6b800`     |
+| General       | Exit node indicator: connected (icon / colour) | on / theme |
+| General       | Exit node indicator: disconnected (icon / colour) | on / `#e6b800` |
 | General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
-| General       | Nautilus integration               | on            |
-| General       | Start Tailscale at boot            | system        |
+| General       | Nautilus integration               | off           |
 | General       | Poll interval                      | 3s            |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
@@ -148,7 +144,7 @@ started.
 
 The two processes are kept apart on disk: `lib/` is loaded only by GNOME
 Shell, `prefs/` only by the preferences window, and `lib/util.js` and
-`lib/notify-policy.js` are the sole modules both may import — so neither
+`lib/notify-policy.js` are the sole modules both may import, so neither
 pulls in the other's toolkit.
 
 ```

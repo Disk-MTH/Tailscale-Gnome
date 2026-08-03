@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Disk_MTH
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-// Preferences entry point. Each page owns its own file under prefs/ — the
+// Preferences entry point. Each page owns its own file under prefs/: the
 // preferences process loads none of the shell-side modules, and keeping
 // them in their own directory is what says so at a glance.
 
@@ -18,7 +18,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         const settings = this.getSettings();
 
         // The shell opens this at a size that leaves the four page titles
-        // fighting for the header, and "Notifications" loses — it comes up
+        // fighting for the header, and "Notifications" loses: it comes up
         // elided to "Notifi…". Wide enough for all four spelled out, and
         // for the longest of them in French and German too.
         window.set_default_size(820, 700);
@@ -39,7 +39,7 @@ export default class TailscaleGnomePrefs extends ExtensionPreferences {
         // With no backend to drive, three of these four pages configure a
         // menu that does not open. Help is the one whose whole job is
         // explaining a machine that is not working, so it is the one that
-        // stays — and it carries the group that says which of the two
+        // stays, and it carries the group that says which of the two
         // states this is.
         //
         // Removed and re-added rather than hidden: the window appends, so

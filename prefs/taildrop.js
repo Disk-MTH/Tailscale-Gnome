@@ -16,12 +16,12 @@ import { fmt as _fmt, spawn as _spawn } from "../lib/util.js";
 // The preferences ask whether the integration is possible, the shell acts
 // on the answer, and both read it out of one place.
 import { hasPythonLoader } from "../lib/nautilus.js";
-import { watchSetting } from "./common.js";
+import { resetButton, watchSetting } from "./common.js";
 
 // True when the user can create/write at the given path without elevation:
 // walk up to the first existing ancestor and check the can-write attribute.
 // Empty/relative paths and system roots (/etc, /var, …) all land here via
-// the kernel's own permission bits — no allow-list to maintain.
+// the kernel's own permission bits, no allow-list to maintain.
 function _isPathSafe(p) {
     if (!p || !p.trim().startsWith("/")) return false;
     let f = Gio.File.new_for_path(p);
@@ -134,7 +134,7 @@ export function makeTaildropGroup(settings) {
     const commitInbox = () => {
         const text = inboxRow.text.trim();
         const v = normalisePath(inboxRow.text);
-        // Refuse to persist a path the user can't write to — the receiver
+        // Refuse to persist a path the user can't write to: the receiver
         // would just crash on first file. Revert to the last committed
         // value so the row keeps reflecting reality.
         if (text === "" || !_isPathSafe(v)) {
@@ -147,7 +147,7 @@ export function makeTaildropGroup(settings) {
         if (v !== inboxRow.text) inboxRow.text = v;
         if (v !== settings.get_string("taildrop-inbox")) {
             settings.set_string("taildrop-inbox", v);
-            // Confirm the change — commitInbox also fires on focus-out
+            // Confirm the change: commitInbox also fires on focus-out
             // with an unchanged value, so the toast is gated on an actual
             // write to keep it from nagging.
             group.get_root().add_toast(
@@ -227,11 +227,31 @@ export function makeTaildropGroup(settings) {
     });
     group.add(nautilusRow);
 
+    // The reset goes through the same confirmation as the switch: restoring
+    // the default makes or drops the same link, and Nautilus has to be quit
+    // for either to be seen. When the key already holds its default there is
+    // nothing to see, so it only drops the override.
+    const applyReset = () => {
+        settings.reset("nautilus-integration");
+        _quitFileManagers();
+    };
+    nautilusRow.add_suffix(
+        resetButton(settings, "nautilus-integration", () => {
+            const fallback = settings
+                .get_default_value("nautilus-integration")
+                .get_boolean();
+            if (fallback === settings.get_boolean("nautilus-integration")) {
+                settings.reset("nautilus-integration");
+                return;
+            }
+            _confirmQuit(nautilusRow, applyReset);
+        }),
+    );
+
     // Not bound to the setting: flipping it asks first, and a bound switch
     // has already written by the time there is anything to ask about. The
-    // guard is the same one the service row uses — it marks the writes we
-    // make ourselves, so setting the switch back after a Cancel does not read
-    // as a second toggle.
+    // guard marks the writes we make ourselves, so setting the switch back
+    // after a Cancel does not read as a second toggle.
     let guard = false;
     const setActive = (v) => {
         guard = true;
@@ -248,7 +268,7 @@ export function makeTaildropGroup(settings) {
 
     // No loader, no integration: the file we link is a python file-manager
     // extension, and nothing reads it without nautilus-python. Greying the
-    // switch out is the honest answer — leaving it live would let the user
+    // switch out is the honest answer: leaving it live would let the user
     // turn on a feature that cannot appear, with nothing to explain why.
     if (!hasPythonLoader()) {
         nautilusRow.sensitive = false;
@@ -277,42 +297,54 @@ export function makeTaildropGroup(settings) {
         if (guard) return;
 
         const wanted = nautilusRow.active;
-        const dialog = new Adw.AlertDialog({
-            heading: _("Quit the file manager?"),
-            // Said plainly because it is the whole reason for the prompt:
-            // Nautilus reads its extensions once, at startup, so the change
-            // cannot reach a window that is already open.
-            body: _(
-                "Nautilus loads its extensions when it starts, so it has to " +
-                    "be closed for this to take effect. Any open Nautilus " +
-                    "window will be closed, and the next one you open picks " +
-                    "up the change.",
-            ),
-        });
-        dialog.add_response("cancel", _("Cancel"));
-        dialog.add_response("quit", _("Quit Nautilus"));
-        dialog.set_response_appearance(
-            "quit",
-            Adw.ResponseAppearance.DESTRUCTIVE,
+        _confirmQuit(
+            nautilusRow,
+            () => {
+                // Written before the quit, not after: the shell extension
+                // makes or drops the link off this key, and nothing
+                // relaunches the file manager on its own, so by the time a
+                // window is opened again the link is already whichever way
+                // it should be.
+                settings.set_boolean("nautilus-integration", wanted);
+                _quitFileManagers();
+            },
+            () => setActive(!wanted),
         );
-        dialog.set_default_response("quit");
-        dialog.set_close_response("cancel");
-
-        dialog.choose(nautilusRow.get_root(), null, (dlg, res) => {
-            if (dlg.choose_finish(res) !== "quit") {
-                setActive(!wanted);
-                return;
-            }
-            // Written before the quit, not after: the shell extension makes
-            // or drops the link off this key, and nothing relaunches the file
-            // manager on its own, so by the time a window is opened again the
-            // link is already whichever way it should be.
-            settings.set_boolean("nautilus-integration", wanted);
-            _quitFileManagers();
-        });
     });
 
     return group;
+}
+
+// The prompt both ways into the integration share: making the link and
+// dropping it are the same change as far as an already-running Nautilus is
+// concerned. `onCancel` is only needed by the switch, which has moved by the
+// time there is anything to ask about and has to be put back.
+function _confirmQuit(widget, onConfirm, onCancel = () => {}) {
+    const dialog = new Adw.AlertDialog({
+        heading: _("Quit the file manager?"),
+        // Said plainly because it is the whole reason for the prompt:
+        // Nautilus reads its extensions once, at startup, so the change
+        // cannot reach a window that is already open.
+        body: _(
+            "Nautilus loads its extensions when it starts, so it has to " +
+                "be closed for this to take effect. Any open Nautilus " +
+                "window will be closed, and the next one you open picks " +
+                "up the change.",
+        ),
+    });
+    dialog.add_response("cancel", _("Cancel"));
+    dialog.add_response("quit", _("Quit Nautilus"));
+    dialog.set_response_appearance("quit", Adw.ResponseAppearance.DESTRUCTIVE);
+    dialog.set_default_response("quit");
+    dialog.set_close_response("cancel");
+
+    dialog.choose(widget.get_root(), null, (dlg, res) => {
+        if (dlg.choose_finish(res) !== "quit") {
+            onCancel();
+            return;
+        }
+        onConfirm();
+    });
 }
 
 // `nautilus -q` asks the running instance to quit rather than signalling it,

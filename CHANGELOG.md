@@ -9,7 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The Quick Settings menu no longer opens when the `tailscale` command is
   missing from PATH or the `tailscaled` daemon does not answer. The button
   stays in the panel, without its arrow, and clicking it opens the
-  preferences window instead — see below for what that window shows in this
+  preferences window instead; see below for what that window shows in this
   state. It used to open onto a banner and a dozen controls that could not
   run. The keyboard shortcut that opens the menu answers the same way, since
   it reaches past the arrow that is no longer there.
@@ -22,19 +22,50 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   notification rather than opening a window: they were aimed at an action,
   not at the menu, and a preferences window nobody asked for would be worse
   than a line of text.
+- The two exit-node indicators are one row each, "connected" and
+  "disconnected", carrying the switch and the colour together with a reset
+  for each. They used to be four rows whose titles said "active" and
+  "status", which named the code rather than what is on screen. The
+  descriptions say what the icon means and nothing else, in all three
+  translations.
+- Three notification and Help strings use a colon where they used an em
+  dash: "Connecting Tailscale", "Tailscale is installed" and "Daemon
+  unreachable". No em dash is left in any translatable string, in any of the
+  four languages.
+- The Nautilus integration is off by default. It reaches outside the
+  extension's own directory and quits the file manager to take effect, so it
+  is now opted into rather than out of.
+
+### Added
+- A reset button on the Nautilus integration, the one row in preferences
+  that was missing one. It asks before quitting the file manager, exactly as
+  the switch beside it does, and only when restoring the default would
+  actually change what Nautilus shows.
 
 ### Fixed
+- Opening the preferences no longer writes white into the connected
+  exit-node indicator colour. The colour button emitted a change while it
+  was only being filled in with the stored value, and the key whose default
+  is "no colour, follow the panel" was overwritten with the `#ffffff` the
+  button shows in its place, so an icon that followed a light or dark theme
+  became a hard white the first time the window was opened. Reset that row
+  once to get the theme-following default back.
 - The "Tailscale daemon" version on the Help page is re-read when the
   backend comes back, instead of keeping the answer it got when the window
   was built. Installing the package or starting the service used to leave
-  that one row stale — showing "—", or the CLI version with a "Daemon
-  unreachable" note — while every other live part of the window had already
+  that one row stale (showing "-", or the CLI version with a "Daemon
+  unreachable" note) while every other live part of the window had already
   caught up. The note is now cleared as well as set, so it cannot outlive
   the state it described.
 
 ### Removed
 - The "Tailscale is not installed" banner inside the menu, and the row class
   behind it. The menu it lived in no longer opens.
+- The "Start Tailscale at boot" toggle, and with it the last elevated call
+  that was not `tailscale` itself: `pkexec systemctl enable/disable --now
+  tailscaled.service`. Enabling a system service at boot is the
+  distribution's business, it is one `systemctl` line away, and the toggle
+  was the only control on the page that did not answer to a setting.
 
 ## [1.0.0] - 2026-08-02
 
@@ -44,26 +75,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   which GNOME itself caps at ten before evicting the oldest.
 - A second exit-node panel icon, for an exit node that is routing, beside the
   one that already reported an exit node that cannot. It has its own switch
-  and its own colour, which defaults to none at all — the icon then takes the
+  and its own colour, which defaults to none at all: the icon then takes the
   panel's own ink and follows a light or dark theme without being told to.
 - Nine notification categories, each set to All, Errors or Off independently,
   with a tenth control at the top of the list that applies one answer to all
   of them at once. Errors keeps a category's failures and warnings while
   dropping its successes, which is what the single global failures override
-  used to approximate for every category at the same time — badly, since one
-  category wanting its errors kept forced them on everywhere.
+  used to approximate for every category at the same time (badly, since one
+  category wanting its errors kept forced them on everywhere).
 - A Help page in the preferences, carrying the extension, daemon, operating
-  system and GNOME Shell versions — copied to the clipboard in one click —
+  system and GNOME Shell versions (copied to the clipboard in one click)
   beside links to the project's source and its issue tracker.
 - Clicking the notification for a received Taildrop file reveals it in the
   file manager, selected inside its folder, via
   `org.freedesktop.FileManager1` (falling back to opening the folder when no
-  file manager implements it). The message says so — "click to open".
+  file manager implements it). The message says so: "click to open".
 
 - A first-class "Tailscale is not installed" state. `Gio.Subprocess.new`
   throws when the program is not on `PATH`, and that rejection used to escape
   the poll: the snapshot never took the error, so the pill read **Disconnected**
-  — as if Tailscale were installed and merely off — while every poll raised a
+  (as if Tailscale were installed and merely off) while every poll raised a
   fresh `Failed to execute child process` banner, one every three seconds for
   the whole session. The client now probes `PATH` before it spawns anything,
   and answers with an empty snapshot flagged `installed: false`. That travels
@@ -74,7 +105,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (connect, exit node, admin console) and the Nautilus "Send with Taildrop"
   entry all refuse with the same wording, since a hidden row stops nothing that
   does not go through the row. Preferences carry a warning at the top of
-  General and Help — but keep their own settings live, because which indicators
+  General and Help, but keep their own settings live, because which indicators
   to draw and which keys to bind mean the same thing either way.
 - The poll drops to 30s while there is nothing to poll, and the extension comes
   back on its own the moment the package lands: no reload, no logout. The
@@ -90,8 +121,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   nautilus-python out of Nautilus' own extensions directory. "Send with
   Taildrop" now sits in the context menu itself rather than three clicks down
   the Scripts submenu, and it calls the same D-Bus method the shell extension
-  already exported, so the in-shell picker — the dialog the keyboard shortcut
-  opens — owns the whole interaction. Its entry and tooltip come out of the
+  already exported, so the in-shell picker (the dialog the keyboard shortcut
+  opens) owns the whole interaction. Its entry and tooltip come out of the
   extension's own gettext catalogues, found by resolving the symlink it was
   loaded through, so the menu is worded like the dialog it opens.
 - Turning the integration on or off asks first, because it has to close the
@@ -108,7 +139,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The link is managed by the extension: made on enable while "Nautilus
   integration" is on, dropped on disable, and pointed at the extension
   directory rather than copied out of it, so an update needs no
-  re-install. Three flavours are covered — the distro package, plus the
+  re-install. Three flavours are covered: the distro package, plus the
   Flatpak and Snap sandboxes when either is present, each of which sees a
   different `$XDG_DATA_HOME`.
 
@@ -128,7 +159,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `wrote <name> as <path> (<n> bytes)`, and the extension took everything
   after "wrote", so the message ended up carrying the byte count the code
   claimed to strip. It also tried to name the sender from a line
-  `tailscale file get` never prints — the record behind that command
+  `tailscale file get` never prints: the record behind that command
   (`apitype.WaitingFile`) holds only a name and a size, so no sender was
   ever available and the "from <peer>" half was unreachable.
 - Sending as a zip crashed instead of sending: the archive options were
@@ -141,8 +172,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - A tailnet renamed in the admin console kept its old name on screen. The
   snapshot comparison that decides whether the menu is worth redrawing looked
-  at the account behind a profile but not at the tailnet name — which is the
-  string the rows and the submenu header are actually drawn from — so the new
+  at the account behind a profile but not at the tailnet name (which is the
+  string the rows and the submenu header are actually drawn from), so the new
   name reached the snapshot and stopped there, until some unrelated field
   happened to change and forced a redraw. A peer's Magic DNS name and OS were
   missing from the same comparison and are now compared too.
@@ -151,7 +182,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The extension is licensed GPL-2.0-or-later, replacing MIT. It is built
   against GNOME Shell, which is published under those same terms, and every
   source file now carries an `SPDX-License-Identifier` pointing at
-  `LICENSE` — the full GPL v2 text.
+  `LICENSE`, the full GPL v2 text.
 - The paired "Taildrop" / "Funnels" and "Extension settings" / "Admin panel"
   buttons no longer come up bold. The shell paints every `.button` bold while
   a menu item sets itself back to normal, so those four labels were the only
@@ -161,14 +192,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Funnel is one dialog now, reached from a "Funnels" button beside
   "Taildrop" on a single menu row. It opens on the list of what is
   published, each entry carrying its own copy and remove button, over the
-  form that publishes one more — and it stays open across both, so pruning
+  form that publishes one more, and it stays open across both, so pruning
   a list does not mean re-opening the dialog per entry and adding one shows
   it appear. The menu keeps none of it: the Funnel submenu, its count pill
   and its inline "+" are gone, because a list you could only read was worth
   less there than the room it took.
 - Every public port being taken no longer refuses to open anything. The
   dialog opens on the list that explains why, with the port row and the Add
-  button greyed and a line saying to remove one first — which is the thing
+  button greyed and a line saying to remove one first, which is the thing
   the dialog is now able to do.
 - The preferences window opens at 820×700. At the size the shell chose,
   four page titles did not fit the header and "Notifications" came up
@@ -190,7 +221,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The `shortcut-add-funnel` keybinding says why nothing happens when the
   tailnet forbids Funnel, instead of opening a port dialog that leads to a
   refusal. The menu entry is hidden in that state, but a shortcut fires
-  wherever the user is — the same reason `shortcut-send-file` already
+  wherever the user is, the same reason `shortcut-send-file` already
   reports it for Taildrop.
 - The "Check availability" button is gone from preferences, along with the
   probe that ran whenever the window opened and the one after a settings
@@ -203,9 +234,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   open the send dialog straight away, and the dialog now owns the selection:
   "Add files" and "Add folders" each open the chooser in their own mode and
   append to a table listing every picked item with its size, plus a running
-  total. No chooser can produce a mixed selection on its own — the portal's
+  total. No chooser can produce a mixed selection on its own (the portal's
   `directory` option selects folders *instead of* files, and in that mode
-  picking a file returns the folder containing it — so accumulating across
+  picking a file returns the folder containing it), so accumulating across
   two trips is what makes files and folders sendable together.
 - Send stays inert until the selection holds at least one real file (an
   empty folder does not count) and at least one recipient is ticked.
@@ -217,7 +248,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   the password field line up instead of each sitting at its own indent, and
   the dialog is wider so more of each file name is readable. Rows carry a
   file or folder icon, spell out their full path on hover, and the tally has
-  merged into the line that introduces the recipients — "Send 4 items
+  merged into the line that introduces the recipients: "Send 4 items
   (9.8 MB) to:".
 - A Taildrop archive is named for the moment it was made
   (`taildrop-20260729-140533.zip`) rather than for the first entry in it.
@@ -231,7 +262,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   what identifies who is asking.
 - The Taildrop send dialog picks recipients instead of firing on the first
   click. Rows toggle, several devices can be ticked at once, and a Send
-  button — inert until something is ticked — starts the transfer. When
+  button (inert until something is ticked) starts the transfer. When
   zipping, the archive is built once and reused for every recipient.
 - The minimum pending duration moved from the General page to the new
   Notifications page. Its key is `min-pending-duration`, renamed from
@@ -249,8 +280,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   is ever read back. The disclosure had been there since 0.2.0 and was lost
   when the description was shortened.
 - The source is laid out to match the two processes it runs in. The Quick
-  Settings menu is split into `lib/menu/` — the rows, the Taildrop dialog and
-  the Funnel dialog — and every preferences page into its own file under
+  Settings menu is split into `lib/menu/` (the rows, the Taildrop dialog and
+  the Funnel dialog), and every preferences page into its own file under
   `prefs/`, which the shell process never loads. Both entry points shrank to
   the lifecycle they own: `extension.js` to 417 lines, `prefs.js` to 30.
 - Pass over the whole codebase against the GNOME best-practices reference and
@@ -265,14 +296,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   enum and key, and `toast-duration` are gone; everything now posts as a
   native GNOME notification. One presentation is less code, and it is the one
   that keeps a history, honours a click, and obeys the user's own
-  do-not-disturb — none of which a bubble painted over the desktop can do.
+  do-not-disturb, none of which a bubble painted over the desktop can do.
 - Per-tailnet feature-state persistence. tailscaled already stores exit node,
   Magic DNS, accepted routes, shields, SSH and LAN access per profile and
   restores them on `tailscale switch`; the extension's copy duplicated that and
   could overwrite what the daemon had just restored.
 - The per-feature visibility toggles. Hiding a block of the menu was a
   setting nobody used, and supporting it was the extension's last reason to
-  write daemon state on its own — turning a feature off used to switch the
+  write daemon state on its own: turning a feature off used to switch the
   matching tailscale setting off with it. Every block the tailnet allows is
   now always shown, and no daemon write happens unless you ask for one.
   Taildrop and Funnel keep their admin-availability detection: the
@@ -285,7 +316,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   resolves it in its own trusted root `PATH`, and that is not going to
   change. Pointing the setting at a differently-named binary therefore
   left login, logout, operator and account switching talking to
-  `tailscale` while everything else talked to something else — a broken
+  `tailscale` while everything else talked to something else, a broken
   extension with a plausible-looking configuration. The program name is
   now the literal `tailscale` everywhere, resolved on `PATH`.
 
@@ -298,11 +329,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.2.1] - 2026-07-14
 
-### Changed — extensions.gnome.org review compliance
+### Changed: extensions.gnome.org review compliance
 - D-Bus interface renamed `fr.diskmth.TailscaleGnome` →
   `org.gnome.Shell.Extensions.TailscaleGnome` (path
   `/org/gnome/Shell/Extensions/TailscaleGnome`). The object is now
-  exported on GNOME Shell's own session connection — no bus name is
+  exported on GNOME Shell's own session connection: no bus name is
   owned anymore; clients call through `org.gnome.Shell`. The Nautilus
   scripts were updated accordingly.
 - All signal connections in the shell process now go through
@@ -339,7 +370,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   keep switching too: the client serves the last known account list
   while the daemon denies `switch --list` (pruned of the profile that
   just logged out), and picking an account then runs a fixed
-  `pkexec tailscale switch <id>` — one prompt, after which the target
+  `pkexec tailscale switch <id>`, one prompt, after which the target
   profile's own operator pref applies. A one-click "Set operator" row
   also sits at the top of the Account submenu. All privileged commands
   are documented in README under "Privileged operations".
@@ -351,13 +382,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   fallback for pre-49 shells, unused `stdinText` plumbing, unused
   getters) and unnecessary optional chaining / try-catch wrappers.
 
-### Changed — codebase audit (consistency, dead code, redundancy)
+### Changed: codebase audit (consistency, dead code, redundancy)
 - The subprocess runner and the daemon capability lookup are now shared:
   `spawn()`, `hasCapability()` and the `CAP_*` keys live in
   `lib/util.js`, used by both the shell process and the preferences
   process. `prefs.js` no longer carries its own copy of `_spawn` nor a
   duplicated `CAP_FILE_SHARING` that a comment had to keep "in sync by
-  hand" — the prefs Check buttons and the startup probe now call the
+  hand": the prefs Check buttons and the startup probe now call the
   same code path.
 - Dropped snapshot fields that nothing ever read: `tailnetName` (a
   verbatim duplicate of `accountName`), `prefs` (the whole raw
@@ -382,7 +413,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Funnel public-port picker: the Add funnel dialog now offers the three
-  ports Tailscale allows (443, 8443, 10000 — read from the daemon's
+  ports Tailscale allows (443, 8443, 10000, read from the daemon's
   CapMap, with a hardcoded fallback), greys out ports that already
   carry a funnel, and the client refuses to overwrite an occupied port
   (remove the existing funnel first). Up to three funnels can now run
@@ -391,7 +422,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `Starting` state outside of a user-initiated action (typically while
   tailscaled is still establishing the session right after boot or
   login), a sticky spinner toast says the connection is in progress
-  and resolves in place to "Tailscale connected" — or to the current
+  and resolves in place to "Tailscale connected", or to the current
   status wording if the daemon lands elsewhere.
 - Confirmation toast in the preferences window whenever the Taildrop
   inbox folder is actually changed (typed, browsed or reset).

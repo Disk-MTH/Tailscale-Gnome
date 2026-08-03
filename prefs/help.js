@@ -20,7 +20,7 @@ import { makeBackendGroup, watchSetting } from "./common.js";
 // Taildrop and Funnel can be forbidden tailnet-wide by an administrator.
 // That is a fact to report, not a setting: each row shows what the shell's
 // last poll saw and points at the admin page when the answer is no. There
-// is nothing to re-check by hand — the extension reads availability out of
+// is nothing to re-check by hand: the extension reads availability out of
 // every `status --json` it already runs and writes these keys, so the rows
 // follow along through the `changed::` each one watches.
 const AVAILABILITY_DEFS = [
@@ -62,7 +62,7 @@ function _openUrl(url) {
 }
 
 // Build one availability row: an explanation, a status icon, a re-check
-// button, and — only when the answer is no — a link to the admin page that
+// button, and (only when the answer is no) a link to the admin page that
 // can change it. No switch: the user cannot grant themselves an ACL, and a
 // control that cannot honour a click is a lie.
 function _makeAvailabilityRow(settings, def) {
@@ -128,7 +128,7 @@ function _makeAvailabilityGroup(settings) {
     return group;
 }
 
-const UNKNOWN_VALUE = "—";
+const UNKNOWN_VALUE = "-";
 
 // One "label: value" row. The value is a selectable label rather than a
 // subtitle so a single line can be picked out and pasted into a bug report
@@ -185,7 +185,7 @@ function _makeLinkRow(title, subtitle, url) {
 }
 
 // `tailscale version --daemon` prints the CLI's own version first and the
-// daemon's on a "Daemon:" line — but only when it can reach the daemon.
+// daemon's on a "Daemon:" line, but only when it can reach the daemon.
 // Falling back to the first line (the CLI version) keeps the row useful on
 // a machine where tailscaled is stopped, which is exactly the machine
 // someone is most likely to be filing a bug from.
@@ -248,7 +248,7 @@ export function makeHelpPage(settings, metadata) {
 
     // Then Availability, ahead of the versions: it answers "why can I not
     // see this feature", which is the question that brings someone here.
-    // No probe on open — the group shows the last poll's answer and follows
+    // No probe on open: the group shows the last poll's answer and follows
     // the key from there. The shell refreshes it every few seconds whether
     // this window is up or not.
     page.add(_makeAvailabilityGroup(settings));
@@ -279,14 +279,14 @@ export function makeHelpPage(settings, metadata) {
 
     // Both of these shell out, so the page builds with placeholders and
     // fills in when the answers arrive. A failure leaves the row on its
-    // placeholder, which already says "we could not tell" — it goes to the
+    // placeholder, which already says "we could not tell"; it goes to the
     // log rather than at the user, who did not ask for it and cannot act
     // on it.
     //
     // The daemon's version is the one row here that can change while the
     // window is open, and this window is on screen exactly when someone is
     // installing the package or starting the service. So it is re-probed
-    // rather than read once, off `backend-status` — the same signal every
+    // rather than read once, off `backend-status`, the same signal every
     // other live part of this window already follows.
     const syncTailscaleVersion = () => {
         _spawn(["tailscale", "version", "--daemon"])
@@ -298,7 +298,7 @@ export function makeHelpPage(settings, metadata) {
                 // worse answer than none.
                 tailscaleRow.row.subtitle =
                     version && clientOnly
-                        ? _("Daemon unreachable — this is the CLI version.")
+                        ? _("Daemon unreachable: this is the CLI version.")
                         : "";
             })
             .catch((e) => {

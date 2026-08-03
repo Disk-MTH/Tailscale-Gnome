@@ -45,8 +45,8 @@
             <default>''</default>
             <summary>Colour of the exit node active icon</summary>
             <description>Six-digit hex colour applied to the panel icon shown
-                while an exit node is routing, e.g. "#8ab4f8". Empty — the
-                default — leaves the icon in whatever colour the panel gives
+                while an exit node is routing, e.g. "#8ab4f8". Empty (the
+                default) leaves the icon in whatever colour the panel gives
                 it, which is what makes it follow a light or dark theme.
                 Anything that is not a #rrggbb literal is treated as
                 empty.</description>
@@ -122,14 +122,17 @@
         </key>
 
         <key name="nautilus-integration" type="b">
-            <default>true</default>
+            <default>false</default>
             <summary>Add Taildrop to the file manager context menu</summary>
-            <description>While enabled, the extension symlinks its Nautilus
+            <description>Off by default: it reaches outside the extension's
+                own directory and quits the file manager to take effect, so
+                it is opted into rather than out of.
+                While enabled, the extension symlinks its Nautilus
                 extension into the file manager's own extensions directory
                 (the standard one, plus the Flatpak and Snap sandboxes when
                 either is present) and takes the link back out when
                 disabled. Needs the nautilus-python package to be installed,
-                and Nautilus reads the directory once at startup — a running
+                and Nautilus reads the directory once at startup, so a running
                 instance has to be quit before the entry appears or
                 goes.</description>
         </key>
@@ -140,7 +143,7 @@
             <description>Written by the extension from the capability map
                 in every `status --json` poll, so it tracks the tailnet's
                 ACL on its own. Nothing reads it to decide what the menu
-                shows — that comes off the same snapshot directly. It
+                shows: that comes off the same snapshot directly. It
                 exists for the two consumers that cannot see a snapshot:
                 the preferences window, which runs in its own process, and
                 the Taildrop receiver, which is driven from
@@ -162,7 +165,7 @@
             <description>Written by the extension on every poll:
                 "not-installed" when the `tailscale` command is not on
                 PATH, "not-running" when it is but the daemon does not
-                answer, "ready" otherwise. Not a preference — the menu
+                answer, "ready" otherwise. Not a preference: the menu
                 gates on the snapshot directly. Like the two availability
                 keys above, it exists for the preferences window, which
                 runs in its own process and cannot see a

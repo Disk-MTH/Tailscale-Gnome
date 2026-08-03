@@ -137,11 +137,11 @@ suite('parseWroteLine', () => {
     });
 });
 
-suite('TailscaleClient — no CLI on PATH', () => {
+suite('TailscaleClient: no CLI on PATH', () => {
     // find_program_in_path reads PATH out of the environment, so PATH is
     // the whole fixture: point it at a directory holding an executable
     // called `tailscale` for the installed case, and at an empty one for
-    // the other. Restored on every exit path — a leaked PATH would take
+    // the other. Restored on every exit path: a leaked PATH would take
     // the rest of this file down with it and give no clue why.
     function withPath(value, fn) {
         const saved = GLib.getenv('PATH');
@@ -154,7 +154,7 @@ suite('TailscaleClient — no CLI on PATH', () => {
     }
 
     // Two directories under one temp root: `bin` with the stub, `empty`
-    // without. Built once — nothing here writes to them.
+    // without. Built once: nothing here writes to them.
     const root = GLib.dir_make_tmp('tailscale-gnome-test-XXXXXX');
     const binDir = GLib.build_filenamev([root, 'bin']);
     const emptyDir = GLib.build_filenamev([root, 'empty']);
@@ -162,7 +162,7 @@ suite('TailscaleClient — no CLI on PATH', () => {
     GLib.mkdir_with_parents(emptyDir, 0o755);
     const stub = GLib.build_filenamev([binDir, 'tailscale']);
     GLib.file_set_contents(stub, '#!/bin/sh\nexit 0\n');
-    // Executable, because that is what find_program_in_path checks for —
+    // Executable, because that is what find_program_in_path checks for;
     // a readable file of the right name is not a hit.
     GLib.chmod(stub, 0o755);
 

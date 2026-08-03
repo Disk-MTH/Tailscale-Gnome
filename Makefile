@@ -1,4 +1,4 @@
-# Tailscale GNOME Shell extension — build / install / package
+# Tailscale GNOME Shell extension: build / install / package
 # Tested on GNOME Shell 46 → 50.
 
 UUID        := tailscale-gnome@diskmth.fr
@@ -80,8 +80,8 @@ locale/%/LC_MESSAGES/$(DOMAIN).mo: po/%.po
 translations: $(MO_FILES)
 
 # Directories are replaced rather than merged. `cp -r` into an existing
-# install only ever adds: a file dropped from the source tree — the 0.2.x
-# nautilus scripts, say — would live on in the installed copy, and __pycache__
+# install only ever adds: a file dropped from the source tree (the 0.2.x
+# nautilus scripts, say) would live on in the installed copy, and __pycache__
 # from a local python run would ride along with it.
 install: schemas translations
 	@mkdir -p "$(USER_EXTDIR)"
@@ -127,7 +127,7 @@ test:
 	@gjs -m tests/run.js
 
 # Build the publishable zip. GNOME Shell 45+ compiles schemas itself on
-# extension load, so we ship only the raw XML — shipping gschemas.compiled
+# extension load, so we ship only the raw XML: shipping gschemas.compiled
 # is flagged by the EGO review tooling as an unnecessary build artifact.
 # store-icon.png stays out: the listing icon is uploaded on the EGO
 # website, shipping it in the zip is just an unnecessary file.

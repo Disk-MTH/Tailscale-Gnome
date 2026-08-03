@@ -133,7 +133,7 @@ const SHORTCUT_DEFS = [
         key: "shortcut-open-admin-panel",
         title: () => _("Open the Tailscale admin console"),
     },
-    // The two keys are still named for what they used to do — send a file,
+    // The two keys are still named for what they used to do: send a file,
     // add a funnel. Both now open their dialog instead, which is where
     // those actions live; the keys keep their names so a shortcut someone
     // has already bound survives the rename.

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-03 13:27+0200\n"
+"POT-Creation-Date: 2026-08-03 13:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,11 +80,11 @@ msgstr ""
 msgid "Could not open %s"
 msgstr ""
 
-#: lib/menu.js:83 prefs/common.js:78
+#: lib/menu.js:83 prefs/common.js:86
 msgid "Tailscale is not installed"
 msgstr ""
 
-#: lib/menu.js:84 prefs/common.js:87
+#: lib/menu.js:84 prefs/common.js:95
 msgid "Tailscale is not running"
 msgstr ""
 
@@ -485,7 +485,7 @@ msgid "Operation failed"
 msgstr ""
 
 #: lib/watcher-messages.js:16
-msgid "Connecting Tailscale — this may take a moment"
+msgid "Connecting Tailscale: this may take a moment"
 msgstr ""
 
 #: lib/watcher-messages.js:23
@@ -548,7 +548,7 @@ msgid "Tailscale is no longer installed"
 msgstr ""
 
 #: lib/watcher-messages.js:43
-msgid "Tailscale is installed — the menu is back"
+msgid "Tailscale is installed: the menu is back"
 msgstr ""
 
 #: lib/menu/funnels-dialog.js:77
@@ -621,7 +621,7 @@ msgstr ""
 msgid "Send to:"
 msgstr ""
 
-#: lib/menu/send-dialog.js:301 prefs/taildrop.js:292
+#: lib/menu/send-dialog.js:301 prefs/taildrop.js:335
 msgid "Cancel"
 msgstr ""
 
@@ -671,123 +671,95 @@ msgstr[1] ""
 msgid "empty"
 msgstr ""
 
-#: prefs/common.js:33 prefs/taildrop.js:207
+#: prefs/common.js:37 prefs/taildrop.js:207
 msgid "Reset to default"
 msgstr ""
 
-#: prefs/common.js:80
+#: prefs/common.js:88
 msgid ""
 "The `tailscale` command was not found on PATH, so the menu has nothing to "
 "drive. Install it with your distribution's package manager; the extension "
 "picks it up on its own, with no reload."
 msgstr ""
 
-#: prefs/common.js:89
+#: prefs/common.js:97
 msgid ""
 "The `tailscale` command is there, but the tailscaled daemon does not answer, "
 "so the menu has nothing to drive. Start it with `systemctl enable --now "
 "tailscaled`; the extension picks it up on its own, with no reload."
 msgstr ""
 
-#: prefs/general.js:34
-msgid "Start Tailscale at boot"
-msgstr ""
-
-#: prefs/general.js:35
-msgid "Enables tailscaled.service via systemctl."
-msgstr ""
-
-#: prefs/general.js:48
-msgid "tailscaled.service not found. Install Tailscale via your distribution."
+#: prefs/general.js:69
+msgid "Follows the panel colour. Pick one to override it."
 msgstr ""
 
 #: prefs/general.js:70
-msgid "Could not change service state"
+msgid "Icon colour"
 msgstr ""
 
-#: prefs/general.js:171
+#: prefs/general.js:142
 msgid "General"
 msgstr ""
 
-#: prefs/general.js:190
+#: prefs/general.js:159
 msgid "Indicators"
 msgstr ""
 
-#: prefs/general.js:191
+#: prefs/general.js:160
 msgid "Icons shown in the top bar, next to Wi-Fi."
 msgstr ""
 
-#: prefs/general.js:196
+#: prefs/general.js:165
 msgid "Show Tailscale panel indicator"
 msgstr ""
 
-#: prefs/general.js:197
+#: prefs/general.js:166
 msgid "Small Tailscale icon shown while connected."
 msgstr ""
 
-#: prefs/general.js:209
-msgid "Show exit node active panel indicator"
+#: prefs/general.js:182
+msgid "Show exit node panel indicator: connected"
 msgstr ""
 
-#: prefs/general.js:211
-msgid "VPN icon shown while an exit node is selected and routing traffic."
+#: prefs/general.js:184
+msgid "Icon shown while the exit node is routing your traffic."
 msgstr ""
 
-#: prefs/general.js:228
-msgid "Exit node active indicator colour"
+#: prefs/general.js:193
+msgid "Show exit node panel indicator: disconnected"
 msgstr ""
 
-#: prefs/general.js:232
-msgid "Custom colour. Reset to follow the theme again."
-msgstr ""
-
-#: prefs/general.js:233
-msgid "Follows the panel's own colour, light or dark."
-msgstr ""
-
-#: prefs/general.js:238
-msgid "Show exit node status panel indicator"
-msgstr ""
-
-#: prefs/general.js:240
+#: prefs/general.js:195
 msgid ""
-"Warning icon shown when the selected exit node cannot route, which leaves "
-"the device without internet access."
+"Icon shown when the exit node cannot route your traffic, leaving this device "
+"without internet."
 msgstr ""
 
-#: prefs/general.js:257
-msgid "Exit node indicator colour"
-msgstr ""
-
-#: prefs/general.js:258
-msgid "Colour of the warning icon in the top bar."
-msgstr ""
-
-#: prefs/general.js:267
+#: prefs/general.js:206
 msgid "Advanced"
 msgstr ""
 
-#: prefs/general.js:276
+#: prefs/general.js:211
 msgid "Poll interval"
 msgstr ""
 
-#: prefs/general.js:277
+#: prefs/general.js:212
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr ""
 
-#: prefs/general.js:299
+#: prefs/general.js:234
 msgid "Reset all settings"
 msgstr ""
 
-#: prefs/general.js:300
+#: prefs/general.js:235
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 
-#: prefs/general.js:303
+#: prefs/general.js:238
 msgid "Reset all"
 msgstr ""
 
-#: prefs/general.js:344
+#: prefs/general.js:279
 msgid "All settings reset to defaults"
 msgstr ""
 
@@ -871,7 +843,7 @@ msgid "GNOME Shell"
 msgstr ""
 
 #: prefs/help.js:301
-msgid "Daemon unreachable — this is the CLI version."
+msgid "Daemon unreachable: this is the CLI version."
 msgstr ""
 
 #: prefs/help.js:328
@@ -1114,28 +1086,28 @@ msgstr ""
 msgid "Add \"Send with Taildrop\" to the file manager's right-click menu."
 msgstr ""
 
-#: prefs/taildrop.js:257
+#: prefs/taildrop.js:277
 msgid "nautilus-python is not installed"
 msgstr ""
 
-#: prefs/taildrop.js:259
+#: prefs/taildrop.js:279
 msgid ""
 "The file manager needs it to load extensions. Install it with your package "
 "manager, then reopen this window."
 msgstr ""
 
-#: prefs/taildrop.js:281
+#: prefs/taildrop.js:324
 msgid "Quit the file manager?"
 msgstr ""
 
-#: prefs/taildrop.js:286
+#: prefs/taildrop.js:329
 msgid ""
 "Nautilus loads its extensions when it starts, so it has to be closed for "
 "this to take effect. Any open Nautilus window will be closed, and the next "
 "one you open picks up the change."
 msgstr ""
 
-#: prefs/taildrop.js:293
+#: prefs/taildrop.js:336
 msgid "Quit Nautilus"
 msgstr ""
 

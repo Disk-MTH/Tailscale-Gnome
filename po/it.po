@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-03 13:27+0200\n"
+"POT-Creation-Date: 2026-08-03 13:38+0200\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: Italian\n"
@@ -77,11 +77,11 @@ msgstr "%s (%s)"
 msgid "Could not open %s"
 msgstr "Impossibile aprire %s"
 
-#: lib/menu.js:83 prefs/common.js:78
+#: lib/menu.js:83 prefs/common.js:86
 msgid "Tailscale is not installed"
 msgstr "Tailscale non è installato"
 
-#: lib/menu.js:84 prefs/common.js:87
+#: lib/menu.js:84 prefs/common.js:95
 msgid "Tailscale is not running"
 msgstr "Tailscale non è in esecuzione"
 
@@ -482,8 +482,8 @@ msgid "Operation failed"
 msgstr "Operazione non riuscita"
 
 #: lib/watcher-messages.js:16
-msgid "Connecting Tailscale — this may take a moment"
-msgstr "Connessione a Tailscale — potrebbe richiedere un momento"
+msgid "Connecting Tailscale: this may take a moment"
+msgstr "Connessione a Tailscale: potrebbe richiedere un momento"
 
 #: lib/watcher-messages.js:23
 msgid "Auto exit node lost"
@@ -545,8 +545,8 @@ msgid "Tailscale is no longer installed"
 msgstr "Tailscale non è più installato"
 
 #: lib/watcher-messages.js:43
-msgid "Tailscale is installed — the menu is back"
-msgstr "Tailscale è installato — il menu è tornato"
+msgid "Tailscale is installed: the menu is back"
+msgstr "Tailscale è installato: il menu è tornato"
 
 #: lib/menu/funnels-dialog.js:77
 msgid "Manage Funnels"
@@ -619,7 +619,7 @@ msgstr "Invia tramite Taildrop"
 msgid "Send to:"
 msgstr "Invia a:"
 
-#: lib/menu/send-dialog.js:301 prefs/taildrop.js:292
+#: lib/menu/send-dialog.js:301 prefs/taildrop.js:335
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -669,11 +669,11 @@ msgstr[1] "Invia %d elementi (%s) a:"
 msgid "empty"
 msgstr "vuota"
 
-#: prefs/common.js:33 prefs/taildrop.js:207
+#: prefs/common.js:37 prefs/taildrop.js:207
 msgid "Reset to default"
 msgstr "Ripristina predefinito"
 
-#: prefs/common.js:80
+#: prefs/common.js:88
 msgid ""
 "The `tailscale` command was not found on PATH, so the menu has nothing to "
 "drive. Install it with your distribution's package manager; the extension "
@@ -683,7 +683,7 @@ msgstr ""
 "nulla da comandare. Installalo con il gestore di pacchetti della tua "
 "distribuzione; l'estensione lo rileva da sola, senza ricaricare."
 
-#: prefs/common.js:89
+#: prefs/common.js:97
 msgid ""
 "The `tailscale` command is there, but the tailscaled daemon does not answer, "
 "so the menu has nothing to drive. Start it with `systemctl enable --now "
@@ -693,112 +693,80 @@ msgstr ""
 "quindi il menu non ha nulla da comandare. Avvialo con «systemctl enable --"
 "now tailscaled»; l'estensione se ne accorge da sola, senza ricaricare."
 
-#: prefs/general.js:34
-msgid "Start Tailscale at boot"
-msgstr "Avvia Tailscale all'avvio del sistema"
-
-#: prefs/general.js:35
-msgid "Enables tailscaled.service via systemctl."
-msgstr "Attiva tailscaled.service tramite systemctl."
-
-#: prefs/general.js:48
-msgid "tailscaled.service not found. Install Tailscale via your distribution."
-msgstr ""
-"tailscaled.service non trovato. Installa Tailscale tramite la tua "
-"distribuzione."
+#: prefs/general.js:69
+msgid "Follows the panel colour. Pick one to override it."
+msgstr "Segue il colore del pannello. Scegline uno per sostituirlo."
 
 #: prefs/general.js:70
-msgid "Could not change service state"
-msgstr "Impossibile modificare lo stato del servizio"
+msgid "Icon colour"
+msgstr "Colore dell'icona"
 
-#: prefs/general.js:171
+#: prefs/general.js:142
 msgid "General"
 msgstr "Generale"
 
-#: prefs/general.js:190
+#: prefs/general.js:159
 msgid "Indicators"
 msgstr "Indicatori"
 
-#: prefs/general.js:191
+#: prefs/general.js:160
 msgid "Icons shown in the top bar, next to Wi-Fi."
 msgstr "Icone mostrate nella barra superiore, accanto al Wi-Fi."
 
-#: prefs/general.js:196
+#: prefs/general.js:165
 msgid "Show Tailscale panel indicator"
 msgstr "Mostra l'indicatore Tailscale nel pannello"
 
-#: prefs/general.js:197
+#: prefs/general.js:166
 msgid "Small Tailscale icon shown while connected."
 msgstr "Piccola icona Tailscale mostrata quando connesso."
 
-#: prefs/general.js:209
-msgid "Show exit node active panel indicator"
-msgstr "Mostra l'indicatore di nodo di uscita attivo"
+#: prefs/general.js:182
+msgid "Show exit node panel indicator: connected"
+msgstr "Mostra l'indicatore del nodo di uscita: connesso"
 
-#: prefs/general.js:211
-msgid "VPN icon shown while an exit node is selected and routing traffic."
-msgstr ""
-"Icona VPN mostrata quando un nodo di uscita è selezionato e instrada il "
-"traffico."
+#: prefs/general.js:184
+msgid "Icon shown while the exit node is routing your traffic."
+msgstr "Icona mostrata mentre il nodo di uscita instrada il tuo traffico."
 
-#: prefs/general.js:228
-msgid "Exit node active indicator colour"
-msgstr "Colore dell'indicatore di nodo di uscita attivo"
+#: prefs/general.js:193
+msgid "Show exit node panel indicator: disconnected"
+msgstr "Mostra l'indicatore del nodo di uscita: disconnesso"
 
-#: prefs/general.js:232
-msgid "Custom colour. Reset to follow the theme again."
-msgstr "Colore personalizzato. Reimposta per seguire di nuovo il tema."
-
-#: prefs/general.js:233
-msgid "Follows the panel's own colour, light or dark."
-msgstr "Segue il colore del pannello, chiaro o scuro."
-
-#: prefs/general.js:238
-msgid "Show exit node status panel indicator"
-msgstr "Mostra l'indicatore di stato del nodo di uscita"
-
-#: prefs/general.js:240
+#: prefs/general.js:195
 msgid ""
-"Warning icon shown when the selected exit node cannot route, which leaves "
-"the device without internet access."
+"Icon shown when the exit node cannot route your traffic, leaving this device "
+"without internet."
 msgstr ""
-"Icona di avviso mostrata quando il nodo di uscita selezionato non può "
-"instradare, lasciando il dispositivo senza accesso a Internet."
+"Icona mostrata quando il nodo di uscita non riesce a instradare il tuo "
+"traffico, lasciando questo dispositivo senza Internet."
 
-#: prefs/general.js:257
-msgid "Exit node indicator colour"
-msgstr "Colore dell'indicatore del nodo di uscita"
-
-#: prefs/general.js:258
-msgid "Colour of the warning icon in the top bar."
-msgstr "Colore dell'icona di avviso nella barra superiore."
-
-#: prefs/general.js:267
+#: prefs/general.js:206
 msgid "Advanced"
 msgstr "Avanzate"
 
-#: prefs/general.js:276
+#: prefs/general.js:211
 msgid "Poll interval"
 msgstr "Intervallo di aggiornamento"
 
-#: prefs/general.js:277
+#: prefs/general.js:212
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr "Secondi tra gli aggiornamenti di stato (da 1 a 60)."
 
-#: prefs/general.js:299
+#: prefs/general.js:234
 msgid "Reset all settings"
 msgstr "Ripristina tutte le impostazioni"
 
-#: prefs/general.js:300
+#: prefs/general.js:235
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 "Ripristina ogni impostazione al valore predefinito, in tutte le pagine."
 
-#: prefs/general.js:303
+#: prefs/general.js:238
 msgid "Reset all"
 msgstr "Ripristina tutto"
 
-#: prefs/general.js:344
+#: prefs/general.js:279
 msgid "All settings reset to defaults"
 msgstr "Tutte le impostazioni sono state ripristinate"
 
@@ -894,8 +862,8 @@ msgid "GNOME Shell"
 msgstr "GNOME Shell"
 
 #: prefs/help.js:301
-msgid "Daemon unreachable — this is the CLI version."
-msgstr "Daemon irraggiungibile — questa è la versione della CLI."
+msgid "Daemon unreachable: this is the CLI version."
+msgstr "Daemon irraggiungibile: questa è la versione della CLI."
 
 #: prefs/help.js:328
 msgid "Copy this information to the clipboard"
@@ -1148,11 +1116,11 @@ msgid "Add \"Send with Taildrop\" to the file manager's right-click menu."
 msgstr ""
 "Aggiunge \"Invia con Taildrop\" al menu contestuale del gestore di file."
 
-#: prefs/taildrop.js:257
+#: prefs/taildrop.js:277
 msgid "nautilus-python is not installed"
 msgstr "nautilus-python non è installato"
 
-#: prefs/taildrop.js:259
+#: prefs/taildrop.js:279
 msgid ""
 "The file manager needs it to load extensions. Install it with your package "
 "manager, then reopen this window."
@@ -1160,11 +1128,11 @@ msgstr ""
 "Il gestore di file ne ha bisogno per caricare le estensioni. Installalo con "
 "il tuo gestore di pacchetti, poi riapri questa finestra."
 
-#: prefs/taildrop.js:281
+#: prefs/taildrop.js:324
 msgid "Quit the file manager?"
 msgstr "Chiudere il gestore di file?"
 
-#: prefs/taildrop.js:286
+#: prefs/taildrop.js:329
 msgid ""
 "Nautilus loads its extensions when it starts, so it has to be closed for "
 "this to take effect. Any open Nautilus window will be closed, and the next "
@@ -1174,7 +1142,7 @@ msgstr ""
 "impostazione abbia effetto. Ogni finestra di Nautilus aperta verrà chiusa, e "
 "la prossima che aprirai terrà conto della modifica."
 
-#: prefs/taildrop.js:293
+#: prefs/taildrop.js:336
 msgid "Quit Nautilus"
 msgstr "Chiudi Nautilus"
 
@@ -1185,6 +1153,36 @@ msgstr "Invia con Taildrop"
 #: nautilus/tailscale-taildrop.py:129
 msgid "Send the selection to a Tailscale device"
 msgstr "Invia la selezione a un dispositivo Tailscale"
+
+#~ msgid "Start Tailscale at boot"
+#~ msgstr "Avvia Tailscale all'avvio del sistema"
+
+#~ msgid "Enables tailscaled.service via systemctl."
+#~ msgstr "Attiva tailscaled.service tramite systemctl."
+
+#~ msgid ""
+#~ "tailscaled.service not found. Install Tailscale via your distribution."
+#~ msgstr ""
+#~ "tailscaled.service non trovato. Installa Tailscale tramite la tua "
+#~ "distribuzione."
+
+#~ msgid "Could not change service state"
+#~ msgstr "Impossibile modificare lo stato del servizio"
+
+#~ msgid "Exit node active indicator colour"
+#~ msgstr "Colore dell'indicatore di nodo di uscita attivo"
+
+#~ msgid "Custom colour. Reset to follow the theme again."
+#~ msgstr "Colore personalizzato. Reimposta per seguire di nuovo il tema."
+
+#~ msgid "Show exit node status panel indicator"
+#~ msgstr "Mostra l'indicatore di stato del nodo di uscita"
+
+#~ msgid "Exit node indicator colour"
+#~ msgstr "Colore dell'indicatore del nodo di uscita"
+
+#~ msgid "Colour of the warning icon in the top bar."
+#~ msgstr "Colore dell'icona di avviso nella barra superiore."
 
 #~ msgid "Tailscale unavailable"
 #~ msgstr "Tailscale non disponibile"
@@ -1243,8 +1241,8 @@ msgstr "Invia la selezione a un dispositivo Tailscale"
 #~ msgstr "Nessun funnel configurato"
 
 #, javascript-format
-#~ msgid "All Funnel ports are in use (%s) — remove one first"
-#~ msgstr "Tutte le porte Funnel sono in uso (%s) — rimuovine prima una"
+#~ msgid "All Funnel ports are in use (%s), remove one first"
+#~ msgstr "Tutte le porte Funnel sono in uso (%s), rimuovine prima una"
 
 #~ msgid ""
 #~ "Failures outside any category above: the daemon becoming unreachable, a "

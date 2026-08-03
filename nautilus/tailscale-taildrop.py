@@ -11,8 +11,8 @@ Scripts submenu, three clicks deep, and each one re-implemented the D-Bus
 call in bash.
 
 The menu item carries no logic of its own. It calls the SendFiles method
-the shell extension exports and lets the in-shell picker — the same dialog
-the keyboard shortcut opens — own the whole interaction.
+the shell extension exports and lets the in-shell picker (the same dialog
+the keyboard shortcut opens) own the whole interaction.
 
 The Nautilus API version is asked for in turn rather than named outright:
 it moved with the file manager (4.0 up to GNOME 47, 4.1 after), so pinning
@@ -105,7 +105,7 @@ class TailscaleTaildropExtension(GObject.GObject, Nautilus.MenuProvider):
         )
 
     def _on_call_done(self, bus, result, _data):
-        # Nothing to report on success — the picker appearing is the answer.
+        # Nothing to report on success: the picker appearing is the answer.
         # A failure means the extension is disabled or the shell restarted
         # since this file was loaded, and the journal is where that belongs:
         # a notification here would fire from the file manager for a fault

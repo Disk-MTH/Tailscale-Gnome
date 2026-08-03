@@ -16,8 +16,8 @@ import { resetButton, watchSetting } from "./common.js";
 
 // Every event the extension can report, in the order they appear in the
 // page. Keys match CATEGORY_KEY in lib/notify-policy.js.
-// Titles/subtitles are deferred behind a closure — same convention as
-// AVAILABILITY_DEFS above — because this array is built at module-import time,
+// Titles/subtitles are deferred behind a closure (same convention as
+// AVAILABILITY_DEFS above) because this array is built at module-import time,
 // before the sandboxed prefs loader has an extension context to resolve
 // gettext against. Calling _() here directly throws "gettext can only be
 // called from extensions"; def.title()/def.subtitle() are only invoked
@@ -111,7 +111,7 @@ function _makeNotifyModeRow(settings, def) {
     });
     const group = _makeModeToggleGroup();
     // The key is an enum of the same three nicks, so this is a plain
-    // string-to-string binding — no mapping functions, and an out-of-range
+    // string-to-string binding: no mapping functions, and an out-of-range
     // dconf value can never reach the widget.
     settings.bind(
         def.key,
@@ -125,7 +125,7 @@ function _makeNotifyModeRow(settings, def) {
 }
 
 // Quick access at the top of the list: one control that drives all of them.
-// It has no key of its own — it reads the categories back, and shows a mode
+// It has no key of its own: it reads the categories back, and shows a mode
 // only while every one of them agrees on it. Once they differ it goes blank
 // rather than picking a winner, because there is no honest answer to show.
 function _makeAllEventsRow(settings) {
@@ -164,7 +164,7 @@ function _makeAllEventsRow(settings) {
     sync();
 
     row.add_suffix(group);
-    // Resets the nine category keys only — not the whole page, and not the
+    // Resets the nine category keys only, not the whole page, and not the
     // pending-duration spinner above it.
     row.add_suffix(resetButton(settings, keys));
     return row;

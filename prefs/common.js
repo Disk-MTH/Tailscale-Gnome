@@ -20,11 +20,15 @@ export function watchSetting(widget, settings, key, handler) {
     widget.connect("destroy", () => settings.disconnect(id));
 }
 
-// Per-row reset suffix: restores the GSettings key — or every key in the
-// array — to its schema default. Uses `view-refresh-symbolic`; the
+// Per-row reset suffix: restores the GSettings key (or every key in the
+// array) to its schema default. Uses `view-refresh-symbolic`; the
 // availability check button uses `rotation-allowed-symbolic` to stay
 // visually distinct from a reset.
-export function resetButton(settings, key) {
+//
+// `onClick` replaces the write for the one key whose reset has to ask first:
+// the file-manager integration, which needs Nautilus quit to be seen. The
+// button is still built here so every reset in the window looks the same.
+export function resetButton(settings, key, onClick) {
     const keys = Array.isArray(key) ? key : [key];
     const btn = new Gtk.Button({
         icon_name: "view-refresh-symbolic",
@@ -32,15 +36,19 @@ export function resetButton(settings, key) {
         css_classes: ["flat"],
         tooltip_text: _("Reset to default"),
     });
-    btn.connect("clicked", () => {
-        for (const k of keys) settings.reset(k);
-    });
+    btn.connect(
+        "clicked",
+        onClick ??
+            (() => {
+                for (const k of keys) settings.reset(k);
+            }),
+    );
     return btn;
 }
 
 // What the shell's last poll saw, as far as this process can tell. The
-// mirror can be stale — the extension may be disabled, and then nothing is
-// polling — but a PATH walk cannot, and that is the case worth being right
+// mirror can be stale (the extension may be disabled, and then nothing is
+// polling), but a PATH walk cannot, and that is the case worth being right
 // about: a window that hid its pages on a key written last week would be a
 // bug with no visible cause.
 export function readBackendStatus(settings) {
@@ -50,8 +58,8 @@ export function readBackendStatus(settings) {
 
 // Shown at the top of the pages that survive while the backend cannot be
 // driven. The rows below it are left alone on purpose: they are the
-// *extension's* preferences — which indicators to draw, what to notify
-// about, which keys to bind — and they stay meaningful either way. What is
+// *extension's* preferences (which indicators to draw, what to notify
+// about, which keys to bind), and they stay meaningful either way. What is
 // dead in that state lives in the shell menu, and the menu says so itself.
 // The one thing this group cannot do is act: installing a package and
 // starting a service are the distribution's business, not a button here.

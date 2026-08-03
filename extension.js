@@ -36,7 +36,7 @@ const SHORTCUT_KEYS = [
 // can hand off file paths to the in-shell picker instead of running their
 // own UI. Kept tiny on purpose: one method, no signals. The object is
 // exported on GNOME Shell's own session connection, so clients reach it
-// through the org.gnome.Shell bus name — no extra name ownership needed.
+// through the org.gnome.Shell bus name, no extra name ownership needed.
 const DBUS_PATH = '/org/gnome/Shell/Extensions/TailscaleGnome';
 const DBUS_XML = `
 <node>
@@ -63,7 +63,7 @@ export default class TailscaleGnomeExtension extends Extension {
         // event that created it.
         this._connHandle = null;
         // The receiver is a child of the CLI: losing the binary kills it, and
-        // the client cannot put it back on its own — nothing down there knows
+        // the client cannot put it back on its own: nothing down there knows
         // whether the user still wants files. _onState watches this to
         // re-apply the setting the moment the binary returns.
         this._wasInstalled = this._client.snapshot.installed;
@@ -186,7 +186,7 @@ export default class TailscaleGnomeExtension extends Extension {
     // The three mirrored keys are a mirror of what the last poll saw, not a
     // cache anyone has to refresh: the preferences window runs in its own
     // process and cannot read the snapshot, and the Taildrop receiver is
-    // driven off gsettings. Only a real answer is written — an availability
+    // driven off gsettings. Only a real answer is written: an availability
     // we could not read leaves the last one standing.
     _mirrorState(snap) {
         for (const [key, value] of [
@@ -254,7 +254,7 @@ export default class TailscaleGnomeExtension extends Extension {
     /* ------------------------------- Taildrop ---------------------------- */
 
     // The receiver only runs when the user-facing accept toggle is on AND the
-    // tailnet actually allows Taildrop — a receiver on a tailnet that forbids
+    // tailnet actually allows Taildrop: a receiver on a tailnet that forbids
     // it would never receive anything.
     _syncTaildrop() {
         const available = this._settings.get_boolean('feature-taildrop-available');

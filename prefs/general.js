@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 // The General (landing) page: panel indicators, the Taildrop group, and
-// the advanced knobs — plus the global reset that belongs with them.
+// the advanced knobs, plus the global reset that belongs with them.
 
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
@@ -14,75 +14,6 @@ import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensio
 import { spawn as _spawn } from "../lib/util.js";
 import { makeBackendGroup, resetButton, watchSetting } from "./common.js";
 import { makeTaildropGroup } from "./taildrop.js";
-
-const TAILSCALED_UNIT = "tailscaled.service";
-
-async function _serviceEnabled() {
-    const r = await _spawn(["systemctl", "is-enabled", TAILSCALED_UNIT]);
-    // systemctl is-enabled prints "enabled" / "disabled" / "static" / etc.
-    const out = r.stdout.trim();
-    return {
-        available: r.code !== 4,
-        enabled: out === "enabled" || out === "enabled-runtime",
-    };
-}
-
-// Adw.SwitchRow is `final` in libadwaita 1.4+, so we can't subclass it. Build
-// one and wire the systemctl toggle externally instead.
-function _makeServiceRow() {
-    const row = new Adw.SwitchRow({
-        title: _("Start Tailscale at boot"),
-        subtitle: _("Enables tailscaled.service via systemctl."),
-    });
-
-    let guard = false;
-
-    const refresh = async () => {
-        const { available, enabled } = await _serviceEnabled();
-        row.sensitive = available;
-        guard = true;
-        row.active = enabled;
-        guard = false;
-        if (!available)
-            row.subtitle = _(
-                "tailscaled.service not found. Install Tailscale via your distribution.",
-            );
-    };
-
-    const toggle = async (enable) => {
-        // Fixed argument vector of system binaries only — no user-writable
-        // path is ever elevated. Listed in README under "Privileged
-        // operations".
-        const argv = [
-            "pkexec",
-            "systemctl",
-            enable ? "enable" : "disable",
-            "--now",
-            TAILSCALED_UNIT,
-        ];
-        const r = await _spawn(argv);
-        if (!r.ok) {
-            guard = true;
-            row.active = !enable;
-            guard = false;
-            row.get_root().add_toast(
-                new Adw.Toast({
-                    title: _("Could not change service state"),
-                    timeout: 4,
-                }),
-            );
-        }
-        refresh();
-    };
-
-    row.connect("notify::active", () => {
-        if (guard) return;
-        toggle(row.active);
-    });
-
-    refresh();
-    return row;
-}
 
 const DEFAULT_WARN_COLOR = "#e6b800";
 
@@ -118,12 +49,10 @@ function _formatColor(rgba) {
 // `themeDefault` marks a key whose default is no colour at all: the value
 // is then empty, the shell leaves the icon in the panel's own ink, and it
 // follows a light or dark theme without being told to. A colour button has
-// no way to draw "none", so it shows white as a stand-in and the subtitle
-// says which of the two is in force — picking a colour opts in, the reset
-// suffix opts back out.
-function _makeIndicatorColorRow(settings, def) {
-    const row = new Adw.ActionRow({ title: def.title() });
-
+// no way to draw "none", so it shows white as a stand-in and says which of
+// the two is in force in its tooltip: picking a colour opts in, the reset
+// beside it opts back out.
+function _makeIndicatorColorButton(settings, def) {
     const button = new Gtk.ColorDialogButton({
         // No alpha: the value ends up as a CSS colour on a symbolic icon,
         // where a translucent ink would just look like a rendering fault.
@@ -133,36 +62,78 @@ function _makeIndicatorColorRow(settings, def) {
     const fallback = def.themeDefault
         ? THEME_COLOR_PLACEHOLDER
         : DEFAULT_WARN_COLOR;
-    const read = () => settings.get_string(def.key);
-    const syncSubtitle = () => {
-        row.subtitle = def.subtitle(_isHexColor(read()));
+    const read = () => settings.get_string(def.colorKey);
+    const syncTooltip = () => {
+        button.tooltip_text =
+            def.themeDefault && !_isHexColor(read())
+                ? _("Follows the panel colour. Pick one to override it.")
+                : _("Icon colour");
     };
 
     // Guard against the loop: writing the key re-enters this handler via
-    // the `changed::` subscription below. The subtitle is refreshed either
+    // the `changed::` subscription below. The tooltip is refreshed either
     // way round, so it stays right whichever end the change came from.
     let syncing = false;
     button.connect("notify::rgba", () => {
         if (syncing) return;
         syncing = true;
-        settings.set_string(def.key, _formatColor(button.get_rgba()));
+        settings.set_string(def.colorKey, _formatColor(button.get_rgba()));
         syncing = false;
-        syncSubtitle();
+        syncTooltip();
     });
 
-    watchSetting(row, settings, def.key, () => {
-        syncSubtitle();
+    watchSetting(button, settings, def.colorKey, () => {
+        syncTooltip();
         if (syncing) return;
         syncing = true;
         button.set_rgba(_parseColor(read(), fallback));
         syncing = false;
     });
 
+    // Guarded like every other write to the button: this one is only
+    // showing the stored value, and an unguarded set_rgba() emits
+    // `notify::rgba` straight back into the handler above, which would
+    // write the placeholder to a key whose default is "no colour", turning
+    // "follows the theme" into a hard white the moment the window opened.
+    syncing = true;
     button.set_rgba(_parseColor(read(), fallback));
-    syncSubtitle();
+    syncing = false;
+    syncTooltip();
+    return button;
+}
 
-    row.add_suffix(button);
-    row.add_suffix(resetButton(settings, def.key));
+// One row per exit-node state: whether the icon is drawn at all, and what
+// colour it is drawn in, each with its own reset. The two belong together;
+// the colour is meaningless without the icon it paints, and splitting them
+// over two rows only made the group read as four unrelated settings.
+function _makeExitNodeIndicatorRow(settings, def) {
+    const row = new Adw.ActionRow({
+        title: def.title,
+        subtitle: def.subtitle,
+    });
+
+    const toggle = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    settings.bind(
+        def.showKey,
+        toggle,
+        "active",
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    row.activatable_widget = toggle;
+
+    row.add_suffix(toggle);
+    row.add_suffix(resetButton(settings, def.showKey));
+    row.add_suffix(
+        new Gtk.Separator({
+            orientation: Gtk.Orientation.VERTICAL,
+            valign: Gtk.Align.CENTER,
+            heightRequest: 20,
+            marginStart: 6,
+            marginEnd: 6,
+        }),
+    );
+    row.add_suffix(_makeIndicatorColorButton(settings, def));
+    row.add_suffix(resetButton(settings, def.colorKey));
     return row;
 }
 
@@ -172,7 +143,7 @@ export function makeGeneralPage(settings) {
         iconName: "preferences-system-symbolic",
     });
 
-    // Only ever seen when the mirror is stale — this page is not in the
+    // Only ever seen when the mirror is stale: this page is not in the
     // window at all while the backend is down. That is exactly when it
     // earns its place: with the extension disabled nothing is polling, and
     // the PATH walk behind the group is the only thing still telling the
@@ -180,12 +151,10 @@ export function makeGeneralPage(settings) {
     page.add(makeBackendGroup(settings));
 
     /* --------------------------- Indicators ------------------------- */
-    // Three independent switches rather than one: the exit-node warning
-    // is the only sign that the device has no internet, so someone who
-    // hides the connection icon to keep the panel quiet must still be
-    // able to keep the warning, and the pair of exit-node icons — routing
-    // and not routing — is worth keeping together rather than tying to
-    // the connection icon.
+    // Three independent switches rather than one: the disconnected
+    // exit-node icon is the only sign that the device has no internet, so
+    // someone who hides the connection icon to keep the panel quiet must
+    // still be able to keep that warning.
     const indicators = new Adw.PreferencesGroup({
         title: _("Indicators"),
         description: _("Icons shown in the top bar, next to Wi-Fi."),
@@ -205,57 +174,27 @@ export function makeGeneralPage(settings) {
     showRow.add_suffix(resetButton(settings, "show-indicator"));
     indicators.add(showRow);
 
-    const exitActiveRow = new Adw.SwitchRow({
-        title: _("Show exit node active panel indicator"),
-        subtitle: _(
-            "VPN icon shown while an exit node is selected and routing traffic.",
-        ),
-    });
-    settings.bind(
-        "show-exit-node-active-indicator",
-        exitActiveRow,
-        "active",
-        Gio.SettingsBindFlags.DEFAULT,
-    );
-    exitActiveRow.add_suffix(
-        resetButton(settings, "show-exit-node-active-indicator"),
-    );
-    indicators.add(exitActiveRow);
-
     indicators.add(
-        _makeIndicatorColorRow(settings, {
-            key: "exit-node-active-indicator-color",
-            title: () => _("Exit node active indicator colour"),
+        _makeExitNodeIndicatorRow(settings, {
+            showKey: "show-exit-node-active-indicator",
+            colorKey: "exit-node-active-indicator-color",
             themeDefault: true,
-            subtitle: (custom) =>
-                custom
-                    ? _("Custom colour. Reset to follow the theme again.")
-                    : _("Follows the panel's own colour, light or dark."),
+            title: _("Show exit node panel indicator: connected"),
+            subtitle: _(
+                "Icon shown while the exit node is routing your traffic.",
+            ),
         }),
     );
 
-    const exitIndicatorRow = new Adw.SwitchRow({
-        title: _("Show exit node status panel indicator"),
-        subtitle: _(
-            "Warning icon shown when the selected exit node cannot route, which leaves the device without internet access.",
-        ),
-    });
-    settings.bind(
-        "show-exit-node-indicator",
-        exitIndicatorRow,
-        "active",
-        Gio.SettingsBindFlags.DEFAULT,
-    );
-    exitIndicatorRow.add_suffix(
-        resetButton(settings, "show-exit-node-indicator"),
-    );
-    indicators.add(exitIndicatorRow);
-
     indicators.add(
-        _makeIndicatorColorRow(settings, {
-            key: "exit-node-indicator-color",
-            title: () => _("Exit node indicator colour"),
-            subtitle: () => _("Colour of the warning icon in the top bar."),
+        _makeExitNodeIndicatorRow(settings, {
+            showKey: "show-exit-node-indicator",
+            colorKey: "exit-node-indicator-color",
+            title: _("Show exit node panel indicator: disconnected"),
+            subtitle: _(
+                "Icon shown when the exit node cannot route your traffic, " +
+                    "leaving this device without internet.",
+            ),
         }),
     );
 
@@ -267,10 +206,6 @@ export function makeGeneralPage(settings) {
         title: _("Advanced"),
     });
     page.add(advanced);
-
-    // The systemd unit toggle isn't a GSettings key, so no reset
-    // suffix; the system manages its own state.
-    advanced.add(_makeServiceRow());
 
     const pollRow = new Adw.SpinRow({
         title: _("Poll interval"),

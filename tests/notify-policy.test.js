@@ -84,7 +84,7 @@ suite('NotifyPolicy', () => {
         assertTrue(show(p, { spontaneous: false }), 'user action still passes');
     });
 
-    // What `force` used to guarantee, now carried by spontaneous: false — and
+    // What `force` used to guarantee, now carried by spontaneous: false, and
     // it still stops at the category filter, which is the whole point of an
     // off switch that means it.
     test('a quiet window never overrides the category filter', () => {

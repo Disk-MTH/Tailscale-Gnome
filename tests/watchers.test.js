@@ -24,7 +24,7 @@ const types = (events) => events.map(e => e.type);
 // first render does at runtime.
 const seed = (snap) => computeEvents(EMPTY_TRACK, snap).track;
 
-suite('computeEvents — connection', () => {
+suite('computeEvents: connection', () => {
     test('entering Starting opens a pending event', () => {
         const { events } = computeEvents(EMPTY_TRACK, snapshot({ backendState: 'Starting' }));
         assertDeepEq(types(events), ['connection-starting']);
@@ -66,7 +66,7 @@ suite('computeEvents — connection', () => {
     });
 });
 
-suite('computeEvents — exit node, auto mode', () => {
+suite('computeEvents: exit node, auto mode', () => {
     const auto = (over = {}) => snapshot({ autoExitNode: true, ...over });
 
     test('losing the picked node warns', () => {
@@ -98,7 +98,7 @@ suite('computeEvents — exit node, auto mode', () => {
     });
 });
 
-suite('computeEvents — exit node, pinned mode', () => {
+suite('computeEvents: exit node, pinned mode', () => {
     const pinned = (over = {}) => snapshot({ exitNodeID: 'n1', ...over });
 
     test('going offline then back online round-trips', () => {
@@ -120,7 +120,7 @@ suite('computeEvents — exit node, pinned mode', () => {
         assertDeepEq(types(on.events), ['exit-node-reenabled']);
     });
 
-    test('changing the pinned target emits nothing — the user did that', () => {
+    test('changing the pinned target emits nothing: the user did that', () => {
         const t = seed(pinned({ currentExitNode: node() }));
         const { events } = computeEvents(t, snapshot({
             exitNodeID: 'n2', currentExitNode: node({ id: 'n2', hostname: 'lyon' }),
@@ -175,7 +175,7 @@ suite('SnapshotWatcher', () => {
     });
 });
 
-suite('computeEvents — account', () => {
+suite('computeEvents: account', () => {
     test('the first named account is silent', () => {
         const { events } = computeEvents(EMPTY_TRACK, snapshot({ accountName: 'alice@example.com' }));
         assertDeepEq(types(events), []);
@@ -209,8 +209,8 @@ suite('computeEvents — account', () => {
     });
 
     // A logged-out or failed-status first snapshot still sets `seeded: true`
-    // with no accountName. The next snapshot that names a tailnet — e.g. the
-    // user's first login of the session — must not read as a switch away
+    // with no accountName. The next snapshot that names a tailnet (e.g. the
+    // user's first login of the session) must not read as a switch away
     // from "no account".
     test('a nameless first snapshot then the first login is silent', () => {
         const t = computeEvents(EMPTY_TRACK, snapshot({ accountName: null })).track;
@@ -236,7 +236,7 @@ suite('computeEvents — account', () => {
     });
 });
 
-suite('computeEvents — tailnet capabilities', () => {
+suite('computeEvents: tailnet capabilities', () => {
     const caps = (over = {}) => snapshot({
         taildropAvailable: true,
         funnelsAvailable: true,
@@ -267,7 +267,7 @@ suite('computeEvents — tailnet capabilities', () => {
     });
 
     // A daemon too old to publish a capability map, or a status that could
-    // not be read, answers null — which is not a revocation, and must not
+    // not be read, answers null, which is not a revocation, and must not
     // fire one on the way out or a re-grant on the way back.
     test('an unanswered poll is not a flip in either direction', () => {
         const t = seed(caps());
@@ -285,7 +285,7 @@ suite('computeEvents — tailnet capabilities', () => {
     });
 });
 
-suite('computeEvents — the CLI itself', () => {
+suite('computeEvents: the CLI itself', () => {
     const here = (over = {}) => snapshot({
         installed: true,
         accountName: 'tailnet-a',
