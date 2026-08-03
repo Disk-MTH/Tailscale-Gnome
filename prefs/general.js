@@ -227,9 +227,6 @@ export function makeGeneralPage(settings) {
     advanced.add(pollRow);
 
     /* ----------------------------- Reset all ------------------------ */
-    // Global "reset everything" lives in its own group so it gets a
-    // visual break from the dense list of settings above.
-    const resetGroup = new Adw.PreferencesGroup();
     const resetAllRow = new Adw.ActionRow({
         title: _("Reset all settings"),
         subtitle: _("Restore every setting to its default, on all pages."),
@@ -272,7 +269,7 @@ export function makeGeneralPage(settings) {
         // them from its next poll, a second or two out. Probing them
         // here would only race that.
 
-        resetGroup
+        resetAllRow
             .get_root()
             .add_toast(
                 new Adw.Toast({
@@ -282,8 +279,7 @@ export function makeGeneralPage(settings) {
             );
     });
     resetAllRow.add_suffix(resetAllBtn);
-    resetGroup.add(resetAllRow);
-    page.add(resetGroup);
+    advanced.add(resetAllRow);
 
     return page;
 }
