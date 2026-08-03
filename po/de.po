@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-03 12:30+0200\n"
+"POT-Creation-Date: 2026-08-03 13:27+0200\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: German\n"
@@ -893,35 +893,35 @@ msgstr "Betriebssystem"
 msgid "GNOME Shell"
 msgstr "GNOME Shell"
 
-#: prefs/help.js:291
+#: prefs/help.js:301
 msgid "Daemon unreachable — this is the CLI version."
 msgstr "Daemon nicht erreichbar — dies ist die CLI-Version."
 
-#: prefs/help.js:307
+#: prefs/help.js:328
 msgid "Copy this information to the clipboard"
 msgstr "Diese Informationen in die Zwischenablage kopieren"
 
-#: prefs/help.js:319
+#: prefs/help.js:340
 msgid "Copied to clipboard"
 msgstr "In die Zwischenablage kopiert"
 
-#: prefs/help.js:325
+#: prefs/help.js:346
 msgid "Project"
 msgstr "Projekt"
 
-#: prefs/help.js:330
+#: prefs/help.js:351
 msgid "Source code"
 msgstr "Quellcode"
 
-#: prefs/help.js:331
+#: prefs/help.js:352
 msgid "Browse the extension's repository on GitHub."
 msgstr "Das Repository der Erweiterung auf GitHub ansehen."
 
-#: prefs/help.js:337
+#: prefs/help.js:358
 msgid "Report a problem"
 msgstr "Ein Problem melden"
 
-#: prefs/help.js:338
+#: prefs/help.js:359
 msgid "Open an issue on GitHub. Attach the information above."
 msgstr "Ein Issue auf GitHub eröffnen. Die Angaben darüber beifügen."
 

@@ -23,6 +23,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   not at the menu, and a preferences window nobody asked for would be worse
   than a line of text.
 
+### Fixed
+- The "Tailscale daemon" version on the Help page is re-read when the
+  backend comes back, instead of keeping the answer it got when the window
+  was built. Installing the package or starting the service used to leave
+  that one row stale — showing "—", or the CLI version with a "Daemon
+  unreachable" note — while every other live part of the window had already
+  caught up. The note is now cleared as well as set, so it cannot outlive
+  the state it described.
+
 ### Removed
 - The "Tailscale is not installed" banner inside the menu, and the row class
   behind it. The menu it lived in no longer opens.

@@ -282,17 +282,38 @@ export function makeHelpPage(settings, metadata) {
     // placeholder, which already says "we could not tell" — it goes to the
     // log rather than at the user, who did not ask for it and cannot act
     // on it.
-    _spawn(["tailscale", "version", "--daemon"])
-        .then((r) => {
-            const { version, clientOnly } = _parseTailscaleVersion(r.stdout);
-            tailscaleRow.set(version);
-            if (version && clientOnly)
-                tailscaleRow.row.subtitle = _(
-                    "Daemon unreachable — this is the CLI version.",
-                );
-        })
-        .catch((e) => console.warn(`tailscale-gnome: ${e}`));
+    //
+    // The daemon's version is the one row here that can change while the
+    // window is open, and this window is on screen exactly when someone is
+    // installing the package or starting the service. So it is re-probed
+    // rather than read once, off `backend-status` — the same signal every
+    // other live part of this window already follows.
+    const syncTailscaleVersion = () => {
+        _spawn(["tailscale", "version", "--daemon"])
+            .then((r) => {
+                const { version, clientOnly } = _parseTailscaleVersion(r.stdout);
+                tailscaleRow.set(version);
+                // Cleared as well as set: a row still reading "Daemon
+                // unreachable" after the service came back would be a
+                // worse answer than none.
+                tailscaleRow.row.subtitle =
+                    version && clientOnly
+                        ? _("Daemon unreachable — this is the CLI version.")
+                        : "";
+            })
+            .catch((e) => {
+                // No binary at all: spawn rejects before there is a process
+                // to have failed. Back to the placeholder.
+                tailscaleRow.set("");
+                tailscaleRow.row.subtitle = "";
+                console.warn(`tailscale-gnome: ${e}`);
+            });
+    };
+    watchSetting(about, settings, "backend-status", syncTailscaleVersion);
+    syncTailscaleVersion();
 
+    // Not re-probed: the shell cannot change version under a window it is
+    // itself drawing.
     _spawn(["gnome-shell", "--version"])
         .then((r) => shellRow.set(r.stdout.replace(/^GNOME Shell\s*/, "").trim()))
         .catch((e) => console.warn(`tailscale-gnome: ${e}`));

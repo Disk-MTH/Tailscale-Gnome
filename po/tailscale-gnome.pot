@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-03 12:30+0200\n"
+"POT-Creation-Date: 2026-08-03 13:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -870,35 +870,35 @@ msgstr ""
 msgid "GNOME Shell"
 msgstr ""
 
-#: prefs/help.js:291
+#: prefs/help.js:301
 msgid "Daemon unreachable — this is the CLI version."
 msgstr ""
 
-#: prefs/help.js:307
+#: prefs/help.js:328
 msgid "Copy this information to the clipboard"
 msgstr ""
 
-#: prefs/help.js:319
+#: prefs/help.js:340
 msgid "Copied to clipboard"
 msgstr ""
 
-#: prefs/help.js:325
+#: prefs/help.js:346
 msgid "Project"
 msgstr ""
 
-#: prefs/help.js:330
+#: prefs/help.js:351
 msgid "Source code"
 msgstr ""
 
-#: prefs/help.js:331
+#: prefs/help.js:352
 msgid "Browse the extension's repository on GitHub."
 msgstr ""
 
-#: prefs/help.js:337
+#: prefs/help.js:358
 msgid "Report a problem"
 msgstr ""
 
-#: prefs/help.js:338
+#: prefs/help.js:359
 msgid "Open an issue on GitHub. Attach the information above."
 msgstr ""
 
