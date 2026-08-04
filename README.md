@@ -9,8 +9,6 @@
 
 <a href="https://extensions.gnome.org/extension/10017/tailscale/"><img align="left" width="210" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg" alt="Get it on GNOME Extensions"></a>
 
-<br>
-
 **The complete Tailscale VPN client for the GNOME Shell Quick Settings.**
 Connect, switch accounts, manage exit nodes, publish services with Funnel, and
 send or receive files with Taildrop, all without leaving the panel or opening a
