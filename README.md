@@ -1,6 +1,28 @@
+<!-- markdownlint-disable MD033 MD041 -->
+[![GNOME Extensions downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fextensions.gnome.org%2Fextension-info%2F%3Fpk%3D10017&query=%24.downloads&label=downloads&style=flat-square&logo=gnome&logoColor=white&color=4A86CF)](https://extensions.gnome.org/extension/10017/tailscale/)
+[![GNOME Shell 49 | 50](https://img.shields.io/badge/GNOME_Shell-49%20%7C%2050-4A86CF?style=flat-square&logo=gnome&logoColor=white)](https://release.gnome.org/)
+[![Latest release](https://img.shields.io/github/v/release/Disk-MTH/Tailscale-Gnome?style=flat-square&logo=github&label=release&color=4A86CF)](https://github.com/Disk-MTH/Tailscale-Gnome/releases/latest)
+[![License: GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-3DA639?style=flat-square)](./LICENSE)
+[![Translations: EN | FR | DE | IT](https://img.shields.io/badge/i18n-EN%20%7C%20FR%20%7C%20DE%20%7C%20IT-6E56CF?style=flat-square)](./po)
+
 # Tailscale for GNOME
 
-Connect, switch accounts, manage exit nodes, expose services with Funnel, and send or receive files with Taildrop, all without leaving Quick Settings.
+<a href="https://extensions.gnome.org/extension/10017/tailscale/"><img align="left" width="210" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg" alt="Get it on GNOME Extensions"></a>
+
+<br>
+
+**The complete Tailscale VPN client for the GNOME Shell Quick Settings.**
+Connect, switch accounts, manage exit nodes, publish services with Funnel, and
+send or receive files with Taildrop, all without leaving the panel or opening a
+terminal. Built for GNOME Shell 49 and 50, on Wayland and Xorg.
+
+<br>
+
+<p align="center">
+  <a href="https://extensions.gnome.org/extension/10017/tailscale/"><img width="620" src="icons/store-banner.png" alt="Tailscale for GNOME: the Quick Settings menu with peers, exit node and Magic DNS toggles, the Manage Funnels dialog publishing a local port, and the Send via Taildrop dialog with a file list and peer picker"></a>
+  <br>
+  <sub><b>Left:</b> the Quick Settings menu, peers, exit node, Magic DNS, accepted routes, and the Taildrop and Funnel entry points. &nbsp;·&nbsp; <b>Top right:</b> the Funnel manager. &nbsp;·&nbsp; <b>Bottom right:</b> the Taildrop send dialog.</sub>
+</p>
 
 > **Note on development.** This extension was built based on functional specs and requirements, with AI assistance used for code generation and iterative refinement.
 > While the code is tested and reliable for daily use, you might still encounter edge cases.
@@ -22,6 +44,40 @@ Connect, switch accounts, manage exit nodes, expose services with Funnel, and se
 | **Taildrop** | Send and receive files with peers, plus a "Send with Taildrop" entry in Nautilus. |
 | **Menu toggles** | Magic DNS, accepted routes, Shields up, SSH server, and LAN access, one tap away. |
 | **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, and Funnels. |
+
+## Compared to the other Tailscale GNOME extensions
+
+Three other Tailscale extensions exist for GNOME Shell, and they are good at
+what they do. This table is what each one actually ships, read from their
+source, not from their README, in August 2026. Where they are ahead, the table
+says so.
+
+| | **Tailscale for GNOME**<br>(this one) | [Tailscale QS](https://extensions.gnome.org/extension/9193/tailscale-qs/) | [Tailscale Status](https://extensions.gnome.org/extension/5112/tailscale-status/) | [Tailscale Connect](https://extensions.gnome.org/extension/6843/tailscale-connect/) |
+| --- | :---: | :---: | :---: | :---: |
+| GNOME Shell versions | 49 – 50 | 45 – 50 | 45 – 50 | 42 – 43 |
+| Last upstream commit | 2026 | 2026 | 2026 | 2024 |
+| Lives in | Quick Settings | Quick Settings | Top-bar menu | Top-bar menu |
+| Connect / disconnect | ✅ | ✅ | ✅ | ✅ |
+| Login / logout from the menu | ✅ | ❌ | ✅ | ✅ |
+| Multi-account switching | ✅ | ✅ | ✅ | ❌ |
+| Exit nodes | ✅ None / Auto / peer | ✅ + Mullvad flags | ✅ | ✅ |
+| Warns when the exit node stops routing | ✅ | ❌ | ❌ | ❌ |
+| Peer list with copy address | ✅ IP or Magic DNS | ✅ IP | ✅ IP | ❌ |
+| Magic DNS toggle | ✅ | ✅ | ❌ | ❌ |
+| Accept routes / Shields up / LAN access | ✅ | ✅ | ✅ | ✅ |
+| SSH server toggle | ✅ | ✅ | ❌ | ✅ |
+| **Taildrop send** | ✅ portal picker, folders, zip | ❌ | ✅ needs `zenity` | ❌ |
+| **Taildrop receive** | ✅ auto, click to reveal | ❌ | ✅ manual, one shot | ❌ |
+| **File-manager integration** | ✅ Nautilus "Send with Taildrop" | ❌ | ❌ | ❌ |
+| **Funnel management** | ✅ publish, copy, remove | ❌ | ❌ | ❌ |
+| Preferences window | ✅ 4 pages | ❌ none | ✅ 1 setting | ✅ |
+| Notifications | ✅ 9 configurable categories | ❌ none | fixed | fixed |
+| Keyboard shortcuts | ✅ 6 bindable | ❌ | ❌ | ❌ |
+| Shipped translations | ✅ FR · DE · IT | ❌ | ❌ | ❌ |
+| Degrades gracefully with no `tailscale` | ✅ | ❌ | ❌ | ❌ |
+| Custom login server ([Headscale](https://github.com/juanfont/headscale)) | ❌ *(soon…)* | ❌ | ✅ | ✅ |
+| Mullvad exit nodes with country flags | ❌ *(soon…)* | ✅ | ❌ | ❌ |
+| License | GPL-2.0-or-later | GPL-3.0 | GPL-2.0 | GPL-3.0 |
 
 ## Requirements
 
@@ -172,6 +228,50 @@ prefs/                  # preferences process
 nautilus/               # the nautilus-python extension itself
 icons/  schemas/  stylesheet.css
 ```
+
+## FAQ
+
+### Does it work on Wayland?
+
+Yes, on Wayland and on Xorg alike. It is a GNOME Shell extension, so it runs
+inside the shell process in both sessions. Only the reload step after install
+differs: Wayland needs a log out and back in, Xorg accepts `Alt+F2`, `r`.
+
+### Which GNOME Shell versions are supported?
+
+GNOME Shell 49 and 50. Older shells are not supported: GNOME 45 through 48
+would need the extension to be ported back, and the extension declares only
+what it is tested against, so `gnome-extensions` refuses to load it elsewhere
+rather than half-working.
+
+### Do I need root or `sudo` to use it?
+
+Only once. The Tailscale daemon accepts state-changing commands from root or
+from the user named in its `OperatorUser` pref, so the extension asks polkit
+once to set you as operator; after that, connecting, exit nodes, Taildrop and
+Funnel run with no prompt at all. The full list of elevated commands is in
+[Privileged operations](#privileged-operations) above, four of them, each a
+literal argument vector.
+
+### Does it work with Headscale or another custom login server?
+
+Not yet, but it is planned. There is no login-server setting today, so a
+self-hosted [Headscale](https://github.com/juanfont/headscale) control plane is
+out of reach for now.
+
+### Does it read my clipboard, or send anything anywhere?
+
+No. It **writes** to the clipboard and never reads from it, only when you click
+a copy button, and only the address or Funnel URL that button sits next to. No
+telemetry, no network call of its own: every piece of data on screen comes from
+the local `tailscale` CLI. See [Clipboard access](#clipboard-access).
+
+### Is this the official Tailscale app?
+
+No. This is an independent, community-built GNOME Shell extension, not
+affiliated with, sponsored by, or endorsed by Tailscale Inc. It drives the
+official `tailscale` CLI that you install yourself; it does not replace it or
+bundle it.
 
 ## License
 
