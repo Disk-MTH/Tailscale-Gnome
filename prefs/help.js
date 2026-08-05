@@ -15,7 +15,8 @@ import Pango from "gi://Pango";
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 import { PACKAGE_VERSION } from "resource:///org/gnome/Shell/Extensions/js/misc/config.js";
 
-import { fmt as _fmt, spawn as _spawn } from "../lib/util.js";
+import { fmt as _fmt } from "../lib/util.js";
+import { run as _spawn } from "../lib/spawn.js";
 import { makeBackendGroup, watchSetting } from "./common.js";
 
 // Taildrop and Funnel can be forbidden tailnet-wide by an administrator.

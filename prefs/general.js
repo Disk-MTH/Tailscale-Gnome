@@ -11,7 +11,7 @@ import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { spawn as _spawn } from "../lib/util.js";
+import { run as _spawn } from "../lib/spawn.js";
 import { makeBackendGroup, resetButton, watchSetting } from "./common.js";
 import { makeTaildropGroup } from "./taildrop.js";
 

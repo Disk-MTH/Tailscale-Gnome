@@ -9,7 +9,7 @@ import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { hasTailscaleCli } from "../lib/util.js";
+import { hasTailscaleCli } from "../lib/spawn.js";
 
 // This process has no signal tracker (connectObject lives in the Shell
 // process), so every settings subscription needs its own disconnect. Tying

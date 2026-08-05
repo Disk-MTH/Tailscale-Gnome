@@ -12,7 +12,8 @@ import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { fmt as _fmt, spawn as _spawn } from "../lib/util.js";
+import { fmt as _fmt } from "../lib/util.js";
+import { run as _spawn } from "../lib/spawn.js";
 // The preferences ask whether the integration is possible, the shell acts
 // on the answer, and both read it out of one place.
 import { hasPythonLoader } from "../lib/nautilus.js";
