@@ -13,6 +13,7 @@ import Gtk from "gi://Gtk";
 import Pango from "gi://Pango";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
+import { PACKAGE_VERSION } from "resource:///org/gnome/Shell/Extensions/js/misc/config.js";
 
 import { fmt as _fmt, spawn as _spawn } from "../lib/util.js";
 import { makeBackendGroup, watchSetting } from "./common.js";
@@ -277,11 +278,11 @@ export function makeHelpPage(settings, metadata) {
     );
     osRow.set(_osDescription());
 
-    // Both of these shell out, so the page builds with placeholders and
-    // fills in when the answers arrive. A failure leaves the row on its
-    // placeholder, which already says "we could not tell"; it goes to the
-    // log rather than at the user, who did not ask for it and cannot act
-    // on it.
+    // The one row here with nobody to ask but the daemon itself, so the page
+    // builds with a placeholder and fills in when the answer arrives. A
+    // failure leaves the row on that placeholder, which already says "we
+    // could not tell"; it goes to the log rather than at the user, who did
+    // not ask for it and cannot act on it.
     //
     // The daemon's version is the one row here that can change while the
     // window is open, and this window is on screen exactly when someone is
@@ -312,11 +313,10 @@ export function makeHelpPage(settings, metadata) {
     watchSetting(about, settings, "backend-status", syncTailscaleVersion);
     syncTailscaleVersion();
 
-    // Not re-probed: the shell cannot change version under a window it is
-    // itself drawing.
-    _spawn(["gnome-shell", "--version"])
-        .then((r) => shellRow.set(r.stdout.replace(/^GNOME Shell\s*/, "").trim()))
-        .catch((e) => console.warn(`tailscale-gnome: ${e}`));
+    // The shell the prefs process was launched by already published its own
+    // version, so there is nothing to ask a subprocess and nothing to wait
+    // for: the row is filled in with the rest of the page.
+    shellRow.set(PACKAGE_VERSION);
 
     // Copying the four rows in one go is the whole point of collecting
     // them: a bug report wants all of it, and re-typing a version string is

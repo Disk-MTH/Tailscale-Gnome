@@ -3,6 +3,26 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.1] - 2026-08-05
+
+Review feedback from the GNOME Extensions submission of 1.0.0.
+
+### Changed
+- The preferences window is opened and left alone. Opening it used to be
+  followed by a 120 ms timeout that walked `global.get_window_actors()`,
+  matched a window by its title against the extension's name, and called
+  `activate()` on it with the current timestamp, to raise a window that was
+  already open but buried under the shell. Which window comes up on top is
+  the window manager's call, not an extension's, and matching on a title
+  string is a guess besides: `openPreferences()` is now the whole of it.
+  The toggle no longer carries a raise timeout to arm, re-arm and remove.
+- The Help page reads the GNOME Shell version from
+  `resource:///org/gnome/Shell/Extensions/js/misc/config.js` instead of
+  spawning `gnome-shell --version` and parsing its output. The shell that
+  launched the preferences process already published its own version, so
+  the row is filled in with the rest of the page rather than arriving late
+  and possibly not at all.
+
 ## [1.0.0] - 2026-08-03
 
 ### Added
