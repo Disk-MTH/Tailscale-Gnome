@@ -8,6 +8,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Review feedback from the GNOME Extensions submission of 1.0.0.
 
 ### Changed
+- The status poll runs two commands instead of four, halving what the Shell
+  process spawns: 80 child processes a minute at the default three-second
+  interval, down to 40. `switch --list` and `funnel status --json` only ever
+  fed rows inside the menu, which cannot be seen while it is closed, and
+  neither changes on its own. They now run when the menu opens and after any
+  command that could have changed them; the snapshot carries their last
+  answer forward in between, so nothing on screen changes. `status --json`
+  and `debug prefs` still run at the interval the user picked: the panel
+  icon reads from those, and it stays exactly as current as it was.
+- Every process the extension starts is now launched from `lib/spawn.js` and
+  nowhere else, so the whole set of commands it can run is readable in one
+  file. No command, argument or privilege changed.
 - The preferences window is opened and left alone. Opening it used to be
   followed by a 120 ms timeout that walked `global.get_window_actors()`,
   matched a window by its title against the extension's name, and called
