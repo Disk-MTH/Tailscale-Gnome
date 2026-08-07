@@ -3,6 +3,24 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.2] - unreleased
+
+### Added
+- An optional, off-by-default workaround for a GNOME Shell limitation: the
+  Quick Settings menu has no scroll view of its own, so one taller than the
+  screen runs off the bottom edge with no way to reach what is down there.
+  The shell does set a `max-height` on every open, but `QuickSettingsMenu`
+  replaces `menu.actor` with a 0x0 widget, so that ceiling constrains
+  nothing; and the submenus live outside the popup entirely, which is why
+  scrolling only the grid would leave an open one painted over the panel.
+  **General → Advanced → Scrollable Quick Settings menu** wraps the grid and
+  the submenu overlay together in a scroll view with no visible scrollbar and
+  puts the ceiling where it bites, so the wheel reaches the whole menu, open
+  submenus included. No shell method is replaced, and switching it off,
+  disabling or removing the extension restores the menu exactly. Marked
+  `TEMPORARY` in the five places it touches, to be deleted once GNOME Shell
+  scrolls that menu itself.
+
 ## [1.0.1] - 2026-08-05
 
 Review feedback from the GNOME Extensions submission of 1.0.0.

@@ -26,6 +26,21 @@
                 increase CPU/wakeups.</description>
         </key>
 
+        <!-- TEMPORARY: paired with lib/quick-settings-scroll.js. Remove both
+             once GNOME Shell scrolls its own Quick Settings menu. -->
+        <key name="quick-settings-scroll" type="b">
+            <default>false</default>
+            <summary>Make the Quick Settings menu scrollable</summary>
+            <description>Works around a GNOME Shell limitation: the Quick
+                Settings menu has no scroll view of its own, so one taller
+                than the screen runs off the bottom with no way to reach
+                what is down there. When this is on, the extension wraps the
+                menu's contents in a scroll view with no visible scrollbar,
+                so the wheel reaches the whole menu, open submenus included.
+                Off by default, because it changes a menu this extension
+                does not own.</description>
+        </key>
+
         <key name="show-indicator" type="b">
             <default>true</default>
             <summary>Show the panel indicator icon</summary>

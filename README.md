@@ -169,6 +169,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
 | General       | Nautilus integration               | off           |
 | General       | Poll interval                      | 3s            |
+| General       | Scrollable Quick Settings menu ([temporary](#scrollable-quick-settings-menu-temporary)) | off |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
@@ -179,6 +180,40 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | Shortcuts     | Open Funnels                       | unbound       |
 | Help          | Availability: Taildrop / Funnel    | read from every poll |
 | Help          | Versions, source and issue links   | read-only     |
+
+### Scrollable Quick Settings menu (temporary)
+
+GNOME Shell does not scroll its own Quick Settings menu. One taller than the
+screen, which is easy to reach with a few extensions installed and a submenu
+open, runs off the bottom edge with no way to get at what is down there.
+Three things add up to it in GNOME 49 and 50:
+
+- `PanelMenu.Button._onOpenStateChanged` does set a `max-height` on every
+  open, but `QuickSettingsMenu` replaces `menu.actor` with a 0x0 widget that
+  exists only to host the submenu overlay, so the ceiling lands on something
+  that constrains nothing.
+- There is no scroll view at the top level. `PopupSubMenu` has one, which is
+  why submenus scroll and the menu holding them does not.
+- The submenus are not inside the popup at all: `_overlay` is a sibling of
+  the box pointer, so scrolling the grid on its own would leave an open
+  submenu painted over the panel and the desktop.
+
+The switch in **General → Advanced** wraps the menu's contents, grid and
+submenu overlay together, in a scroll view with no visible scrollbar, and
+puts the ceiling where it bites. The whole menu then answers the wheel, open
+submenus included, and the top and bottom edges fade to show there is more.
+
+Off by default, because it changes a menu this extension does not own. No
+shell method is replaced: `addItem`, `open`, `close` and the rest go on
+driving the same actors, only reparented, so other extensions that add
+toggles see no difference. Turning the switch back off, disabling the
+extension or removing it puts the menu back exactly as it was.
+
+**It is a workaround and it is meant to be deleted.** All of it is marked
+`TEMPORARY` in five places: `lib/quick-settings-scroll.js`, the
+`quick-settings-scroll` key in the schema, one row in `prefs/general.js`, one
+rule in `stylesheet.css` and four lines in `extension.js`. When GNOME Shell
+scrolls its Quick Settings menu itself, the lot goes.
 
 ## Debugging
 
@@ -212,6 +247,7 @@ lib/                    # GNOME Shell process
 │   ├── rows.js         # the rows every submenu is built from
 │   ├── send-dialog.js  # Taildrop send flow + archiving
 │   └── funnels-dialog.js
+├── quick-settings-scroll.js  # TEMPORARY, see the section above
 ├── watchers.js         # snapshot diffing into semantic events
 ├── watcher-messages.js # those events, turned into translated wording
 ├── quiet-window.js     # the silence held open around an account switch

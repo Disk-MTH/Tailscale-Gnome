@@ -226,6 +226,28 @@ export function makeGeneralPage(settings) {
     pollRow.add_suffix(resetButton(settings, "poll-interval"));
     advanced.add(pollRow);
 
+    // TEMPORARY: remove this row along with lib/quick-settings-scroll.js
+    // once GNOME Shell scrolls its own Quick Settings menu.
+    const scrollRow = new Adw.SwitchRow({
+        title: _("Scrollable Quick Settings menu"),
+        subtitle: _(
+            "Works around a GNOME Shell limitation: a Quick Settings menu " +
+                "taller than the screen runs off the bottom with no way to " +
+                "reach what is down there. Turning this on lets the wheel " +
+                "scroll the whole menu, open submenus included, with no " +
+                "scrollbar shown. Off by default: it changes a menu this " +
+                "extension does not own.",
+        ),
+    });
+    settings.bind(
+        "quick-settings-scroll",
+        scrollRow,
+        "active",
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    scrollRow.add_suffix(resetButton(settings, "quick-settings-scroll"));
+    advanced.add(scrollRow);
+
     /* ----------------------------- Reset all ------------------------ */
     const resetAllRow = new Adw.ActionRow({
         title: _("Reset all settings"),

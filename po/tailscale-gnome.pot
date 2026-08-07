@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-03 14:25+0200\n"
+"POT-Creation-Date: 2026-08-07 19:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: extension.js:363 lib/menu.js:99
+#: extension.js:387 lib/menu.js:99
 msgid "Login required"
 msgstr ""
 
-#: extension.js:364
+#: extension.js:388
 msgid "Tailscale is not ready yet"
 msgstr ""
 
-#: extension.js:378 lib/menu/sections.js:149
+#: extension.js:402 lib/menu/sections.js:149
 msgid "Clearing exit node"
 msgstr ""
 
-#: extension.js:379 lib/menu/sections.js:150
+#: extension.js:403 lib/menu/sections.js:150
 msgid "Exit node cleared"
 msgstr ""
 
-#: extension.js:385 lib/menu/sections.js:161
+#: extension.js:409 lib/menu/sections.js:161
 msgid "Selecting an exit node"
 msgstr ""
 
-#: extension.js:386 lib/menu/sections.js:162
+#: extension.js:410 lib/menu/sections.js:162
 msgid "Exit node: auto"
 msgstr ""
 
-#: lib/menu.js:55 lib/menu.js:831
+#: lib/menu.js:55 lib/menu.js:804
 #, javascript-format
 msgid "Could not open %s"
 msgstr ""
@@ -83,241 +83,241 @@ msgstr ""
 msgid "Tailscale disconnected"
 msgstr ""
 
-#: lib/menu.js:179
+#: lib/menu.js:158
 msgid "Loading…"
 msgstr ""
 
-#: lib/menu.js:267 lib/notify.js:29
+#: lib/menu.js:259 lib/notify.js:29
 msgid "Tailnet"
 msgstr ""
 
-#: lib/menu.js:276 lib/menu/sections.js:236
+#: lib/menu.js:268 lib/menu/sections.js:236
 msgid "Peers"
 msgstr ""
 
-#: lib/menu.js:283 lib/notify.js:30 lib/menu/sections.js:115
+#: lib/menu.js:275 lib/notify.js:30 lib/menu/sections.js:115
 #: prefs/notifications.js:44
 msgid "Exit node"
 msgstr ""
 
-#: lib/menu.js:297
+#: lib/menu.js:289
 msgid "Magic DNS"
 msgstr ""
 
-#: lib/menu.js:300
+#: lib/menu.js:292
 msgid "Enabling Magic DNS"
 msgstr ""
 
-#: lib/menu.js:300
+#: lib/menu.js:292
 msgid "Disabling Magic DNS"
 msgstr ""
 
-#: lib/menu.js:301
+#: lib/menu.js:293
 msgid "Magic DNS: on"
 msgstr ""
 
-#: lib/menu.js:301
+#: lib/menu.js:293
 msgid "Magic DNS: off"
 msgstr ""
 
-#: lib/menu.js:311
+#: lib/menu.js:303
 msgid "Enabling Accept routes"
 msgstr ""
 
-#: lib/menu.js:311
+#: lib/menu.js:303
 msgid "Disabling Accept routes"
 msgstr ""
 
-#: lib/menu.js:312
+#: lib/menu.js:304
 msgid "Accept routes: on"
 msgstr ""
 
-#: lib/menu.js:312
+#: lib/menu.js:304
 msgid "Accept routes: off"
 msgstr ""
 
-#: lib/menu.js:319
+#: lib/menu.js:311
 msgid "Accept files"
 msgstr ""
 
-#: lib/menu.js:323
+#: lib/menu.js:315
 msgid "Shields up"
 msgstr ""
 
-#: lib/menu.js:326
+#: lib/menu.js:318
 msgid "Enabling Shields up"
 msgstr ""
 
-#: lib/menu.js:326
+#: lib/menu.js:318
 msgid "Disabling Shields up"
 msgstr ""
 
-#: lib/menu.js:327
+#: lib/menu.js:319
 msgid "Shields up: on"
 msgstr ""
 
-#: lib/menu.js:327
+#: lib/menu.js:319
 msgid "Shields up: off"
 msgstr ""
 
-#: lib/menu.js:333
+#: lib/menu.js:325
 msgid "Run SSH server"
 msgstr ""
 
-#: lib/menu.js:336
+#: lib/menu.js:328
 msgid "Enabling SSH server"
 msgstr ""
 
-#: lib/menu.js:336
+#: lib/menu.js:328
 msgid "Disabling SSH server"
 msgstr ""
 
-#: lib/menu.js:337
+#: lib/menu.js:329
 msgid "SSH server: on"
 msgstr ""
 
-#: lib/menu.js:337
+#: lib/menu.js:329
 msgid "SSH server: off"
 msgstr ""
 
-#: lib/menu.js:370 lib/notify.js:32 prefs/help.js:29 prefs/notifications.js:55
-#: prefs/taildrop.js:46
+#: lib/menu.js:362 lib/notify.js:32 prefs/help.js:31 prefs/notifications.js:55
+#: prefs/taildrop.js:47
 msgid "Taildrop"
 msgstr ""
 
-#: lib/menu.js:381
+#: lib/menu.js:373
 msgid "Funnels"
 msgstr ""
 
-#: lib/menu.js:409
+#: lib/menu.js:401
 msgid "Extension settings"
 msgstr ""
 
-#: lib/menu.js:427
+#: lib/menu.js:419
 msgid "Admin panel"
 msgstr ""
 
-#: lib/menu.js:474
+#: lib/menu.js:466
 msgid "Operator not set"
 msgstr ""
 
-#: lib/menu.js:480
+#: lib/menu.js:472
 msgid "Set operator"
 msgstr ""
 
-#: lib/menu.js:486
+#: lib/menu.js:478
 msgid "Granting operator privilege"
 msgstr ""
 
-#: lib/menu.js:487
+#: lib/menu.js:479
 msgid "Operator set"
 msgstr ""
 
-#: lib/menu.js:559
+#: lib/menu.js:532
 msgid "Login required (see Account menu)"
 msgstr ""
 
-#: lib/menu.js:667
+#: lib/menu.js:640
 msgid "This device"
 msgstr ""
 
-#: lib/menu.js:755
+#: lib/menu.js:728
 msgid "Funnel is disabled for this tailnet by your admin."
 msgstr ""
 
-#: lib/menu.js:785
+#: lib/menu.js:758
 #, javascript-format
 msgid "Removing funnel %s"
 msgstr ""
 
-#: lib/menu.js:786
+#: lib/menu.js:759
 #, javascript-format
 msgid "Funnel removed %s"
 msgstr ""
 
-#: lib/menu.js:798
+#: lib/menu.js:771
 msgid "Invalid port number"
 msgstr ""
 
-#: lib/menu.js:811
+#: lib/menu.js:784
 #, javascript-format
 msgid "Adding funnel %d:%d"
 msgstr ""
 
-#: lib/menu.js:812
+#: lib/menu.js:785
 #, javascript-format
 msgid "Funnel added %d:%d"
 msgstr ""
 
-#: lib/menu.js:837
+#: lib/menu.js:810
 msgid "Approve Funnel in the browser, then retry."
 msgstr ""
 
-#: lib/menu.js:886
+#: lib/menu.js:859
 msgid "Accepting Taildrop files"
 msgstr ""
 
-#: lib/menu.js:887
+#: lib/menu.js:860
 msgid "Taildrop receiver stopped"
 msgstr ""
 
-#: lib/menu.js:911
+#: lib/menu.js:884
 msgid "Taildrop is disabled for this tailnet by your admin."
 msgstr ""
 
-#: lib/menu.js:920
+#: lib/menu.js:893
 msgid "No online peers available to receive files"
 msgstr ""
 
-#: lib/menu.js:945
+#: lib/menu.js:918
 #, javascript-format
 msgid "%d files"
 msgstr ""
 
-#: lib/menu.js:948
+#: lib/menu.js:921
 #, javascript-format
 msgid "%d devices"
 msgstr ""
 
-#: lib/menu.js:968
+#: lib/menu.js:941
 #, javascript-format
 msgid "Could not send to %s"
 msgstr ""
 
-#: lib/menu.js:974
+#: lib/menu.js:947
 #, javascript-format
 msgid "Sent to %d of %d devices"
 msgstr ""
 
-#: lib/menu.js:987
+#: lib/menu.js:960
 #, javascript-format
 msgid "Sent %s to %s"
 msgstr ""
 
-#: lib/menu.js:992
+#: lib/menu.js:965
 #, javascript-format
 msgid "Sending %s to %s"
 msgstr ""
 
-#: lib/menu.js:1001
+#: lib/menu.js:974
 #, javascript-format
 msgid "Archiving %s"
 msgstr ""
 
-#: lib/menu.js:1012
+#: lib/menu.js:985
 msgid "Could not create the archive"
 msgstr ""
 
-#: lib/menu.js:1111
+#: lib/menu.js:1084
 msgid "File chooser portal unavailable"
 msgstr ""
 
-#: lib/menu.js:1146
+#: lib/menu.js:1119
 #, javascript-format
 msgid "Received %s (%s) - click to open"
 msgstr ""
 
-#: lib/menu.js:1160
+#: lib/menu.js:1133
 #, javascript-format
 msgid "Copied %s to clipboard"
 msgstr ""
@@ -334,7 +334,7 @@ msgstr ""
 msgid "Network"
 msgstr ""
 
-#: lib/notify.js:33 prefs/help.js:43 prefs/notifications.js:61
+#: lib/notify.js:33 prefs/help.js:45 prefs/notifications.js:61
 msgid "Funnel"
 msgstr ""
 
@@ -614,65 +614,65 @@ msgstr ""
 msgid "Logging out"
 msgstr ""
 
-#: lib/menu/send-dialog.js:260
+#: lib/menu/send-dialog.js:258
 msgid "Send via Taildrop"
 msgstr ""
 
-#: lib/menu/send-dialog.js:270 lib/menu/send-dialog.js:598
+#: lib/menu/send-dialog.js:268 lib/menu/send-dialog.js:596
 msgid "Send to:"
 msgstr ""
 
-#: lib/menu/send-dialog.js:301 prefs/taildrop.js:335
+#: lib/menu/send-dialog.js:299 prefs/taildrop.js:336
 msgid "Cancel"
 msgstr ""
 
-#: lib/menu/send-dialog.js:311
+#: lib/menu/send-dialog.js:309
 msgid "Send"
 msgstr ""
 
-#: lib/menu/send-dialog.js:383
+#: lib/menu/send-dialog.js:381
 msgid "Send as zip"
 msgstr ""
 
-#: lib/menu/send-dialog.js:386
+#: lib/menu/send-dialog.js:384
 msgid "Required: the selection contains a folder"
 msgstr ""
 
-#: lib/menu/send-dialog.js:414
+#: lib/menu/send-dialog.js:412
 msgid "Password (optional)"
 msgstr ""
 
-#: lib/menu/send-dialog.js:420
+#: lib/menu/send-dialog.js:418
 msgid "Spaces are not allowed in the password"
 msgstr ""
 
-#: lib/menu/send-dialog.js:473 lib/menu/send-dialog.js:522
+#: lib/menu/send-dialog.js:471 lib/menu/send-dialog.js:520
 msgid "Add files"
 msgstr ""
 
-#: lib/menu/send-dialog.js:482 lib/menu/send-dialog.js:522
+#: lib/menu/send-dialog.js:480 lib/menu/send-dialog.js:520
 msgid "Add folders"
 msgstr ""
 
-#: lib/menu/send-dialog.js:603
+#: lib/menu/send-dialog.js:601
 #, javascript-format
 msgid "Send %d item (measuring…) to:"
 msgid_plural "Send %d items (measuring…) to:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/menu/send-dialog.js:608
+#: lib/menu/send-dialog.js:606
 #, javascript-format
 msgid "Send %d item (%s) to:"
 msgid_plural "Send %d items (%s) to:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/menu/send-dialog.js:658
+#: lib/menu/send-dialog.js:656
 msgid "empty"
 msgstr ""
 
-#: prefs/common.js:37 prefs/taildrop.js:207
+#: prefs/common.js:37 prefs/taildrop.js:208
 msgid "Reset to default"
 msgstr ""
 
@@ -748,44 +748,57 @@ msgstr ""
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr ""
 
+#: prefs/general.js:232
+msgid "Scrollable Quick Settings menu"
+msgstr ""
+
 #: prefs/general.js:234
+msgid ""
+"Works around a GNOME Shell limitation: a Quick Settings menu taller than the "
+"screen runs off the bottom with no way to reach what is down there. Turning "
+"this on lets the wheel scroll the whole menu, open submenus included, with "
+"no scrollbar shown. Off by default: it changes a menu this extension does "
+"not own."
+msgstr ""
+
+#: prefs/general.js:253
 msgid "Reset all settings"
 msgstr ""
 
-#: prefs/general.js:235
+#: prefs/general.js:254
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 
-#: prefs/general.js:238
+#: prefs/general.js:257
 msgid "Reset all"
 msgstr ""
 
-#: prefs/general.js:279
+#: prefs/general.js:298
 msgid "All settings reset to defaults"
 msgstr ""
 
-#: prefs/help.js:32
+#: prefs/help.js:34
 msgid "Taildrop is disabled for this tailnet."
 msgstr ""
 
-#: prefs/help.js:35
+#: prefs/help.js:37
 msgid ""
 "Taildrop requires the feature to be enabled for the tailnet and the source "
 "and destination devices to be owned by the same user. Devices owned by a tag "
 "or by different users are not eligible."
 msgstr ""
 
-#: prefs/help.js:47
+#: prefs/help.js:49
 msgid "Funnel is not enabled for this tailnet."
 msgstr ""
 
-#: prefs/help.js:50
+#: prefs/help.js:52
 msgid ""
 "Funnel requires HTTPS certificates to be enabled tailnet-wide and the "
 "\"funnel\" node attribute granted to the current user."
 msgstr ""
 
-#: prefs/help.js:76
+#: prefs/help.js:78
 #, javascript-format
 msgid ""
 "%s\n"
@@ -793,85 +806,85 @@ msgid ""
 "Click to open: %s"
 msgstr ""
 
-#: prefs/help.js:89
+#: prefs/help.js:91
 msgid "Open admin"
 msgstr ""
 
-#: prefs/help.js:109
+#: prefs/help.js:111
 msgid "Available on this tailnet"
 msgstr ""
 
-#: prefs/help.js:110
+#: prefs/help.js:112
 msgid "Not available on this tailnet"
 msgstr ""
 
-#: prefs/help.js:121
+#: prefs/help.js:123
 msgid "Availability"
 msgstr ""
 
-#: prefs/help.js:123
+#: prefs/help.js:125
 msgid ""
 "What this tailnet allows. Both depend on your tailnet's admin settings, not "
 "on anything you can change here. (Hover over the info icon for details)"
 msgstr ""
 
-#: prefs/help.js:234
+#: prefs/help.js:236
 msgid "Help"
 msgstr ""
 
-#: prefs/help.js:258
+#: prefs/help.js:260
 msgid "About"
 msgstr ""
 
-#: prefs/help.js:260
+#: prefs/help.js:262
 msgid "What is running on this machine. Include it when reporting a problem."
 msgstr ""
 
-#: prefs/help.js:265
+#: prefs/help.js:267
 msgid "Extension"
 msgstr ""
 
-#: prefs/help.js:266
+#: prefs/help.js:268
 msgid "Tailscale daemon"
 msgstr ""
 
-#: prefs/help.js:267
+#: prefs/help.js:269
 msgid "Operating system"
 msgstr ""
 
-#: prefs/help.js:268
+#: prefs/help.js:270
 msgid "GNOME Shell"
 msgstr ""
 
-#: prefs/help.js:301
+#: prefs/help.js:303
 msgid "Daemon unreachable: this is the CLI version."
 msgstr ""
 
-#: prefs/help.js:328
+#: prefs/help.js:329
 msgid "Copy this information to the clipboard"
 msgstr ""
 
-#: prefs/help.js:340
+#: prefs/help.js:341
 msgid "Copied to clipboard"
 msgstr ""
 
-#: prefs/help.js:346
+#: prefs/help.js:347
 msgid "Project"
 msgstr ""
 
-#: prefs/help.js:351
+#: prefs/help.js:352
 msgid "Source code"
 msgstr ""
 
-#: prefs/help.js:352
+#: prefs/help.js:353
 msgid "Browse the extension's repository on GitHub."
 msgstr ""
 
-#: prefs/help.js:358
+#: prefs/help.js:359
 msgid "Report a problem"
 msgstr ""
 
-#: prefs/help.js:359
+#: prefs/help.js:360
 msgid "Open an issue on GitHub. Attach the information above."
 msgstr ""
 
@@ -1054,61 +1067,61 @@ msgstr ""
 msgid "Click a row to capture a key combination. Backspace to clear."
 msgstr ""
 
-#: prefs/taildrop.js:47
+#: prefs/taildrop.js:48
 msgid "Send and receive files between Tailscale nodes."
 msgstr ""
 
-#: prefs/taildrop.js:88
+#: prefs/taildrop.js:89
 msgid "Inbox folder (created if it does not exist)"
 msgstr ""
 
-#: prefs/taildrop.js:104
+#: prefs/taildrop.js:105
 msgid "Path is empty or not writable without admin privileges."
 msgstr ""
 
-#: prefs/taildrop.js:155
+#: prefs/taildrop.js:156
 #, javascript-format
 msgid "Taildrop inbox set to %s"
 msgstr ""
 
-#: prefs/taildrop.js:183
+#: prefs/taildrop.js:184
 msgid "Browse"
 msgstr ""
 
-#: prefs/taildrop.js:187
+#: prefs/taildrop.js:188
 msgid "Choose Taildrop inbox folder"
 msgstr ""
 
-#: prefs/taildrop.js:223
+#: prefs/taildrop.js:224
 msgid "Nautilus integration"
 msgstr ""
 
-#: prefs/taildrop.js:225
+#: prefs/taildrop.js:226
 msgid "Add \"Send with Taildrop\" to the file manager's right-click menu."
 msgstr ""
 
-#: prefs/taildrop.js:277
+#: prefs/taildrop.js:278
 msgid "nautilus-python is not installed"
 msgstr ""
 
-#: prefs/taildrop.js:279
+#: prefs/taildrop.js:280
 msgid ""
 "The file manager needs it to load extensions. Install it with your package "
 "manager, then reopen this window."
 msgstr ""
 
-#: prefs/taildrop.js:324
+#: prefs/taildrop.js:325
 msgid "Quit the file manager?"
 msgstr ""
 
-#: prefs/taildrop.js:329
+#: prefs/taildrop.js:330
 msgid ""
 "Nautilus loads its extensions when it starts, so it has to be closed for "
 "this to take effect. Any open Nautilus window will be closed, and the next "
 "one you open picks up the change."
 msgstr ""
 
-#: prefs/taildrop.js:336
+#: prefs/taildrop.js:337
 msgid "Quit Nautilus"
 msgstr ""
 

@@ -304,3 +304,10 @@
     opacity: 0.4;
 }
 
+/* TEMPORARY: paired with lib/quick-settings-scroll.js, remove both once
+   GNOME Shell scrolls its own Quick Settings menu. No scrollbar is drawn
+   (the view is St.PolicyType.EXTERNAL), so the fade at the top and bottom
+   edges is the only thing saying there is more menu past them. */
+.tailscale-quick-settings-scroll {
+    -st-vfade-offset: 24px;
+}
