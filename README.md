@@ -32,6 +32,26 @@ terminal. Built for GNOME Shell 49 and 50, on Wayland and Xorg.
 > here in a purely nominative sense to describe what the extension
 > integrates with.
 
+## If the menu runs off your screen
+
+This extension puts a lot into the Quick Settings menu: peers, exit nodes,
+five toggles, and the Taildrop and Funnel entry points. On a short screen, at
+a large text scale, or next to other extensions that add toggles of their own,
+the menu can grow past the bottom edge. GNOME's Quick Settings popup does not
+scroll, so anything below that edge is simply unreachable.
+
+That is a GNOME limitation rather than something this extension can fix from
+the inside, and the fix for it,
+[gnome-shell!3272](https://gitlab.gnome.org/GNOME/gnome-shell/-/merge_requests/3272),
+has been open since April 2024 without landing.
+
+Until it does,
+[**Quick Settings Scroll**](https://extensions.gnome.org/extension/10660/quick-settings-scroll/)
+makes the menu scroll instead of overflowing. It is a separate extension by
+the same author, with no preferences and nothing to configure, and it helps
+with any extension that crowds the menu, not only this one.
+([source](https://github.com/Disk-MTH/Quick-Settings-Scroll))
+
 ## Features
 
 | Feature | What it does |
