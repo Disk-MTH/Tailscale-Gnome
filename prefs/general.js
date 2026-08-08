@@ -11,7 +11,7 @@ import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { run as _spawn } from "../lib/spawn.js";
+import { run as _spawn, tailscaleBin as _bin } from "../lib/spawn.js";
 import { makeBackendGroup, resetButton, watchSetting } from "./common.js";
 import { makeTaildropGroup } from "./taildrop.js";
 
@@ -226,28 +226,6 @@ export function makeGeneralPage(settings) {
     pollRow.add_suffix(resetButton(settings, "poll-interval"));
     advanced.add(pollRow);
 
-    // TEMPORARY: remove this row along with lib/quick-settings-scroll.js
-    // once GNOME Shell scrolls its own Quick Settings menu.
-    const scrollRow = new Adw.SwitchRow({
-        title: _("Scrollable Quick Settings menu"),
-        subtitle: _(
-            "Works around a GNOME Shell limitation: a Quick Settings menu " +
-                "taller than the screen runs off the bottom with no way to " +
-                "reach what is down there. Turning this on lets the wheel " +
-                "scroll the whole menu, open submenus included, with no " +
-                "scrollbar shown. Off by default: it changes a menu this " +
-                "extension does not own.",
-        ),
-    });
-    settings.bind(
-        "quick-settings-scroll",
-        scrollRow,
-        "active",
-        Gio.SettingsBindFlags.DEFAULT,
-    );
-    scrollRow.add_suffix(resetButton(settings, "quick-settings-scroll"));
-    advanced.add(scrollRow);
-
     /* ----------------------------- Reset all ------------------------ */
     const resetAllRow = new Adw.ActionRow({
         title: _("Reset all settings"),
@@ -267,9 +245,14 @@ export function makeGeneralPage(settings) {
         //   Magic DNS off, accept routes off, shields up off,
         //   SSH server off, exit node cleared, any active funnels
         //   torn down.
+        // Same lookup the shell process uses, so both talk to the same
+        // Tailscale. Null means there is none on this machine, and the
+        // daemon half of the reset is skipped: the GSettings half above
+        // already happened, which is the half this window owns.
+        const bin = _bin();
         try {
-            await _spawn([
-                "tailscale",
+            if (bin) await _spawn([
+                bin,
                 "set",
                 "--accept-dns=false",
                 "--accept-routes=false",
@@ -283,7 +266,7 @@ export function makeGeneralPage(settings) {
         // `funnel reset` is its own subcommand; ignore failures (most
         // likely "no funnels to reset", which is exactly what we want).
         try {
-            await _spawn(["tailscale", "funnel", "reset"]);
+            if (bin) await _spawn([bin, "funnel", "reset"]);
         } catch {}
 
         // The two availability keys were reset along with everything

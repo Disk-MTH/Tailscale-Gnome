@@ -23,9 +23,6 @@ import { SnapshotWatcher } from './lib/watchers.js';
 import { watcherMessage } from './lib/watcher-messages.js';
 import { QuietWindow } from './lib/quiet-window.js';
 import * as NautilusIntegration from './lib/nautilus.js';
-// TEMPORARY: drop this import, the four lines below that drive it and the
-// module itself once GNOME Shell scrolls its own Quick Settings menu.
-import { QuickSettingsScroll } from './lib/quick-settings-scroll.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
 // one accelerators (e.g. ["<Super>t"]). Empty array = unbound.
@@ -65,9 +62,6 @@ export default class TailscaleGnomeExtension extends Extension {
         });
         this._watcher = new SnapshotWatcher();
         this._quiet = new QuietWindow();
-        // TEMPORARY, see lib/quick-settings-scroll.js. Built here, switched
-        // on below once our own toggle is in the menu it patches.
-        this._scrollFix = new QuickSettingsScroll();
         // A pending connection resolves in place, so its handle outlives the
         // event that created it.
         this._connHandle = null;
@@ -84,7 +78,6 @@ export default class TailscaleGnomeExtension extends Extension {
             'changed::taildrop-accept', () => this._syncTaildrop(),
             'changed::feature-taildrop-available', () => this._syncTaildrop(),
             'changed::taildrop-inbox', () => this._bounceTaildrop(),
-            'changed::quick-settings-scroll', () => this._syncScrollFix(),
             ...SHORTCUT_KEYS.flatMap((key) => [
                 `changed::${key}`,
                 () => this._rebindShortcut(key),
@@ -97,7 +90,6 @@ export default class TailscaleGnomeExtension extends Extension {
             client:    this._client,
         });
         Main.panel.statusArea.quickSettings.addExternalIndicator(this._indicator);
-        this._syncScrollFix();
 
         this._boundShortcuts = new Set();
         for (const key of SHORTCUT_KEYS)
@@ -168,12 +160,6 @@ export default class TailscaleGnomeExtension extends Extension {
         for (const key of this._boundShortcuts)
             Main.wm.removeKeybinding(key);
         this._boundShortcuts.clear();
-
-        // TEMPORARY, see lib/quick-settings-scroll.js. The shell's menu goes
-        // back to what it was before our toggle leaves it: that menu is not
-        // ours, and it is still there once we are gone.
-        this._scrollFix.destroy();
-        this._scrollFix = null;
 
         this._indicator.destroy();
         this._indicator = null;
@@ -300,16 +286,6 @@ export default class TailscaleGnomeExtension extends Extension {
             NautilusIntegration.install(this.path);
         else
             NautilusIntegration.uninstall(this.path);
-    }
-
-    /* ----------------------------- scroll fix --------------------------- */
-
-    // TEMPORARY: remove this method, its two callers and the module it drives
-    // once GNOME Shell scrolls its own Quick Settings menu. See
-    // lib/quick-settings-scroll.js for what it patches and why.
-    _syncScrollFix() {
-        this._scrollFix.setEnabled(
-            this._settings.get_boolean('quick-settings-scroll'));
     }
 
     /* ------------------------------- DBus ------------------------------- */

@@ -112,20 +112,27 @@ extension therefore runs a **small, fixed set** of commands through
 
 | Command | When it runs |
 | ------- | ------------ |
-| `pkexec tailscale set --operator=$USER` | Once at login if the operator pref is missing, and when you click **Set operator**. Makes every later command work without a prompt. |
-| `pkexec tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
-| `pkexec tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
-| `pkexec tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
+| `pkexec <path>/tailscale set --operator=$USER` | Once at login if the operator pref is missing, and when you click **Set operator**. Makes every later command work without a prompt. |
+| `pkexec <path>/tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
+| `pkexec <path>/tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
+| `pkexec <path>/tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
 
 Safeguards:
 
 - Every elevated command is a **literal argument vector**, readable
   as-is in the source; nothing typed by a user, read from a file or
   built at runtime is ever concatenated into it (no `sh -c`).
-- The program name is always the bare `tailscale`, resolved on `PATH`
-  (in `pkexec`'s own trusted root `PATH` for elevated calls). No setting
-  can point it elsewhere, so a user-writable path is never run, let
-  alone elevated.
+- `<path>` is never a setting and never taken on trust from `$PATH`. It
+  is checked against a fixed list of root-owned system directories in
+  `lib/spawn.js` (`/usr/bin`, `/usr/local/bin`, `/bin`, `/usr/sbin`,
+  `/sbin`, NixOS's and Guix's system profiles, `/opt/tailscale/bin`); a
+  Tailscale found anywhere else runs unelevated only, and the four
+  commands above refuse rather than hand it to `pkexec`.
+- Passing the resolved path is also what makes those four work off
+  `/usr/bin`: `pkexec` does not inherit the caller's environment, so a
+  bare `tailscale` would be looked up in its own root `PATH` and, on a
+  distribution that keeps its tools in a system profile, find the wrong
+  program or none.
 
 ## Clipboard access
 
@@ -169,7 +176,6 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
 | General       | Nautilus integration               | off           |
 | General       | Poll interval                      | 3s            |
-| General       | Scrollable Quick Settings menu ([temporary](#scrollable-quick-settings-menu-temporary)) | off |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
@@ -180,40 +186,6 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | Shortcuts     | Open Funnels                       | unbound       |
 | Help          | Availability: Taildrop / Funnel    | read from every poll |
 | Help          | Versions, source and issue links   | read-only     |
-
-### Scrollable Quick Settings menu (temporary)
-
-GNOME Shell does not scroll its own Quick Settings menu. One taller than the
-screen, which is easy to reach with a few extensions installed and a submenu
-open, runs off the bottom edge with no way to get at what is down there.
-Three things add up to it in GNOME 49 and 50:
-
-- `PanelMenu.Button._onOpenStateChanged` does set a `max-height` on every
-  open, but `QuickSettingsMenu` replaces `menu.actor` with a 0x0 widget that
-  exists only to host the submenu overlay, so the ceiling lands on something
-  that constrains nothing.
-- There is no scroll view at the top level. `PopupSubMenu` has one, which is
-  why submenus scroll and the menu holding them does not.
-- The submenus are not inside the popup at all: `_overlay` is a sibling of
-  the box pointer, so scrolling the grid on its own would leave an open
-  submenu painted over the panel and the desktop.
-
-The switch in **General → Advanced** wraps the menu's contents, grid and
-submenu overlay together, in a scroll view with no visible scrollbar, and
-puts the ceiling where it bites. The whole menu then answers the wheel, open
-submenus included, and the top and bottom edges fade to show there is more.
-
-Off by default, because it changes a menu this extension does not own. No
-shell method is replaced: `addItem`, `open`, `close` and the rest go on
-driving the same actors, only reparented, so other extensions that add
-toggles see no difference. Turning the switch back off, disabling the
-extension or removing it puts the menu back exactly as it was.
-
-**It is a workaround and it is meant to be deleted.** All of it is marked
-`TEMPORARY` in five places: `lib/quick-settings-scroll.js`, the
-`quick-settings-scroll` key in the schema, one row in `prefs/general.js`, one
-rule in `stylesheet.css` and four lines in `extension.js`. When GNOME Shell
-scrolls its Quick Settings menu itself, the lot goes.
 
 ## Debugging
 
@@ -247,7 +219,6 @@ lib/                    # GNOME Shell process
 │   ├── rows.js         # the rows every submenu is built from
 │   ├── send-dialog.js  # Taildrop send flow + archiving
 │   └── funnels-dialog.js
-├── quick-settings-scroll.js  # TEMPORARY, see the section above
 ├── watchers.js         # snapshot diffing into semantic events
 ├── watcher-messages.js # those events, turned into translated wording
 ├── quiet-window.js     # the silence held open around an account switch
