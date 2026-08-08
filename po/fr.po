@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-07 19:46+0200\n"
+"POT-Creation-Date: 2026-08-08 10:42+0200\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: French\n"
@@ -15,27 +15,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: extension.js:387 lib/menu.js:99
+#: extension.js:363 lib/menu.js:99
 msgid "Login required"
 msgstr "Connexion requise"
 
-#: extension.js:388
+#: extension.js:364
 msgid "Tailscale is not ready yet"
 msgstr "Tailscale n'est pas encore prêt"
 
-#: extension.js:402 lib/menu/sections.js:149
+#: extension.js:378 lib/menu/sections.js:149
 msgid "Clearing exit node"
 msgstr "Effacement du nœud de sortie"
 
-#: extension.js:403 lib/menu/sections.js:150
+#: extension.js:379 lib/menu/sections.js:150
 msgid "Exit node cleared"
 msgstr "Nœud de sortie effacé"
 
-#: extension.js:409 lib/menu/sections.js:161
+#: extension.js:385 lib/menu/sections.js:161
 msgid "Selecting an exit node"
 msgstr "Sélection d'un nœud de sortie"
 
-#: extension.js:410 lib/menu/sections.js:162
+#: extension.js:386 lib/menu/sections.js:162
 msgid "Exit node: auto"
 msgstr "Nœud de sortie : auto"
 
@@ -755,38 +755,20 @@ msgstr "Intervalle d'interrogation"
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr "Secondes entre les actualisations d'état (1 à 60)."
 
-#: prefs/general.js:232
-msgid "Scrollable Quick Settings menu"
-msgstr "Menu Réglages rapides défilable"
-
-#: prefs/general.js:234
-msgid ""
-"Works around a GNOME Shell limitation: a Quick Settings menu taller than the "
-"screen runs off the bottom with no way to reach what is down there. Turning "
-"this on lets the wheel scroll the whole menu, open submenus included, with "
-"no scrollbar shown. Off by default: it changes a menu this extension does "
-"not own."
-msgstr ""
-"Contourne une limite de GNOME Shell : un menu Réglages rapides plus haut que "
-"l'écran déborde en bas sans aucun moyen d'atteindre ce qui s'y trouve. "
-"Activer cette option permet à la molette de faire défiler tout le menu, "
-"sous-menus ouverts compris, sans barre de défilement. Désactivé par défaut : "
-"cela modifie un menu qui n'appartient pas à cette extension."
-
-#: prefs/general.js:253
+#: prefs/general.js:231
 msgid "Reset all settings"
 msgstr "Réinitialiser tous les paramètres"
 
-#: prefs/general.js:254
+#: prefs/general.js:232
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 "Restaure chaque paramètre à sa valeur par défaut, sur toutes les pages."
 
-#: prefs/general.js:257
+#: prefs/general.js:235
 msgid "Reset all"
 msgstr "Tout réinitialiser"
 
-#: prefs/general.js:298
+#: prefs/general.js:281
 msgid "All settings reset to defaults"
 msgstr "Tous les paramètres ont été réinitialisés"
 
@@ -883,35 +865,35 @@ msgstr "Système d'exploitation"
 msgid "GNOME Shell"
 msgstr "GNOME Shell"
 
-#: prefs/help.js:303
+#: prefs/help.js:311
 msgid "Daemon unreachable: this is the CLI version."
 msgstr "Démon injoignable : voici la version de la CLI."
 
-#: prefs/help.js:329
+#: prefs/help.js:337
 msgid "Copy this information to the clipboard"
 msgstr "Copier ces informations dans le presse-papiers"
 
-#: prefs/help.js:341
+#: prefs/help.js:349
 msgid "Copied to clipboard"
 msgstr "Copié dans le presse-papiers"
 
-#: prefs/help.js:347
+#: prefs/help.js:355
 msgid "Project"
 msgstr "Projet"
 
-#: prefs/help.js:352
+#: prefs/help.js:360
 msgid "Source code"
 msgstr "Code source"
 
-#: prefs/help.js:353
+#: prefs/help.js:361
 msgid "Browse the extension's repository on GitHub."
 msgstr "Parcourir le dépôt de l'extension sur GitHub."
 
-#: prefs/help.js:359
+#: prefs/help.js:367
 msgid "Report a problem"
 msgstr "Signaler un problème"
 
-#: prefs/help.js:360
+#: prefs/help.js:368
 msgid "Open an issue on GitHub. Attach the information above."
 msgstr "Ouvrir un ticket sur GitHub. Joignez-y les informations ci-dessus."
 
@@ -1180,170 +1162,3 @@ msgstr "Envoyer avec Taildrop"
 #: nautilus/tailscale-taildrop.py:129
 msgid "Send the selection to a Tailscale device"
 msgstr "Envoyer la sélection vers un appareil Tailscale"
-
-#~ msgid "Start Tailscale at boot"
-#~ msgstr "Démarrer Tailscale au démarrage"
-
-#~ msgid "Enables tailscaled.service via systemctl."
-#~ msgstr "Active tailscaled.service via systemctl."
-
-#~ msgid ""
-#~ "tailscaled.service not found. Install Tailscale via your distribution."
-#~ msgstr ""
-#~ "tailscaled.service introuvable. Installez Tailscale via votre "
-#~ "distribution."
-
-#~ msgid "Could not change service state"
-#~ msgstr "Impossible de modifier l'état du service"
-
-#~ msgid "Exit node active indicator colour"
-#~ msgstr "Couleur de l'indicateur de nœud de sortie actif"
-
-#~ msgid "Custom colour. Reset to follow the theme again."
-#~ msgstr ""
-#~ "Couleur personnalisée. Réinitialisez pour suivre à nouveau le thème."
-
-#~ msgid "Show exit node status panel indicator"
-#~ msgstr "Afficher l'indicateur d'état du nœud de sortie"
-
-#~ msgid "Exit node indicator colour"
-#~ msgstr "Couleur de l'indicateur de nœud de sortie"
-
-#~ msgid "Colour of the warning icon in the top bar."
-#~ msgstr "Couleur de l'icône d'avertissement dans la barre supérieure."
-
-#~ msgid "Tailscale unavailable"
-#~ msgstr "Tailscale indisponible"
-
-#~ msgid "Install the tailscale package, then this menu comes back on its own."
-#~ msgstr "Installez le paquet tailscale : ce menu revient de lui-même."
-
-#~ msgid "tailscale binary"
-#~ msgstr "Binaire tailscale"
-
-#~ msgid ""
-#~ "Add \"Taildrop\" to the file manager's right-click menu. Needs the "
-#~ "nautilus-python package, and Nautilus has to be quit before it notices."
-#~ msgstr ""
-#~ "Ajoute « Taildrop » au menu contextuel du gestionnaire de fichiers. "
-#~ "Nécessite le paquet nautilus-python, et Nautilus doit être fermé pour "
-#~ "qu'il en tienne compte."
-
-#~ msgid "Nautilus right-click scripts"
-#~ msgstr "Scripts du clic droit Nautilus"
-
-#~ msgid "Install"
-#~ msgstr "Installer"
-
-#~ msgid "Remove"
-#~ msgstr "Supprimer"
-
-#~ msgid "Installed"
-#~ msgstr "Installé"
-
-#~ msgid "Not installed"
-#~ msgstr "Non installé"
-
-#~ msgid "Installed. You may need to restart Nautilus."
-#~ msgstr "Installé. Vous devrez peut-être redémarrer Nautilus."
-
-#~ msgid "Removed."
-#~ msgstr "Supprimé."
-
-#~ msgid "Send files via Taildrop"
-#~ msgstr "Envoyer des fichiers via Taildrop"
-
-#~ msgid "Add a Funnel"
-#~ msgstr "Ajouter un Funnel"
-
-#~ msgid "Add funnel"
-#~ msgstr "Ajouter un funnel"
-
-#~ msgid "Local port to expose"
-#~ msgstr "Port local à exposer"
-
-#~ msgid "Send files"
-#~ msgstr "Envoyer des fichiers"
-
-#~ msgid "No funnels configured"
-#~ msgstr "Aucun funnel configuré"
-
-#, javascript-format
-#~ msgid "All Funnel ports are in use (%s), remove one first"
-#~ msgstr "Tous les ports Funnel sont utilisés (%s), supprimez-en un d'abord"
-
-#~ msgid ""
-#~ "Failures outside any category above: the daemon becoming unreachable, a "
-#~ "portal or browser that will not open."
-#~ msgstr ""
-#~ "Échecs en dehors des catégories ci-dessus : démon injoignable, portail ou "
-#~ "navigateur qui refuse de s'ouvrir."
-
-#~ msgid "Which actions are allowed to notify."
-#~ msgstr "Quelles actions sont autorisées à notifier."
-
-#~ msgid "Failures"
-#~ msgstr "Échecs"
-
-#~ msgid "Always report failures"
-#~ msgstr "Toujours signaler les échecs"
-
-#~ msgid ""
-#~ "Let errors and warnings through even when the category above is off. Turn "
-#~ "this off as well for complete silence."
-#~ msgstr ""
-#~ "Laisse passer les erreurs et avertissements même lorsque la catégorie ci-"
-#~ "dessus est désactivée. Désactivez également ceci pour un silence complet."
-
-#~ msgid "Mode"
-#~ msgstr "Mode"
-
-#~ msgid ""
-#~ "Notification mode posts native notifications that stack into a browsable "
-#~ "history. Toast mode shows a transient bubble and keeps no history."
-#~ msgstr ""
-#~ "Le mode Notification publie des notifications natives qui s'empilent en "
-#~ "un historique consultable. Le mode toast affiche une bulle temporaire et "
-#~ "ne conserve aucun historique."
-
-#~ msgid "Notification"
-#~ msgstr "Notification"
-
-#~ msgid "Toast"
-#~ msgstr "Toast"
-
-#~ msgid "Toast duration"
-#~ msgstr "Durée du toast"
-
-#~ msgid "Seconds the result toast stays on screen (1 to 10)."
-#~ msgstr ""
-#~ "Secondes pendant lesquelles le toast de résultat reste affiché (1 à 10)."
-
-#, javascript-format
-#~ msgid "Received %s (%s)"
-#~ msgstr "Reçu %s (%s)"
-
-#~ msgid "Check availability"
-#~ msgstr "Vérifier la disponibilité"
-
-#, javascript-format
-#~ msgid "Could not check %s: is Tailscale running?"
-#~ msgstr "Impossible de vérifier %s : Tailscale est-il démarré ?"
-
-#, javascript-format
-#~ msgid "%s is available"
-#~ msgstr "%s est disponible"
-
-#, javascript-format
-#~ msgid "%s is not available on this tailnet"
-#~ msgstr "%s n'est pas disponible sur ce tailnet"
-
-#, javascript-format
-#~ msgid "%s so far, still measuring…"
-#~ msgstr "%s pour l'instant, calcul en cours…"
-
-#~ msgid "Send a file via Taildrop"
-#~ msgstr "Envoyer un fichier via Taildrop"
-
-#~ msgid "Send a folder via Taildrop"
-#~ msgstr "Envoyer un dossier via Taildrop"

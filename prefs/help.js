@@ -16,7 +16,7 @@ import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensio
 import { PACKAGE_VERSION } from "resource:///org/gnome/Shell/Extensions/js/misc/config.js";
 
 import { fmt as _fmt } from "../lib/util.js";
-import { run as _spawn } from "../lib/spawn.js";
+import { run as _spawn, tailscaleBin as _bin } from "../lib/spawn.js";
 import { makeBackendGroup, watchSetting } from "./common.js";
 
 // Taildrop and Funnel can be forbidden tailnet-wide by an administrator.
@@ -291,7 +291,15 @@ export function makeHelpPage(settings, metadata) {
     // rather than read once, off `backend-status`, the same signal every
     // other live part of this window already follows.
     const syncTailscaleVersion = () => {
-        _spawn(["tailscale", "version", "--daemon"])
+        // Same lookup the shell process uses, so both rows describe the
+        // same Tailscale. No binary: the placeholder, as in the catch below.
+        const bin = _bin();
+        if (!bin) {
+            tailscaleRow.set("");
+            tailscaleRow.row.subtitle = "";
+            return;
+        }
+        _spawn([bin, "version", "--daemon"])
             .then((r) => {
                 const { version, clientOnly } = _parseTailscaleVersion(r.stdout);
                 tailscaleRow.set(version);

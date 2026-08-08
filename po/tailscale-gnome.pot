@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-07 19:46+0200\n"
+"POT-Creation-Date: 2026-08-08 10:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,27 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: extension.js:387 lib/menu.js:99
+#: extension.js:363 lib/menu.js:99
 msgid "Login required"
 msgstr ""
 
-#: extension.js:388
+#: extension.js:364
 msgid "Tailscale is not ready yet"
 msgstr ""
 
-#: extension.js:402 lib/menu/sections.js:149
+#: extension.js:378 lib/menu/sections.js:149
 msgid "Clearing exit node"
 msgstr ""
 
-#: extension.js:403 lib/menu/sections.js:150
+#: extension.js:379 lib/menu/sections.js:150
 msgid "Exit node cleared"
 msgstr ""
 
-#: extension.js:409 lib/menu/sections.js:161
+#: extension.js:385 lib/menu/sections.js:161
 msgid "Selecting an exit node"
 msgstr ""
 
-#: extension.js:410 lib/menu/sections.js:162
+#: extension.js:386 lib/menu/sections.js:162
 msgid "Exit node: auto"
 msgstr ""
 
@@ -748,32 +748,19 @@ msgstr ""
 msgid "Seconds between status refreshes (1 to 60)."
 msgstr ""
 
-#: prefs/general.js:232
-msgid "Scrollable Quick Settings menu"
-msgstr ""
-
-#: prefs/general.js:234
-msgid ""
-"Works around a GNOME Shell limitation: a Quick Settings menu taller than the "
-"screen runs off the bottom with no way to reach what is down there. Turning "
-"this on lets the wheel scroll the whole menu, open submenus included, with "
-"no scrollbar shown. Off by default: it changes a menu this extension does "
-"not own."
-msgstr ""
-
-#: prefs/general.js:253
+#: prefs/general.js:231
 msgid "Reset all settings"
 msgstr ""
 
-#: prefs/general.js:254
+#: prefs/general.js:232
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 
-#: prefs/general.js:257
+#: prefs/general.js:235
 msgid "Reset all"
 msgstr ""
 
-#: prefs/general.js:298
+#: prefs/general.js:281
 msgid "All settings reset to defaults"
 msgstr ""
 
@@ -856,35 +843,35 @@ msgstr ""
 msgid "GNOME Shell"
 msgstr ""
 
-#: prefs/help.js:303
+#: prefs/help.js:311
 msgid "Daemon unreachable: this is the CLI version."
 msgstr ""
 
-#: prefs/help.js:329
+#: prefs/help.js:337
 msgid "Copy this information to the clipboard"
 msgstr ""
 
-#: prefs/help.js:341
+#: prefs/help.js:349
 msgid "Copied to clipboard"
 msgstr ""
 
-#: prefs/help.js:347
+#: prefs/help.js:355
 msgid "Project"
 msgstr ""
 
-#: prefs/help.js:352
+#: prefs/help.js:360
 msgid "Source code"
 msgstr ""
 
-#: prefs/help.js:353
+#: prefs/help.js:361
 msgid "Browse the extension's repository on GitHub."
 msgstr ""
 
-#: prefs/help.js:359
+#: prefs/help.js:367
 msgid "Report a problem"
 msgstr ""
 
-#: prefs/help.js:360
+#: prefs/help.js:368
 msgid "Open an issue on GitHub. Attach the information above."
 msgstr ""
 
