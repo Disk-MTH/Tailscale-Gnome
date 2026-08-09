@@ -11,11 +11,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   among them. Those four commands are the ones that need root, so they run
   through `pkexec`, which does not inherit the caller's environment: it was
   being given the bare name `tailscale` and resolving it in its own root
-  `PATH`, somewhere else than the rest of the extension looks. On NixOS that
-  found a different program altogether, and **Set operator** came back with
+  `PATH`, somewhere else than the rest of the extension looks. The path is
+  now resolved before the command is built, so the elevated half of the
+  extension runs the same binary as the unelevated half.
+- Those same four commands no longer start the Tailscale *daemon* in place
+  of the CLI on NixOS, which resolving the path alone did not stop:
+  **Set operator** kept coming back with
   `tailscaled does not take non-flag arguments: ["set" "--operator=…"]`.
-  The path is now resolved before the command is built, so the elevated half
-  of the extension runs the same binary as the unelevated half.
+  There `tailscale` is a symlink to `tailscaled`, a single binary that picks
+  which half of itself to be from `argv[0]`, reached through a `#!` wrapper
+  script. polkit 127 resolves the program with `realpath()` before running
+  it; it deliberately leaves `argv[0]` alone, but for a script the kernel
+  overwrites it with the resolved path anyway, so the name the binary reads
+  ends in "tailscaled" and it starts as the daemon. The elevated vector now
+  carries `env TS_BE_CLI=1`, Tailscale's own override for exactly this,
+  ahead of the CLI. It is still a literal vector with no shell in it, and
+  the plain form is used on any system without `/usr/bin/env`. See
+  "Privileged operations" in the README.
+
+### Changed
+- The **Tailnet** submenu is grouped by the account it is signed in as,
+  with that account's tailnets listed under it and the membership on each
+  row: `acme.com (Guest)`, `me@example.com (Personal)`. It used to be one
+  flat list of tailnets, each carrying its account and a wording
+  ("Guest account") that read as a kind of account rather than as a
+  standing on that tailnet. The account heads its group even when there is
+  only one of them: it is the only place the signed-in address is shown.
+
+### Added
+- The **Open Taildrop** shortcut picks up whatever is selected in Nautilus,
+  so a selection made in the file manager can be sent without reaching for
+  the mouse and finding the same files again. It reads the selection only
+  while Nautilus has the keyboard, and asks for it once, when the shortcut
+  fires: the paths stay in the file manager the rest of the time. Anywhere
+  else, with nothing selected, or with the integration off, the shortcut
+  opens the picker empty exactly as before. See "Sending files" in the
+  README.
+- A privileged command that fails now says so in the journal, with the
+  vector it ran, its exit code and its output. Until now the only report
+  was a notification, which GNOME's own message-stacking code can fail to
+  draw precisely when the message is an error.
 
 ### Changed
 - The CLI is looked up in one place for both processes, and the lookup now
