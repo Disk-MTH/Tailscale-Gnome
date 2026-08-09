@@ -132,10 +132,10 @@ extension therefore runs a **small, fixed set** of commands through
 
 | Command | When it runs |
 | ------- | ------------ |
-| `pkexec <path>/tailscale set --operator=$USER` | Once at login if the operator pref is missing, and when you click **Set operator**. Makes every later command work without a prompt. |
-| `pkexec <path>/tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
-| `pkexec <path>/tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
-| `pkexec <path>/tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
+| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale set --operator=$USER` | Once at login if the operator pref is missing, and when you click **Set operator**. Makes every later command work without a prompt. |
+| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
+| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
+| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
 
 Safeguards:
 
@@ -153,6 +153,16 @@ Safeguards:
   bare `tailscale` would be looked up in its own root `PATH` and, on a
   distribution that keeps its tools in a system profile, find the wrong
   program or none.
+- `env TS_BE_CLI=1` is there for NixOS, where `tailscale` is a symlink to
+  `tailscaled`: one binary that picks which half of itself to be from
+  `argv[0]`, reached through a `#!` wrapper script. polkit 127 resolves
+  the program with `realpath()` before running it, and for a script the
+  kernel then overwrites `argv[0]` with that resolved path, so the CLI
+  starts as the daemon and refuses the command. `TS_BE_CLI` is
+  Tailscale's own override for this; `env` is the only way to set a
+  variable across `pkexec`, which wipes the environment. `env` is not a
+  shell, the vector stays literal, and the plain form is used on any
+  system without `/usr/bin/env`.
 
 ## Clipboard access
 

@@ -16,6 +16,7 @@ import GLib from 'gi://GLib';
 import { suite, test, assertEq, assertTrue } from './harness.js';
 import {
     TAILSCALE_BIN, hasTailscaleCli, tailscaleBin, privilegedTailscaleBin,
+    privilegedArgv,
 } from '../lib/spawn.js';
 
 // Same shape as tailscale.test.js: PATH is the whole fixture, and it is
@@ -94,5 +95,54 @@ suite('privilegedTailscaleBin', () => {
         const fromStubPath = withPath(binDir, () => privilegedTailscaleBin());
         const fromEmptyPath = withPath(emptyDir, () => privilegedTailscaleBin());
         assertEq(fromStubPath, fromEmptyPath);
+    });
+});
+
+// The elevated vector. Two things matter and neither depends on the
+// machine: the command still says what it looks like it says, and
+// whatever is prepended to make NixOS work is prepended *before* the CLI
+// rather than folded into its arguments.
+//
+// Written so it holds on a machine with /usr/bin/env and on one without,
+// because privilegedArgv() degrades to the plain form there and the test
+// suite is not allowed to assume a system path exists.
+suite('privilegedArgv', () => {
+    const BIN = '/usr/bin/tailscale';
+    const ARGS = ['set', '--operator=someone'];
+
+    test('elevates with pkexec and nothing else in front', () => {
+        assertEq(privilegedArgv(BIN, ARGS)[0], 'pkexec');
+    });
+
+    // The tail is the contract: the CLI, then its arguments, in order and
+    // untouched. A prefix may grow ahead of it; nothing may be inserted
+    // into it, dropped from it or reordered.
+    test('ends with the CLI followed by its arguments, in order', () => {
+        const argv = privilegedArgv(BIN, ARGS);
+        assertEq(argv.slice(-1 - ARGS.length).join(' '),
+            [BIN, ...ARGS].join(' '));
+    });
+
+    // No shell, ever: the EGO review reads this vector as-is.
+    test('never routes through a shell', () => {
+        const argv = privilegedArgv(BIN, ARGS);
+        assertTrue(!argv.includes('-c'), 'no -c');
+        assertTrue(!argv.some((a) => a.endsWith('sh')), 'no shell program');
+    });
+
+    // And when the env indirection is there, it is there whole: the
+    // variable set before the CLI, never after it, where it would land in
+    // Tailscale's own argument list instead of its environment.
+    test('places TS_BE_CLI ahead of the CLI when it is used', () => {
+        const argv = privilegedArgv(BIN, ARGS);
+        const varIdx = argv.indexOf('TS_BE_CLI=1');
+        if (varIdx === -1) {
+            // No /usr/bin/env on this machine: plain form, nothing to check
+            // beyond the tail contract above.
+            assertEq(argv.length, 2 + ARGS.length);
+            return;
+        }
+        assertEq(argv[1], '/usr/bin/env');
+        assertTrue(varIdx < argv.indexOf(BIN), 'set before the CLI');
     });
 });
