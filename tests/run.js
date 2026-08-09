@@ -7,6 +7,7 @@ import System from 'system';
 import { report } from './harness.js';
 
 import './client-poll.test.js';
+import './nautilus-selection.test.js';
 import './notify-policy.test.js';
 import './spawn.test.js';
 import './tailscale.test.js';

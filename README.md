@@ -59,9 +59,30 @@ with any extension that crowds the menu, not only this one.
 | **Connect** | One-click connect / disconnect and account switching, with a panel icon next to Wi-Fi while connected. |
 | **Exit nodes** | Pick None, Auto, or any peer, with a status pill and a panel warning if the selected node stops routing. |
 | **Funnel** | Publish, copy, and remove exposed services from a single dialog. |
-| **Taildrop** | Send and receive files with peers, plus a "Send with Taildrop" entry in Nautilus. |
+| **Taildrop** | Send and receive files with peers, from the menu, from a keyboard shortcut, or from the file manager. See [Sending files](#sending-files). |
 | **Menu toggles** | Magic DNS, accepted routes, Shields up, SSH server, and LAN access, one tap away. |
 | **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, and Funnels. |
+
+## Sending files
+
+Three ways in, one dialog. Whichever you use, the picker that opens is the
+same one, and it is where you choose the peer and confirm.
+
+| From | What it does |
+| ---- | ------------ |
+| **The menu** | **Send file** opens the picker empty. Choose the files there. |
+| **The file manager** | Select files in Nautilus, right-click, **Send with Taildrop**. The picker opens on that selection. Needs **Nautilus integration** on. |
+| **The keyboard** | Select files in Nautilus and press your **Open Taildrop** shortcut. Same result as the right-click, without leaving the keyboard. Pressed anywhere else, or with nothing selected, it opens the picker empty. |
+
+The shortcut only reads a selection while Nautilus has the keyboard, and it
+asks for it once, at the moment you press it. Nothing is sent anywhere, and
+nothing about what you have selected is kept outside the file manager, until
+you confirm in the picker.
+
+One limit worth knowing: with several Nautilus windows open, the extension
+cannot always tell which one a selection came from, because the file manager
+does not say. When it cannot tell, it opens the picker empty rather than
+guess, so the worst case is choosing the files yourself.
 
 ## Compared to the other Tailscale GNOME extensions
 

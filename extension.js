@@ -23,6 +23,7 @@ import { SnapshotWatcher } from './lib/watchers.js';
 import { watcherMessage } from './lib/watcher-messages.js';
 import { QuietWindow } from './lib/quiet-window.js';
 import * as NautilusIntegration from './lib/nautilus.js';
+import { selectedFiles } from './lib/nautilus-selection.js';
 
 // Keys backed by `as` arrays in the GSettings schema. Each key holds zero or
 // one accelerators (e.g. ["<Super>t"]). Empty array = unbound.
@@ -400,7 +401,16 @@ export default class TailscaleGnomeExtension extends Extension {
                 openAdminPanel();
             };
         case 'shortcut-send-file':
-            return () => this._indicator.sendFiles();
+            // Same destination as the Nautilus context entry, reached from
+            // the keyboard: if the file manager has the focus and something
+            // selected, those files are what the picker opens on. Every
+            // other case resolves to an empty list and opens the picker
+            // bare, which is what this shortcut has always done.
+            return () => {
+                selectedFiles().then((files) => {
+                    this._indicator.sendFiles(files.length ? files : undefined);
+                });
+            };
         case 'shortcut-add-funnel':
             return () => this._indicator.openFunnels();
         default:
