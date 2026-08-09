@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-08 10:42+0200\n"
+"POT-Creation-Date: 2026-08-09 11:31+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,27 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: extension.js:363 lib/menu.js:99
+#: extension.js:364 lib/menu.js:99
 msgid "Login required"
 msgstr ""
 
-#: extension.js:364
+#: extension.js:365
 msgid "Tailscale is not ready yet"
 msgstr ""
 
-#: extension.js:378 lib/menu/sections.js:149
+#: extension.js:379 lib/menu/sections.js:167
 msgid "Clearing exit node"
 msgstr ""
 
-#: extension.js:379 lib/menu/sections.js:150
+#: extension.js:380 lib/menu/sections.js:168
 msgid "Exit node cleared"
 msgstr ""
 
-#: extension.js:385 lib/menu/sections.js:161
+#: extension.js:386 lib/menu/sections.js:179
 msgid "Selecting an exit node"
 msgstr ""
 
-#: extension.js:386 lib/menu/sections.js:162
+#: extension.js:387 lib/menu/sections.js:180
 msgid "Exit node: auto"
 msgstr ""
 
@@ -55,7 +55,7 @@ msgstr ""
 msgid "Tailscale is not running"
 msgstr ""
 
-#: lib/menu.js:98 lib/menu/sections.js:386
+#: lib/menu.js:98 lib/menu/sections.js:431
 msgid "Logged out"
 msgstr ""
 
@@ -91,11 +91,11 @@ msgstr ""
 msgid "Tailnet"
 msgstr ""
 
-#: lib/menu.js:268 lib/menu/sections.js:236
+#: lib/menu.js:268 lib/menu/sections.js:254
 msgid "Peers"
 msgstr ""
 
-#: lib/menu.js:275 lib/notify.js:30 lib/menu/sections.js:115
+#: lib/menu.js:275 lib/notify.js:30 lib/menu/sections.js:133
 #: prefs/notifications.js:44
 msgid "Exit node"
 msgstr ""
@@ -475,142 +475,142 @@ msgstr ""
 msgid "Accept routes"
 msgstr ""
 
-#: lib/menu/sections.js:42
-msgid "Personal account"
-msgstr ""
-
-#: lib/menu/sections.js:43
-msgid "Guest account"
-msgstr ""
-
-#: lib/menu/sections.js:44
-msgid "Organisation account"
-msgstr ""
-
 #: lib/menu/sections.js:45
-#, javascript-format
-msgid "%s (%s)"
+msgid "Personal"
 msgstr ""
 
-#: lib/menu/sections.js:75
+#: lib/menu/sections.js:46
+msgid "Guest"
+msgstr ""
+
+#: lib/menu/sections.js:47
+msgid "Organisation"
+msgstr ""
+
+#: lib/menu/sections.js:93
 msgid "1 route"
 msgstr ""
 
-#: lib/menu/sections.js:76
+#: lib/menu/sections.js:94
 #, javascript-format
 msgid "%d routes"
 msgstr ""
 
-#: lib/menu/sections.js:85
+#: lib/menu/sections.js:103
 #, javascript-format
 msgid "via %s"
 msgstr ""
 
-#: lib/menu/sections.js:101
+#: lib/menu/sections.js:119
 msgid "Through exit node"
 msgstr ""
 
-#: lib/menu/sections.js:129
+#: lib/menu/sections.js:147
 #, javascript-format
 msgid "Auto (%s)"
 msgstr ""
 
-#: lib/menu/sections.js:130
+#: lib/menu/sections.js:148
 msgid "Auto (None)"
 msgstr ""
 
-#: lib/menu/sections.js:133
+#: lib/menu/sections.js:151
 #, javascript-format
 msgid "Offline (%s)"
 msgstr ""
 
-#: lib/menu/sections.js:135
+#: lib/menu/sections.js:153
 #, javascript-format
 msgid "Disabled (%s)"
 msgstr ""
 
-#: lib/menu/sections.js:138 lib/menu/sections.js:145
+#: lib/menu/sections.js:156 lib/menu/sections.js:163
 msgid "None"
 msgstr ""
 
-#: lib/menu/sections.js:157
+#: lib/menu/sections.js:175
 msgid "Auto"
 msgstr ""
 
-#: lib/menu/sections.js:178
+#: lib/menu/sections.js:196
 msgid "No approved exit nodes"
 msgstr ""
 
-#: lib/menu/sections.js:200
+#: lib/menu/sections.js:218
 #, javascript-format
 msgid "Routing through %s"
 msgstr ""
 
-#: lib/menu/sections.js:201
+#: lib/menu/sections.js:219
 #, javascript-format
 msgid "Exit node: %s"
 msgstr ""
 
-#: lib/menu/sections.js:216
+#: lib/menu/sections.js:234
 msgid "Allow LAN access"
 msgstr ""
 
-#: lib/menu/sections.js:219
+#: lib/menu/sections.js:237
 msgid "Enabling LAN access"
 msgstr ""
 
-#: lib/menu/sections.js:219
+#: lib/menu/sections.js:237
 msgid "Disabling LAN access"
 msgstr ""
 
-#: lib/menu/sections.js:220
+#: lib/menu/sections.js:238
 msgid "LAN access: on"
 msgstr ""
 
-#: lib/menu/sections.js:220
+#: lib/menu/sections.js:238
 msgid "LAN access: off"
 msgstr ""
 
-#: lib/menu/sections.js:241
+#: lib/menu/sections.js:259
 msgid "No peers"
 msgstr ""
 
-#: lib/menu/sections.js:295
+#: lib/menu/sections.js:313
 msgid "No tailnet"
 msgstr ""
 
-#: lib/menu/sections.js:297
+#: lib/menu/sections.js:315
 #, javascript-format
 msgid "Tailnet: %s"
 msgstr ""
 
-#: lib/menu/sections.js:335
+#: lib/menu/sections.js:373
+#, javascript-format
+msgid "%s (%s)"
+msgstr ""
+
+#: lib/menu/sections.js:379
 #, javascript-format
 msgid "Switching to %s"
 msgstr ""
 
-#: lib/menu/sections.js:336
+#: lib/menu/sections.js:380
 #, javascript-format
 msgid "Active tailnet: %s"
 msgstr ""
 
-#: lib/menu/sections.js:360
+#: lib/menu/sections.js:405
 msgid "Login"
 msgstr ""
 
-#: lib/menu/sections.js:368
+#: lib/menu/sections.js:413
 msgid "Opening Tailscale login"
 msgstr ""
 
-#: lib/menu/sections.js:369
+#: lib/menu/sections.js:414
 msgid "Login flow started"
 msgstr ""
 
-#: lib/menu/sections.js:377
+#: lib/menu/sections.js:422
 msgid "Logout"
 msgstr ""
 
-#: lib/menu/sections.js:385
+#: lib/menu/sections.js:430
 msgid "Logging out"
 msgstr ""
 
@@ -1112,10 +1112,10 @@ msgstr ""
 msgid "Quit Nautilus"
 msgstr ""
 
-#: nautilus/tailscale-taildrop.py:128
+#: nautilus/tailscale-taildrop.py:247
 msgid "Send with Taildrop"
 msgstr ""
 
-#: nautilus/tailscale-taildrop.py:129
+#: nautilus/tailscale-taildrop.py:248
 msgid "Send the selection to a Tailscale device"
 msgstr ""
