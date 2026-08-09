@@ -8,6 +8,8 @@ USER_EXTDIR := $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
 SCHEMA      := schemas/org.gnome.shell.extensions.tailscale-gnome.gschema.xml
 COMPILED    := schemas/gschemas.compiled
 ZIPNAME     := $(UUID).shell-extension.zip
+# Throwaway config for the nested shell. See the `nested` recipe for why.
+NESTED_CFG  := /tmp/tailscale-gnome-nested-config
 
 # Translations. The domain must match metadata.json's "gettext-domain";
 # GNOME Shell 45+ binds it to <extension>/locale/ on its own.
@@ -25,7 +27,7 @@ PO_FILES    := $(wildcard po/*.po)
 MO_FILES    := $(patsubst po/%.po,locale/%/LC_MESSAGES/$(DOMAIN).mo,$(PO_FILES))
 
 .PHONY: all schemas install uninstall enable disable reset pack clean test test-syntax help \
-        translations pot update-po
+        translations pot update-po nested nested-config
 
 all: schemas translations
 
@@ -40,6 +42,7 @@ help:
 	@printf "  enable       Enable the extension via gnome-extensions\n"
 	@printf "  disable      Disable the extension via gnome-extensions\n"
 	@printf "  reset        Reset all preferences (dconf)\n"
+	@printf "  nested       Install, then run a nested shell with it enabled\n"
 	@printf "  pack         Build a publishable .shell-extension.zip\n"
 	@printf "  test-syntax  Quick syntax check on every JS file via gjs\n"
 	@printf "  test         Run the unit tests for the pure modules via gjs\n"
@@ -95,7 +98,7 @@ install: schemas translations
 	@cp -r LICENSE README.md CHANGELOG.md "$(USER_EXTDIR)/" 2>/dev/null || true
 	@printf "Installed to %s\n" "$(USER_EXTDIR)"
 	@printf "Restart GNOME Shell (Xorg: Alt+F2 r ; Wayland: log out / log in)\n"
-	@printf "or test in a nested session:  dbus-run-session -- gnome-shell --devkit\n"
+	@printf "or try it without touching this session:  make nested\n"
 
 uninstall:
 	@rm -rf "$(USER_EXTDIR)"
@@ -109,6 +112,50 @@ disable:
 
 reset:
 	@dconf reset -f /org/gnome/shell/extensions/tailscale-gnome/
+
+# A throwaway shell in a window of its own, so a change can be seen without
+# restarting the session. It is also the only way to see one at all: GNOME
+# Shell caches extension modules, so `make install` does not reach a shell
+# that is already running. Only a fresh one, nested or after a log out,
+# loads changed code.
+#
+# The nested shell gets a *copy* of the real dconf, and the override goes in
+# front of dbus-run-session rather than inside it. Both matter.
+#
+# The copy, because a nested session shares the settings database with the
+# live one: anything it writes, an extension of its own being enabled or a
+# preference it touches, lands in the config of the desktop you are sitting
+# in. Copying gets the same list of enabled extensions, so the nested menu
+# looks like the real one, without writing back to it.
+#
+# In front, because dconf does not run in this process. It is a D-Bus
+# service the bus activates, and an activated service inherits the *bus's*
+# environment, not its caller's. Exporting XDG_CONFIG_HOME inside the
+# session leaves dconf-service pointed at the real database anyway, which is
+# exactly the trap this comment exists to stop anyone falling into twice.
+#
+# What does and does not work in there, for this extension specifically:
+#
+#   - The menu, the peers, the exit nodes and the tailnet rows all show real
+#     data. The CLI talks to tailscaled over a unix socket, which has
+#     nothing to do with the session bus.
+#   - Elevated commands prompt in the nested window: gnome-shell brings its
+#     own polkit agent along.
+#   - The file manager half does NOT work. dbus-run-session builds a fresh
+#     session bus, and the Nautilus you can see is on the real one, so the
+#     context-menu entry and the shortcut's selection pickup both find
+#     nobody to talk to. Those two need a real session: install, log out,
+#     log back in.
+nested: install nested-config
+	@env XDG_CONFIG_HOME="$(NESTED_CFG)" dbus-run-session -- gnome-shell --devkit
+
+nested-config:
+	@rm -rf "$(NESTED_CFG)"
+	@mkdir -p "$(NESTED_CFG)/dconf"
+	@cp "$${XDG_CONFIG_HOME:-$$HOME/.config}/dconf/user" "$(NESTED_CFG)/dconf/user" 2>/dev/null \
+	    || printf "No dconf database to copy; the nested shell starts with defaults.\n"
+	@gnome-extensions list --enabled | grep -qx "$(UUID)" \
+	    || printf "Note: not enabled here, so the nested shell will not load it.\n      Run 'make enable' first.\n\n"
 
 test-syntax:
 	@for f in extension.js prefs.js lib/*.js; do \
@@ -145,4 +192,4 @@ pack: translations
 
 clean:
 	@rm -f "$(COMPILED)" "$(ZIPNAME)"
-	@rm -rf locale nautilus/__pycache__
+	@rm -rf locale nautilus/__pycache__ "$(NESTED_CFG)"

@@ -250,7 +250,20 @@ tailscale debug prefs   | jq .
 ```
 
 Looking Glass (`Alt+F2`, type `lg`) lists errors thrown since the shell
-started.
+started. If `Alt+F2` does nothing, the shortcut has been cleared: restore it
+with `gsettings reset org.gnome.desktop.wm.keybindings panel-run-dialog`.
+
+`make nested` installs the extension and opens a throwaway shell in its own
+window, on a copy of your settings, so a change can be seen without logging
+out. That is the only way to see one at all: GNOME Shell caches extension
+modules, so `make install` never reaches a shell already running.
+
+The menu, peers, exit nodes and tailnet rows all show real data in there,
+because the CLI reaches `tailscaled` over a unix socket rather than the
+session bus. The file manager half does not: `dbus-run-session` builds a new
+session bus, and the running Nautilus is on the old one, so both the
+context-menu entry and the shortcut's selection pickup find nobody to talk
+to. Testing those two means installing, logging out and back in.
 
 ## Project layout
 
