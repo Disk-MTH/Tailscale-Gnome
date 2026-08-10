@@ -5,6 +5,7 @@
 
 import Adw from "gi://Adw";
 import Gio from "gi://Gio";
+import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
@@ -73,34 +74,122 @@ const NOTIFY_DEFS = [
     },
 ];
 
+// Adw.ToggleGroup arrived in libadwaita 1.7, and so in GNOME 48; this
+// extension supports 46. Below that, the same control out of what 1.5
+// already has: a linked box of grouped toggle buttons. It is only ever
+// built on 46 and 47, and it carries the one property the rest of the page
+// talks to, `active-name`, so the bindings and the "All events" row below
+// are written once and work against either.
+//
+// It is a shade wider than the real thing, enough to wrap one subtitle in
+// the list, which is why 48 and up keep the widget they already had rather
+// than everyone moving to this.
+const ModeToggleGroup = GObject.registerClass(
+    {
+        Properties: {
+            "active-name": GObject.ParamSpec.string(
+                "active-name",
+                null,
+                null,
+                GObject.ParamFlags.READWRITE,
+                null,
+            ),
+        },
+    },
+    class ModeToggleGroup extends Gtk.Box {
+        _init(modes) {
+            super._init({
+                orientation: Gtk.Orientation.HORIZONTAL,
+                valign: Gtk.Align.CENTER,
+                css_classes: ["linked"],
+            });
+
+            this._activeName = null;
+            this._buttons = new Map();
+            // Guards the round trip: activating a button emits 'toggled',
+            // whose handler writes active-name, which writes the buttons
+            // back.
+            this._syncing = false;
+
+            let group = null;
+            for (const { name, label, tooltip } of modes) {
+                const button = new Gtk.ToggleButton({
+                    label,
+                    tooltip_text: tooltip,
+                    // Grouping is what makes the three mutually exclusive,
+                    // and what keeps a click on the already-active one from
+                    // leaving the row with nothing selected. Code can still
+                    // clear them all: the group only guards the click path,
+                    // which is what the "All events" row below needs.
+                    group,
+                });
+                group ??= button;
+                button.connect("toggled", () => {
+                    // Moving the selection emits twice, once for the button
+                    // leaving and once for the one arriving. Only the
+                    // arrival carries the new value.
+                    if (this._syncing || !button.active) return;
+                    this._apply(name);
+                });
+                this._buttons.set(name, button);
+                this.append(button);
+            }
+        }
+
+        get active_name() {
+            return this._activeName;
+        }
+
+        // Null is a value here, not an absence: the "All events" row blanks
+        // the group when the nine categories disagree.
+        set active_name(name) {
+            this._apply(name || null);
+        }
+
+        _apply(name) {
+            if (this._activeName === name) return;
+            this._activeName = name;
+
+            this._syncing = true;
+            for (const [mode, button] of this._buttons)
+                button.active = mode === name;
+            this._syncing = false;
+
+            this.notify("active-name");
+        }
+    },
+);
+
 // The three-way control every event row carries, replacing the on/off
 // switch and the single global failures override that used to sit beside
-// it. Labels are terse on purpose: ten of these stack down the page and a
-// homogeneous group is as wide as its widest toggle, so a long middle label
-// would push the whole column out.
+// it. Labels are terse on purpose: ten of these stack down the page and
+// either group is as wide as its widest label, so a long middle one would
+// push the whole column out.
 function _makeModeToggleGroup() {
-    const group = new Adw.ToggleGroup({ valign: Gtk.Align.CENTER });
-    group.add(
-        new Adw.Toggle({
+    const modes = [
+        {
             name: NotifyMode.ALL,
             label: _("All"),
             tooltip: _("Report everything this category produces"),
-        }),
-    );
-    group.add(
-        new Adw.Toggle({
+        },
+        {
             name: NotifyMode.ERRORS,
             label: _("Errors"),
             tooltip: _("Report only failures and warnings"),
-        }),
-    );
-    group.add(
-        new Adw.Toggle({
+        },
+        {
             name: NotifyMode.OFF,
             label: _("Off"),
             tooltip: _("Report nothing at all"),
-        }),
-    );
+        },
+    ];
+
+    // The documented way to ask a GI namespace whether it has a symbol.
+    if (Adw.ToggleGroup === undefined)
+        return new ModeToggleGroup(modes);
+
+    const group = new Adw.ToggleGroup({ valign: Gtk.Align.CENTER });
+    for (const mode of modes) group.add(new Adw.Toggle(mode));
     return group;
 }
 
@@ -145,7 +234,7 @@ function _makeAllEventsRow(settings) {
         if (syncing) return;
         const modes = new Set(keys.map((k) => settings.get_string(k)));
         syncing = true;
-        group.set_active_name(modes.size === 1 ? [...modes][0] : null);
+        group.active_name = modes.size === 1 ? [...modes][0] : null;
         syncing = false;
     };
 
