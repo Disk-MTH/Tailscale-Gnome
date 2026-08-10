@@ -1,5 +1,5 @@
 # Tailscale GNOME Shell extension: build / install / package
-# Tested on GNOME Shell 46 → 50.
+# Targets GNOME Shell 46 → 50.
 
 UUID        := tailscale-gnome@diskmth.fr
 NAME        := Tailscale

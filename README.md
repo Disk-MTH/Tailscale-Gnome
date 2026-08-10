@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD033 MD041 -->
 [![GNOME Extensions downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fextensions.gnome.org%2Fextension-info%2F%3Fpk%3D10017&query=%24.downloads&label=downloads&style=flat-square&logo=gnome&logoColor=white&color=4A86CF)](https://extensions.gnome.org/extension/10017/tailscale/)
-[![GNOME Shell 49 | 50](https://img.shields.io/badge/GNOME_Shell-49%20%7C%2050-4A86CF?style=flat-square&logo=gnome&logoColor=white)](https://release.gnome.org/)
+[![GNOME Shell 46 to 50](https://img.shields.io/badge/GNOME_Shell-46%20%E2%86%92%2050-4A86CF?style=flat-square&logo=gnome&logoColor=white)](https://release.gnome.org/)
 [![Latest release](https://img.shields.io/github/v/release/Disk-MTH/Tailscale-Gnome?style=flat-square&logo=github&label=release&color=4A86CF)](https://github.com/Disk-MTH/Tailscale-Gnome/releases/latest)
 [![License: GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-3DA639?style=flat-square)](./LICENSE)
 [![Translations: EN | FR | DE | IT](https://img.shields.io/badge/i18n-EN%20%7C%20FR%20%7C%20DE%20%7C%20IT-6E56CF?style=flat-square)](./po)
@@ -12,7 +12,7 @@
 **The complete Tailscale VPN client for the GNOME Shell Quick Settings.**
 Connect, switch accounts, manage exit nodes, publish services with Funnel, and
 send or receive files with Taildrop, all without leaving the panel or opening a
-terminal. Built for GNOME Shell 49 and 50, on Wayland and Xorg.
+terminal. Built for GNOME Shell 46 through 50, on Wayland and Xorg.
 
 <br>
 
@@ -120,7 +120,7 @@ says so.
 
 ## Requirements
 
-- GNOME Shell 49 → 50.
+- GNOME Shell 46 → 50.
 - `tailscale` 1.70+ on `PATH`.
 - `pkexec` (polkit) for the privileged calls listed below.
 
@@ -308,10 +308,13 @@ differs: Wayland needs a log out and back in, Xorg accepts `Alt+F2`, `r`.
 
 ### Which GNOME Shell versions are supported?
 
-GNOME Shell 49 and 50. Older shells are not supported: GNOME 45 through 48
-would need the extension to be ported back, and the extension declares only
-what it is tested against, so `gnome-extensions` refuses to load it elsewhere
-rather than half-working.
+GNOME Shell 46 through 50. GNOME 45 is not, and will not be: its notification
+API predates the GNOME 46 rewrite the extension is built on, `St.ScrollView`
+had no `set_child()` yet, and libadwaita 1.4 has neither `Adw.AlertDialog` nor
+`Adw.ToggleGroup`. That is a port, not a compatibility shim, and 45 has been
+out of support since March 2024. The extension declares only what it is meant
+to run on, so `gnome-extensions` refuses to load it there rather than
+half-working.
 
 ### Do I need root or `sudo` to use it?
 
