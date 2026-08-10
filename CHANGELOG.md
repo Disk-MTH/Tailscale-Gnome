@@ -3,6 +3,24 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.3] - unreleased
+
+### Added
+- Support for **GNOME Shell 46, 47 and 48**, alongside the 49 and 50 that
+  were already declared. Everything the extension touches on the Shell side
+  already existed in 46: the notification API it is written against is the
+  one introduced by the GNOME 46 rewrite, `St.ScrollView.set_child()` landed
+  in 46, and nothing it uses was added later. The one thing that did not
+  reach back was the three-way **All / Errors / Off** control on the
+  Notifications page, which is `Adw.ToggleGroup`, a libadwaita 1.7 widget and
+  so GNOME 48 and up. Below that it is now built out of grouped toggle
+  buttons in a linked box, which behaves the same and looks near enough. On
+  48 and up the real widget is still used, so nothing changes there.
+
+  GNOME 45 stays unsupported. Its notification API predates the 46 rewrite,
+  `St.ScrollView` had no `set_child()`, and libadwaita 1.4 has neither
+  `Adw.AlertDialog` nor `Adw.ToggleGroup`.
+
 ## [1.0.2] - 2026-08-09
 
 ### Fixed
