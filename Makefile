@@ -27,7 +27,7 @@ PO_FILES    := $(wildcard po/*.po)
 MO_FILES    := $(patsubst po/%.po,locale/%/LC_MESSAGES/$(DOMAIN).mo,$(PO_FILES))
 
 .PHONY: all schemas install uninstall enable disable reset pack clean test test-syntax help \
-        translations pot update-po nested nested-config
+        translations pot update-po nested nested-raw nested-config
 
 all: schemas translations
 
@@ -42,7 +42,8 @@ help:
 	@printf "  enable       Enable the extension via gnome-extensions\n"
 	@printf "  disable      Disable the extension via gnome-extensions\n"
 	@printf "  reset        Reset all preferences (dconf)\n"
-	@printf "  nested       Install, then run a nested shell with it enabled\n"
+	@printf "  nested       Install, then run a nested shell, logs filtered to this extension\n"
+	@printf "  nested-raw   Same, with every extension's output left in\n"
 	@printf "  pack         Build a publishable .shell-extension.zip\n"
 	@printf "  test-syntax  Quick syntax check on every JS file via gjs\n"
 	@printf "  test         Run the unit tests for the pure modules via gjs\n"
@@ -146,7 +147,34 @@ reset:
 #     context-menu entry and the shortcut's selection pickup both find
 #     nobody to talk to. Those two need a real session: install, log out,
 #     log back in.
+
+# A nested shell loads every extension that is enabled here, so its stderr
+# is everyone's stderr and this extension's own messages get lost in it.
+# What comes through is what names this extension: its GObject classes,
+# whose GType is built out of the file that registers them
+# (lib/menu/rows.js -> Gjs_menu_rows_PeerRow), and anything carrying the
+# word "tailscale", which covers both the console.warn() prefixes and the
+# installed path that stack-trace frames are written with.
+#
+# A matching line also opens the stack trace under it: those frames name no
+# extension of their own, so they would otherwise be dropped one line after
+# the message they belong to. `fflush()` keeps the output live rather than
+# arriving in blocks whenever awk's buffer happens to fill.
+NESTED_FILTER := function dump(  i) { for (i = 1; i <= n; i++) print buf[i]; n = 0; fflush() } \
+                 { frame = /^== Stack trace/ || /^\#[0-9]/ ; \
+                   if (!frame) { n = 0; hit = 0 } \
+                   if (!hit && /[Tt]ailscale|Gjs_menu|Gjs_indicator|Gjs_tray|Gjs_notify|Gjs_quiet/) \
+                       hit = 1 ; \
+                   if (hit) { if (n) dump() ; print ; fflush() } else buf[++n] = $$0 }
+
 nested: install nested-config
+	@env XDG_CONFIG_HOME="$(NESTED_CFG)" dbus-run-session -- \
+	    gnome-shell --devkit 2>&1 | awk '$(NESTED_FILTER)'
+
+# The same session with nothing filtered out, for when the interesting
+# message is one that never names this extension: a shell that dies on
+# startup, or a failure in something the extension only talks to.
+nested-raw: install nested-config
 	@env XDG_CONFIG_HOME="$(NESTED_CFG)" dbus-run-session -- gnome-shell --devkit
 
 nested-config:
