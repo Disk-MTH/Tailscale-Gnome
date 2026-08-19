@@ -11,6 +11,7 @@ import './nautilus-selection.test.js';
 import './notify-policy.test.js';
 import './spawn.test.js';
 import './tailscale.test.js';
+import './util.test.js';
 import './watchers.test.js';
 
 System.exit(report());

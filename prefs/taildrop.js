@@ -12,7 +12,7 @@ import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { fmt as _fmt } from "../lib/util.js";
+import { fmt as _fmt, taildropInboxDefault } from "../lib/util.js";
 import { run as _spawn } from "../lib/spawn.js";
 // The preferences ask whether the integration is possible, the shell acts
 // on the answer, and both read it out of one place.
@@ -60,16 +60,18 @@ export function makeTaildropGroup(settings) {
     );
     syncSensitivity();
 
-    // Default inbox: must match TailscaleClient._resolveInbox in lib/tailscale.js.
-    const defaultInbox = GLib.build_filenamev([
-        GLib.get_home_dir(),
-        "Downloads",
-        "Taildrop",
-    ]);
-    // Migrate "empty means default" to an explicit prefilled value so the
-    // input is never blank. The receiver treats both equivalently.
-    if (!settings.get_string("taildrop-inbox"))
-        settings.set_string("taildrop-inbox", defaultInbox);
+    // The same answer TailscaleClient._resolveInbox gets: one helper, so
+    // the folder this window names is the folder the receiver writes into.
+    const defaultInbox = taildropInboxDefault();
+
+    // What the inbox resolves to right now. An empty key is not a missing
+    // value, it is "follow the download directory", which is why it is
+    // never written out: persisting today's answer would freeze the inbox
+    // on a machine whose download directory later moves. The row shows the
+    // resolved path so the input is never blank, and only a path the user
+    // actually chose reaches GSettings.
+    const effectiveInbox = () =>
+        settings.get_string("taildrop-inbox") || defaultInbox;
 
     // Expand ~ and $HOME into an absolute path, leaving relative paths
     // alone so the user can spot and correct them on commit.
@@ -93,7 +95,7 @@ export function makeTaildropGroup(settings) {
     // every keystroke would otherwise restart the receiver and pre-create
     // partial folders ("T", "Ta", "Tai", ...) on disk. The setting is
     // committed below, only on apply (Enter / check button) or focus-out.
-    inboxRow.text = settings.get_string("taildrop-inbox") || defaultInbox;
+    inboxRow.text = effectiveInbox();
 
     // Warning glyph that surfaces when the typed path would need elevation.
     // Outline-style symbolic icon tinted with the Adwaita "warning" accent
@@ -139,15 +141,23 @@ export function makeTaildropGroup(settings) {
         // would just crash on first file. Revert to the last committed
         // value so the row keeps reflecting reality.
         if (text === "" || !_isPathSafe(v)) {
-            const committed =
-                settings.get_string("taildrop-inbox") || defaultInbox;
+            const committed = effectiveInbox();
             if (inboxRow.text !== committed) inboxRow.text = committed;
             updateValidity();
             return;
         }
         if (v !== inboxRow.text) inboxRow.text = v;
-        if (v !== settings.get_string("taildrop-inbox")) {
+        // Read before the write, so the toast below reports what actually
+        // moved rather than what was stored: dropping the override and
+        // storing a path are two different writes for the same change.
+        const changed = v !== effectiveInbox();
+        // Landing back on the default drops the override instead of
+        // writing the resolved path into it. That is what keeps the inbox
+        // following the download directory afterwards.
+        if (v === defaultInbox) settings.reset("taildrop-inbox");
+        else if (v !== settings.get_string("taildrop-inbox"))
             settings.set_string("taildrop-inbox", v);
+        if (changed) {
             // Confirm the change: commitInbox also fires on focus-out
             // with an unchanged value, so the toast is gated on an actual
             // write to keep it from nagging.
@@ -170,7 +180,7 @@ export function makeTaildropGroup(settings) {
     // Keep the row in sync when the setting is changed externally
     // (e.g. the reset button below, or another prefs window).
     watchSetting(inboxRow, settings, "taildrop-inbox", () => {
-        const v = settings.get_string("taildrop-inbox") || defaultInbox;
+        const v = effectiveInbox();
         if (inboxRow.text !== v) inboxRow.text = v;
         updateValidity();
     });

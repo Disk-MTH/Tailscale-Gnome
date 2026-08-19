@@ -117,8 +117,17 @@
         <key name="taildrop-inbox" type="s">
             <default>''</default>
             <summary>Directory where Taildrop files are saved</summary>
-            <description>Empty means $HOME/Downloads/Taildrop (created on
-                first receipt).</description>
+            <description>Empty, the default, means a "Taildrop" folder
+                inside the user's own download directory: the one
+                ~/.config/user-dirs.dirs names through XDG_DOWNLOAD_DIR,
+                which is what the file manager and the browsers use, and
+                so the folder the user already expects arrivals in. Where
+                there is no such setting to read, $HOME/Downloads is used
+                when it exists, and $HOME otherwise. Resolved on every
+                start rather than written out, so a download directory that
+                moves is followed. A non-empty value is an explicit choice
+                and is used as-is. Either way the directory is created on
+                first receipt.</description>
         </key>
 
         <key name="nautilus-integration" type="b">
