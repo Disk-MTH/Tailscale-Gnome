@@ -36,7 +36,45 @@ const REAL_PEER = {
     Online: true,
 };
 
+// A wireguard session the local engine still holds for a node that has
+// left the network map: a device removed from the tailnet, or one whose
+// key rotated. Copied from a real `status --json`, where it sits beside
+// the two devices this tailnet actually has. It carries traffic counters
+// and a recent handshake but no identity at all, and `tailscale status`
+// prints it as `("")`.
+const STALE_ENGINE_PEER = {
+    ID: '',
+    HostName: '',
+    DNSName: '',
+    OS: '',
+    TailscaleIPs: null,
+    Online: false,
+    InEngine: true,
+    InNetworkMap: false,
+};
+
 suite('peersFromStatus', () => {
+    test('hides a wireguard session that left the network map', () => {
+        const peers = peersFromStatus({
+            Peer: {
+                'nodekey:aaa': STALE_ENGINE_PEER,
+                'nodekey:bbb': REAL_PEER,
+            },
+        }, null);
+        assertEq(peers.length, 1, 'the nameless engine peer is not a device');
+        assertEq(peers[0].hostname, 'redmi-disk-mth');
+    });
+
+    test('a daemon that reports no InNetworkMap keeps its peers', () => {
+        // The field is absent, not false. Treating "don't know" as "not in
+        // the map" would empty the peer list on any daemon old enough not
+        // to publish it.
+        const peers = peersFromStatus({
+            Peer: { 'nodekey:bbb': REAL_PEER },
+        }, null);
+        assertEq(peers.length, 1);
+    });
+
     test('hides funnel ingress relays', () => {
         const peers = peersFromStatus({
             Peer: {
