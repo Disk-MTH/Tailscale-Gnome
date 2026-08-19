@@ -5,6 +5,54 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [1.0.3] - unreleased
 
+### Fixed
+- **A blank row in the Peers submenu, and a peer count one too high.** The
+  daemon lists, beside the real devices, any wireguard session its local
+  engine still holds for a node that has left the network map: a device
+  removed from the tailnet, or one whose key has rotated. Those entries keep
+  their traffic counters and their last handshake but lose every identifying
+  field, so what reached the menu was a row with no name, no address and
+  nothing to act on, counted in the pill like a device. `tailscale status`
+  shows the same entry as `("")`. They are now dropped on the network-map
+  flag the daemon publishes for exactly this. A daemon too old to publish
+  that flag has all its peers kept, rather than none.
+
+### Changed
+- **The extension no longer asks to be made Tailscale's operator on its
+  own.** It used to fire a polkit password prompt about two seconds into
+  every session where the pref was missing, which on a machine with more
+  than one account meant a prompt per login, asked of someone who had not
+  come to use Tailscale at all. The grant is now only ever asked for by an
+  action that needs it: the Quick Settings toggle, the connect shortcut,
+  the Taildrop and Funnels entries, and the menu's own **Set operator**
+  button. Do nothing with Tailscale and you are never asked.
+
+  Nothing is hidden while it is missing, either. Reading Tailscale needs no
+  operator (`tailscale status --json` and `tailscale debug prefs` both
+  answer any local user; only `switch --list` is refused), so the menu now
+  fills in normally: peers, addresses, the exit node in use and every
+  switch position are the real ones, and the addresses are still there to
+  copy. What cannot be driven is greyed out rather than hidden, above a row
+  that names the reason and grants it in one click. Before, the whole menu
+  was replaced by that one row.
+
+  The Tailnet submenu is the one thing that stays empty: listing profiles
+  is the single read Tailscale refuses without the operator.
+- **The default Taildrop inbox follows the download folder** the desktop
+  itself uses, the one `~/.config/user-dirs.dirs` names through
+  `XDG_DOWNLOAD_DIR`, instead of a hardcoded `~/Downloads`. Someone whose
+  downloads go to `~/dl` now receives into `~/dl/Taildrop`. Where there is
+  no such setting to read, `~/Downloads` is used when it exists and `$HOME`
+  otherwise, and arrivals always land in a `Taildrop` folder of their own
+  rather than loose among browser downloads.
+
+  The folder is resolved on every start rather than written into the
+  setting, so a download directory that later moves is followed. Opening
+  the preferences no longer freezes it either: the row shows the resolved
+  path, and only a folder you actually pick is stored. An inbox already set
+  by hand is left alone; the reset button beside it returns to following
+  the download folder.
+
 ### Added
 - Support for **GNOME Shell 46, 47 and 48**, alongside the 49 and 50 that
   were already declared. Everything the extension touches on the Shell side
