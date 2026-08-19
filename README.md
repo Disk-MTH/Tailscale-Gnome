@@ -153,7 +153,7 @@ extension therefore runs a **small, fixed set** of commands through
 
 | Command | When it runs |
 | ------- | ------------ |
-| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale set --operator=$USER` | Once at login if the operator pref is missing, and when you click **Set operator**. Makes every later command work without a prompt. |
+| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale set --operator=$USER` | Only when an action needs it: the Quick Settings toggle, the connect shortcut, the Taildrop and Funnels entries, or the **Set operator** button. Never on its own at login. Makes every later command work without a prompt. |
 | `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
 | `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
 | `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
@@ -224,7 +224,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Show panel indicator               | on            |
 | General       | Exit node indicator: connected (icon / colour) | on / theme |
 | General       | Exit node indicator: disconnected (icon / colour) | on / `#e6b800` |
-| General       | Taildrop inbox folder              | `~/Downloads/Taildrop` |
+| General       | Taildrop inbox folder              | `Taildrop` in your download folder |
 | General       | Nautilus integration               | off           |
 | General       | Poll interval                      | 3s            |
 | Notifications | Minimum pending duration           | 1000ms        |
@@ -318,12 +318,19 @@ half-working.
 
 ### Do I need root or `sudo` to use it?
 
-Only once. The Tailscale daemon accepts state-changing commands from root or
-from the user named in its `OperatorUser` pref, so the extension asks polkit
-once to set you as operator; after that, connecting, exit nodes, Taildrop and
-Funnel run with no prompt at all. The full list of elevated commands is in
+Only once, and only when you first ask for something. The Tailscale daemon
+accepts state-changing commands from root or from the user named in its
+`OperatorUser` pref, so the extension asks polkit once to set you as
+operator; after that, connecting, exit nodes, Taildrop and Funnel run with
+no prompt at all. The full list of elevated commands is in
 [Privileged operations](#privileged-operations) above, four of them, each a
 literal argument vector.
+
+The extension never asks on its own. Reading Tailscale needs no operator, so
+until the pref is set the menu still shows your peers, their addresses and
+every switch position, with the controls greyed out and a row that grants
+the pref in one click. On a machine shared between several accounts, one
+that never touches Tailscale is never asked for a password.
 
 ### Does it work with Headscale or another custom login server?
 

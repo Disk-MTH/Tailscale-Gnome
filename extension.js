@@ -5,7 +5,6 @@
 // GNOME Shell 46+ (ESM extensions API).
 
 import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 
@@ -111,25 +110,15 @@ export default class TailscaleGnomeExtension extends Extension {
         // client and gets killed on disable() via client.destroy().
         this._syncTaildrop();
 
-        // One-shot startup check: if the operator pref is missing once the
-        // first poll has landed, fire a single polkit prompt. We avoid a
-        // state-changed handler because login transiently flips
-        // canControl=false while the pkexec child runs, and a listener would
-        // race it with its own prompt. Skipped while logged out: login
-        // restores the operator by itself (--operator flag), so prompting
-        // before a login would just double the elevations. After startup,
-        // the user's own actions (clicking the toggle, the menu "Set
-        // operator" button, etc.) handle every re-prompt explicitly.
-        this._startupCheckId = GLib.timeout_add_seconds(
-            GLib.PRIORITY_DEFAULT, 2, () => {
-                this._startupCheckId = 0;
-                const snap = this._client.snapshot;
-                if (!snap.error && !snap.canControl &&
-                    !snap.loggedOut && snap.backendState !== 'NeedsLogin')
-                    this._client.setOperator();
-                return GLib.SOURCE_REMOVE;
-            },
-        );
+        // Nothing asks for the operator here, and nothing should: a polkit
+        // password prompt a couple of seconds into a session the user
+        // opened to do something else is an interruption they did not ask
+        // for, and on a machine with several accounts it is one per login.
+        // Reading Tailscale needs no operator (`status --json` and `debug
+        // prefs` both answer any local user), so the menu fills in and
+        // greys out what it cannot drive, and says why. The prompt belongs
+        // to the actions that genuinely need it: the Quick Settings toggle,
+        // the connect shortcut, and the menu's own "Set operator" button.
 
         this._exportDbus();
 
@@ -152,11 +141,6 @@ export default class TailscaleGnomeExtension extends Extension {
 
         this._settings.disconnectObject(this);
         this._client.disconnectObject(this);
-
-        if (this._startupCheckId) {
-            GLib.source_remove(this._startupCheckId);
-            this._startupCheckId = 0;
-        }
 
         for (const key of this._boundShortcuts)
             Main.wm.removeKeybinding(key);
@@ -373,6 +357,14 @@ export default class TailscaleGnomeExtension extends Extension {
                 if (!requireBackend(this._client.snapshot, Category.CONNECTION))
                     return;
                 const snap = this._client.snapshot;
+                // Picking an exit node is a write, refused without the
+                // operator. The menu rows for it are dimmed in that state;
+                // this shortcut reaches past them, so it asks for the grant
+                // the way the connect shortcut above does.
+                if (!snap.canControl) {
+                    this._client.setOperator();
+                    return;
+                }
                 if (snap.exitNodeID) {
                     Notifier.withFeedback(
                         Category.EXIT_NODE,
