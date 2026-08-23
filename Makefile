@@ -201,9 +201,18 @@ test-syntax:
 test:
 	@gjs -m tests/run.js
 
-# Build the publishable zip. GNOME Shell 45+ compiles schemas itself on
-# extension load, so we ship only the raw XML: shipping gschemas.compiled
-# is flagged by the EGO review tooling as an unnecessary build artifact.
+# Build the publishable zip. Only the raw XML goes in: shipping
+# gschemas.compiled is flagged by the EGO review tooling as an unnecessary
+# build artifact, and whatever installs the bundle compiles the schema on
+# its own. The Shell's extension downloader does it for a website install
+# and `gnome-extensions install` does it for a local zip, both by running
+# `glib-compile-schemas --strict` on the schemas directory once the files
+# are in place.
+#
+# Unpacking a zip by hand is the one path that skips it, and the extension
+# then fails to start on the missing gschemas.compiled. Install a packed
+# zip with `gnome-extensions install --force`, never with `unzip`.
+#
 # store-icon.png stays out: the listing icon is uploaded on the EGO
 # website, shipping it in the zip is just an unnecessary file.
 pack: translations

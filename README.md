@@ -212,7 +212,26 @@ make install
 gnome-extensions enable tailscale-gnome@diskmth.fr
 ```
 
-Pack a release zip with `make pack`.
+Pack a release zip with `make pack`, and install a packed zip with
+`gnome-extensions install`:
+
+```bash
+make pack
+gnome-extensions install --force tailscale-gnome@diskmth.fr.shell-extension.zip
+# Wayland: log out, log back in.
+gnome-extensions enable tailscale-gnome@diskmth.fr
+```
+
+That is the same two steps the Extensions website performs: it unpacks the
+bundle, then compiles the GSettings schema that ships in it as XML. Unzipping
+a bundle by hand into `~/.local/share/gnome-shell/extensions/` only does the
+first, and the extension then refuses to start, with the settings dialog
+reporting `GLib.FileError` on a missing `schemas/gschemas.compiled`. An
+install already in that state is repaired without unpacking anything again:
+
+```bash
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/tailscale-gnome@diskmth.fr/schemas/
+```
 
 ## Settings
 
