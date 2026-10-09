@@ -2,7 +2,7 @@
     "uuid": "tailscale-gnome@diskmth.fr",
     "name": "Tailscale",
     "description": "An intuitive, feature-rich, and elegant Tailscale integration for GNOME. Nothing more, nothing less.\n\nDiscover all features on the extension homepage.\n\nTrademark notice: This project is not affiliated with, sponsored by, or endorsed by Tailscale Inc. \"Tailscale\" is a trademark of Tailscale Inc.",
-    "shell-version": ["46", "47", "48", "49", "50"],
+    "shell-version": ["46", "47", "48", "49", "50", "51"],
     "url": "https://github.com/Disk-MTH/Tailscale-Gnome",
     "settings-schema": "org.gnome.shell.extensions.tailscale-gnome",
     "gettext-domain": "tailscale-gnome",
