@@ -12,8 +12,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Declare GNOME Shell 51 support.
-- Add a shared backend accessor using the stage context on GNOME 47+ and
-  the older Clutter API on GNOME 46.
 
 ## [1.0.3] - 2026-08-23
 
