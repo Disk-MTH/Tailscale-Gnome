@@ -8,7 +8,8 @@ import GLib from 'gi://GLib';
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import { TailscaleClient } from '../lib/tailscale.js';
 import {
-    backendStatus, parseWroteLine, peersFromStatus,
+    accountsFromProfiles, backendStatus, parseSwitchList, parseWroteLine,
+    peersFromStatus,
 } from '../lib/tailscale-parse.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
@@ -288,5 +289,50 @@ suite('backendStatus', () => {
             backendState: 'NeedsLogin',
             loggedOut: true,
         }), 'ready');
+    });
+});
+
+// The LocalAPI's profile list has to land on the same rows `switch --list`
+// prints, since the menu cannot tell which of the two it came from.
+suite('accountsFromProfiles', () => {
+    const work = {
+        ID: '13ee', Name: 'me@example.com',
+        NetworkProfile: { DomainName: 'corp.example', DisplayName: 'Corp' },
+    };
+    const own = {
+        ID: '3c95', Name: 'me@example.com',
+        NetworkProfile: { DomainName: 'me@example.com' },
+    };
+
+    test('the rows the CLI prints for the same profiles', () => {
+        const cli = parseSwitchList(
+            'ID    Tailnet          Account\n' +
+            '13ee  Corp             me@example.com*\n' +
+            '3c95  me@example.com   me@example.com\n');
+        assertDeepEq(accountsFromProfiles(work, [work, own]), cli);
+    });
+
+    test('the domain stands in for a missing display name', () => {
+        assertEq(accountsFromProfiles(null, [own])[0].tailnet, 'me@example.com');
+    });
+
+    test('no current profile marks none', () => {
+        const rows = accountsFromProfiles({}, [work, own]);
+        assertTrue(rows.every((a) => !a.current));
+    });
+
+    test('a profile with no tailnet yet is left out, as by the CLI', () => {
+        assertDeepEq(accountsFromProfiles(null, [{ ID: 'x', Name: 'n' }]), []);
+    });
+
+    test('anything but a list is no profiles', () => {
+        assertDeepEq(accountsFromProfiles(null, null), []);
+        assertDeepEq(accountsFromProfiles(null, {}), []);
+    });
+
+    // The text parser splits on runs of two spaces; JSON has no such trap.
+    test('a tailnet name with two spaces survives', () => {
+        const odd = { ID: 'a', Name: 'me', NetworkProfile: { DisplayName: 'My  Net' } };
+        assertEq(accountsFromProfiles(odd, [odd])[0].tailnet, 'My  Net');
     });
 });

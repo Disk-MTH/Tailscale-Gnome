@@ -12,7 +12,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   frames each time. The daemon's state is now read straight off its
   LocalAPI socket, the interface the CLI is itself a client of: same JSON,
   no process, about a millisecond instead of about thirty of CPU per read.
-  Opening the menu now starts one process instead of four.
+  Opening the menu no longer starts any process either (it used to start
+  four), the profile list included.
 
 ### Changed
 - **No more polling while the daemon can say what changed.** The extension
@@ -24,6 +25,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reached, in which case everything goes through the CLI as before.
 - A peer starting or stopping traffic no longer rebuilds the menu: that
   flag is not shown anywhere, so it no longer counts as a change.
+- The peers, exit nodes, tailnets and routes submenus are no longer rebuilt
+  while nobody can see them. A change that lands while the menu is closed
+  marks a folded submenu stale, and it is rebuilt when the menu opens; on a
+  large tailnet that rebuild was most of the cost of every update.
 
 ## [1.1.0] - 2026-10-09
 

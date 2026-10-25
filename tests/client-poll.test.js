@@ -80,6 +80,9 @@ const FUNNEL = JSON.stringify({
     AllowFunnel: { 'box.tail1234.ts.net:443': true },
 });
 
+// Stands in for a LocalAPI answer that is a refusal rather than a body.
+const REFUSED = Symbol('403');
+
 // A client whose commands never leave the process: _run is the single
 // funnel every CLI read goes through, so replacing it both stubs the
 // answers and records exactly which commands a refresh asked for. The
@@ -94,7 +97,9 @@ function fakeClient({ api = null } = {}) {
     client._localApiJson = (path) => {
         apiCalls.push(path);
         const body = api?.[path];
-        return Promise.resolve(body === undefined ? null : { json: body });
+        if (body === undefined) return Promise.resolve(null);
+        if (body === REFUSED) return Promise.resolve({ status: 403 });
+        return Promise.resolve({ status: 200, json: body });
     };
     const calls = [];
     const ok = (stdout) => ({ ok: true, code: 0, stdout, stderr: '' });
@@ -215,14 +220,58 @@ suite('refresh: the LocalAPI comes first', () => {
         client.destroy();
     });
 
-    // `switch --list` stays on the CLI: the daemon only lists profiles to
-    // its operator, and that refusal is what canControl is read from.
-    test('a full one only asks the CLI for the profile list', () => {
+    const PROFILE = {
+        ID: 'abc', Name: 'me@example.com',
+        NetworkProfile: { DomainName: 'example.com' },
+    };
+    const WITH_PROFILES = {
+        ...API,
+        '/localapi/v0/profiles/current': PROFILE,
+        '/localapi/v0/profiles/': [PROFILE],
+    };
+
+    test('so does a full one, the profile list included', () => {
+        const { client, calls } = fakeClient({ api: WITH_PROFILES });
+        const snap = settle(client.refresh());
+        assertDeepEq(calls, []);
+        assertEq(snap.funnels.length, 1, 'the serve config came off the socket');
+        assertDeepEq(snap.accounts, [
+            { id: 'abc', tailnet: 'example.com', account: 'me@example.com', current: true },
+        ]);
+        assertEq(snap.canControl, true);
+        client.destroy();
+    });
+
+    // The daemon lists profiles to its operator only. Its 403 is what
+    // canControl is read from, exactly as the CLI's "Access denied" was.
+    test('a refused profile list is no operator, with the last list kept', () => {
+        const { client, calls } = fakeClient({ api: WITH_PROFILES });
+        settle(client.refresh());
+        client._localApiJson = (path) => Promise.resolve(
+            path.startsWith('/localapi/v0/profiles/')
+                ? { status: 403 }
+                : { status: 200, json: WITH_PROFILES[path] });
+        const snap = settle(client.refresh());
+        assertEq(snap.canControl, false);
+        assertEq(snap.accounts.length, 1, 'switching stays reachable');
+        assertDeepEq(calls, [], 'the refusal is the answer: no CLI to ask');
+        client.destroy();
+    });
+
+    test('a profile list the socket cannot give comes from the CLI', () => {
         const { client, calls } = fakeClient({ api: API });
         const snap = settle(client.refresh());
         assertDeepEq(calls, ['switch --list']);
-        assertEq(snap.funnels.length, 1, 'the serve config came off the socket');
         assertEq(snap.accounts.length, 1);
+        client.destroy();
+    });
+
+    test('so does a status the daemon answers with an error', () => {
+        const { client, calls } = fakeClient({
+            api: { ...API, '/localapi/v0/status': REFUSED },
+        });
+        settle(client.refresh({ full: false }));
+        assertDeepEq(calls, ['status --json']);
         client.destroy();
     });
 

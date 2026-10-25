@@ -268,10 +268,13 @@ Reads go to `tailscaled`'s LocalAPI, the HTTP-over-Unix-socket interface
 the `tailscale` CLI is itself a client of: `tailscale status --json` is a
 `GET /localapi/v0/status`, printed. Asking the socket directly returns the
 same JSON in about a millisecond and starts no process at all. The
-extension only ever sends `GET`s there, to endpoints the daemon serves to
-any local user (`status`, `prefs`, `serve-config`, `watch-ipn-bus`);
-every command that changes something still goes through the CLI and is
-listed above.
+extension only ever sends `GET`s there, the same reads the CLI makes for
+`status --json`, `debug prefs`, `funnel status --json` and
+`switch --list` (`status`, `prefs`, `serve-config`, `profiles/`), plus
+`watch-ipn-bus`. The daemon answers them on the same terms as the CLI:
+all but the profile list to any local user, the profile list to its
+operator only. Every command that changes something still goes through
+the CLI and is listed above.
 
 On top of that it subscribes to the daemon's IPN bus (what
 `tailscale debug watch-ipn` prints), so a change made anywhere, menu,
