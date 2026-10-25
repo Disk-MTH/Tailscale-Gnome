@@ -80,12 +80,14 @@
     background-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Copy chooser: unfolds under a row when a node has both an IP and a
-   Magic DNS name. Right-aligned so the choices sit under the copy button
-   that opened them, and only as wide as their own text. */
-.tailscale-copy-chooser {
-    spacing: 2px;
-    padding: 2px 0 2px 0;
+/* Copy buttons at the end of a device or peer row: the copy icon and a
+   short word (IP, DNS), one button per thing the setting offers. */
+.tailscale-copy-buttons {
+    spacing: 4px;
+    margin-left: 6px;
+}
+.tailscale-copy-choice StIcon {
+    margin-right: 4px;
 }
 .tailscale-copy-choice {
     padding: 3px 8px;

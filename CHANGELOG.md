@@ -19,9 +19,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   wipe tailnet-only `tailscale serve` entries the dialog does not show.
 
 ### Changed
-- The copy choices on device and peer rows read **Copy IP** and **Copy
-  DNS**, and device names are written, and copied, in lower case, the way
-  Magic DNS spells them.
+- **Copying is one click.** Device and peer rows carry their copy buttons
+  directly, **IP** and **DNS**, instead of one button that unfolded a
+  chooser. Which ones a row carries is a new setting, General → **Copy
+  buttons**: the IP, the Magic DNS name, or both (the default). Device
+  names are written, and copied, in lower case, the way Magic DNS spells
+  them.
 - **Accept routes** no longer lists `0.0.0.0/0` and `::/0`. Every peer
   offering itself as an exit node advertises both; the Exit node submenu
   already says which ones those are.

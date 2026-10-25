@@ -198,7 +198,7 @@ what that button sits next to on the clipboard:
 
 | Button | What it copies |
 | ------ | -------------- |
-| Copy IP / Copy DNS, on the device row or a peer row | That device's Tailscale IP, or its Magic DNS name (lower case) when Magic DNS is on |
+| IP / DNS, on the device row or a peer row | That device's Tailscale IP, or its Magic DNS name (lower case) when Magic DNS is on. Which of the two buttons a row carries is set in preferences → General → Copy buttons |
 | Copy address, on a Funnel row | The public address that funnel serves: `https://…` with its path, or `host:port` for a TCP one |
 | Copy, in preferences → Help | The four version lines shown above it, for a bug report |
 
@@ -248,6 +248,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Show panel indicator               | on            |
 | General       | Exit node indicator: connected (icon / colour) | on / theme |
 | General       | Exit node indicator: disconnected (icon / colour) | on / `#e6b800` |
+| General       | Copy buttons (IP / Magic DNS name / both) | both   |
 | General       | Taildrop inbox folder              | `Taildrop` in your download folder |
 | General       | Nautilus integration               | off           |
 | General       | Poll interval (fallback only, see below) | 3s      |
