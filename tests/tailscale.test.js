@@ -8,8 +8,8 @@ import GLib from 'gi://GLib';
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import { TailscaleClient } from '../lib/tailscale.js';
 import {
-    accountsFromProfiles, backendStatus, parseSwitchList, parseWroteLine,
-    peersFromStatus,
+    accountsFromProfiles, backendStatus, busMessageMatters, parseSwitchList,
+    parseWroteLine, peersFromStatus,
 } from '../lib/tailscale-parse.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
@@ -334,5 +334,66 @@ suite('accountsFromProfiles', () => {
     test('a tailnet name with two spaces survives', () => {
         const odd = { ID: 'a', Name: 'me', NetworkProfile: { DisplayName: 'My  Net' } };
         assertEq(accountsFromProfiles(odd, [odd])[0].tailnet, 'My  Net');
+    });
+});
+
+// What is worth a re-read of the daemon's state. Wrongly dropping a message
+// costs up to a minute of staleness; wrongly keeping one costs a read. So
+// the tests below pin the drops, and everything else must stay a yes.
+suite('busMessageMatters', () => {
+    const msg = (o) => JSON.stringify({ Version: '1.104.2', ErrMessage: null, ...o });
+
+    test('state, prefs, our own node, peers coming and going: yes', () => {
+        assertTrue(busMessageMatters(msg({ State: 6 })));
+        assertTrue(busMessageMatters(msg({ Prefs: { WantRunning: true } })));
+        assertTrue(busMessageMatters(msg({ SelfChange: { ID: 1 } })));
+        assertTrue(busMessageMatters(msg({ PeersChanged: [{ ID: 2 }] })));
+        assertTrue(busMessageMatters(msg({ PeersRemoved: [2] })));
+        assertTrue(busMessageMatters(msg({ LoginFinished: {} })));
+        assertTrue(busMessageMatters(msg({ ErrMessage: 'boom' })));
+    });
+
+    test('a peer going on or offline: yes, offline included', () => {
+        assertTrue(busMessageMatters(msg({ PeerChangedPatch: [{ NodeID: 2, Online: true }] })));
+        assertTrue(busMessageMatters(msg({ PeerChangedPatch: [{ NodeID: 2, Online: false }] })));
+    });
+
+    test('peers roaming and re-handshaking: no', () => {
+        assertEq(busMessageMatters(msg({
+            PeerChangedPatch: [
+                { NodeID: 2, LastSeen: '2026-10-25T12:00:00Z' },
+                { NodeID: 3, Endpoints: ['1.2.3.4:41641'], DERPRegion: 4 },
+            ],
+        })), false);
+    });
+
+    test('one patch that matters in a batch of noise: yes', () => {
+        assertTrue(busMessageMatters(msg({
+            PeerChangedPatch: [
+                { NodeID: 2, LastSeen: '2026-10-25T12:00:00Z' },
+                { NodeID: 3, Online: true },
+            ],
+        })));
+    });
+
+    test('a patch field nobody knows yet: yes', () => {
+        assertTrue(busMessageMatters(msg({ PeerChangedPatch: [{ NodeID: 2, Shiny: 1 }] })));
+    });
+
+    test('health, transfers, version news on their own: no', () => {
+        assertEq(busMessageMatters(msg({ Health: { Warnings: {} } })), false);
+        assertEq(busMessageMatters(msg({ IncomingFiles: [{ Name: 'a' }] })), false);
+        assertEq(busMessageMatters(msg({ ClientVersion: { RunningLatest: true } })), false);
+        assertEq(busMessageMatters(msg({})), false, 'just the version');
+    });
+
+    test('a field nobody knows yet: yes', () => {
+        assertTrue(busMessageMatters(msg({ SomethingNew: { a: 1 } })));
+    });
+
+    test('a network map too big to decode, or garbage: yes', () => {
+        assertTrue(busMessageMatters(null));
+        assertTrue(busMessageMatters('{not json'));
+        assertTrue(busMessageMatters('42'));
     });
 });

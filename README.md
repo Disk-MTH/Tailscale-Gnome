@@ -279,7 +279,9 @@ the CLI and is listed above.
 On top of that it subscribes to the daemon's IPN bus (what
 `tailscale debug watch-ipn` prints), so a change made anywhere, menu,
 terminal or admin console, shows up within a quarter of a second, and an
-idle tailnet costs nothing: while the bus is live the timer only checks
+idle tailnet costs nothing. Messages that cannot change anything on
+screen (peers roaming or re-handshaking, transfer progress, health and
+version news) are recognised and do not even trigger a re-read: while the bus is live the timer only checks
 back once a minute as a safety net. The **Poll interval** setting applies
 when the socket cannot be reached (a daemon started with a custom
 `--socket`, or one that is down); everything is then read through the CLI,

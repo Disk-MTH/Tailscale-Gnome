@@ -29,6 +29,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   while nobody can see them. A change that lands while the menu is closed
   marks a folded submenu stale, and it is rebuilt when the menu opens; on a
   large tailnet that rebuild was most of the cost of every update.
+- Bus messages that cannot change anything on screen are ignored: peers
+  roaming, re-handshaking or changing relay, Taildrop transfer progress,
+  health and version news. On a large tailnet those are most of the
+  traffic, and each one used to cost a full re-read of the daemon's state.
+  Anything not known to be harmless still counts, and the once-a-minute
+  check bounds whatever a wrong guess could cost.
 
 ## [1.1.0] - 2026-10-09
 

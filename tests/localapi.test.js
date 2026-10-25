@@ -11,7 +11,7 @@ import GLib from 'gi://GLib';
 
 import { suite, test, assertTrue, assertEq } from './harness.js';
 import {
-    get, watch, parseResponse, parseStatusLine,
+    get, watch, lineSplitter, parseResponse, parseStatusLine,
 } from '../lib/localapi.js';
 
 function settle(promise) {
@@ -133,6 +133,55 @@ suite('localapi: parsing', () => {
     });
 });
 
+suite('localapi: lineSplitter', () => {
+    const collect = () => {
+        const out = [];
+        return { out, feed: lineSplitter((t) => out.push(t)) };
+    };
+
+    test('one message per line, across reads', () => {
+        const { out, feed } = collect();
+        feed(enc.encode('{"a":1}\n{"b"'));
+        feed(enc.encode(':2}\n'));
+        assertEq(out.length, 2);
+        assertEq(out[0], '{"a":1}');
+        assertEq(out[1], '{"b":2}');
+    });
+
+    test('nothing until the newline', () => {
+        const { out, feed } = collect();
+        feed(enc.encode('{"a":1}'));
+        assertEq(out.length, 0);
+    });
+
+    test('blank lines are not messages', () => {
+        const { out, feed } = collect();
+        feed(enc.encode('\n\n{"a":1}\n\n'));
+        assertEq(out.length, 1);
+    });
+
+    // A whole network map, from a daemon too old for peer patches.
+    test('a huge line is reported, never decoded or held', () => {
+        const { out, feed } = collect();
+        const big = new Uint8Array(100 * 1024).fill(0x61);
+        feed(big.subarray(0, 50 * 1024));
+        feed(big.subarray(50 * 1024));
+        feed(enc.encode('\n{"a":1}\n'));
+        assertEq(out.length, 2);
+        assertEq(out[0], null);
+        assertEq(out[1], '{"a":1}', 'the next line is read normally');
+    });
+
+    test('a character split across reads survives', () => {
+        const { out, feed } = collect();
+        const bytes = enc.encode('{"n":"é"}\n');
+        const at = bytes.indexOf(0xc3) + 1;   // inside the two-byte é
+        feed(bytes.subarray(0, at));
+        feed(bytes.subarray(at));
+        assertEq(out[0], '{"n":"é"}');
+    });
+});
+
 suite('localapi: get', () => {
     test('sends what the daemon expects, reads the body to the end', () => {
         const d = fakeDaemon((_req, conn) =>
@@ -207,24 +256,28 @@ suite('localapi: get', () => {
 });
 
 suite('localapi: watch', () => {
-    test('open, then one onData per message, then onClose', () => {
+    test('open, then one onMessage per line, then onClose', () => {
         let conn = null;
         const d = fakeDaemon((_req, c) => {
             conn = c;
             respond(c, 'HTTP/1.0 200 OK', '', { close: false });
         });
         try {
-            let opened = false, data = 0, closed = null;
+            let opened = false, closed = null;
+            const messages = [];
             const w = watch(d.path, '/localapi/v0/watch-ipn-bus', null, {
                 onOpen: () => { opened = true; },
-                onData: () => data++,
+                onMessage: (text) => messages.push(text),
                 onClose: (wasOpen) => { closed = wasOpen; },
             });
             assertTrue(driveUntil(() => opened), 'opened');
-            assertEq(data, 0, 'an empty bus says nothing');
+            assertEq(messages.length, 0, 'an empty bus says nothing');
 
-            writeAll(conn.get_output_stream(), enc.encode('{"State":6}\n'), () => {});
-            assertTrue(driveUntil(() => data === 1), 'first message');
+            writeAll(conn.get_output_stream(),
+                enc.encode('{"State":6}\n{"Prefs":{}}\n'), () => {});
+            assertTrue(driveUntil(() => messages.length === 2), 'two messages');
+            assertEq(messages[0], '{"State":6}');
+            assertEq(messages[1], '{"Prefs":{}}');
 
             conn.close(null);
             assertTrue(driveUntil(() => closed !== null), 'closed');
