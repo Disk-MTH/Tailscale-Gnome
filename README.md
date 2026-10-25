@@ -58,7 +58,7 @@ with any extension that crowds the menu, not only this one.
 | ------- | ------------- |
 | **Connect** | One-click connect / disconnect and account switching, with a panel icon next to Wi-Fi while connected. |
 | **Exit nodes** | Pick None, Auto, or any peer, with a status pill and a panel warning if the selected node stops routing. |
-| **Funnel** | Publish, copy, and remove exposed services from a single dialog. |
+| **Funnel** | Publish, copy, and remove exposed services from a single dialog: HTTPS (a local server, a URL, a Unix socket, a file or folder, or fixed text, under an optional path), raw TCP or TLS-terminated TCP with optional PROXY protocol, and remove them one by one or all at once. |
 | **Taildrop** | Send and receive files with peers, from the menu, from a keyboard shortcut, or from the file manager. See [Sending files](#sending-files). |
 | **Menu toggles** | Magic DNS, accepted routes, Shields up, SSH server, and LAN access, one tap away. |
 | **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, and Funnels. |
@@ -108,7 +108,7 @@ says so.
 | **Taildrop send** | ✅ portal picker, folders, zip | ❌ | ✅ needs `zenity` | ❌ |
 | **Taildrop receive** | ✅ auto, click to reveal | ❌ | ✅ manual, one shot | ❌ |
 | **File-manager integration** | ✅ Nautilus "Send with Taildrop" | ❌ | ❌ | ❌ |
-| **Funnel management** | ✅ publish, copy, remove | ❌ | ❌ | ❌ |
+| **Funnel management** | ✅ HTTPS / TCP / TLS-terminated TCP, paths, PROXY protocol, remove all | ❌ | ❌ | ❌ |
 | Preferences window | ✅ 4 pages | ❌ none | ✅ 1 setting | ✅ |
 | Notifications | ✅ 9 configurable categories | ❌ none | fixed | fixed |
 | Keyboard shortcuts | ✅ 6 bindable | ❌ | ❌ | ❌ |
@@ -198,8 +198,8 @@ what that button sits next to on the clipboard:
 
 | Button | What it copies |
 | ------ | -------------- |
-| Copy, on the device row or a peer row | That device's Tailscale IP, or its Magic DNS name when Magic DNS is on |
-| Copy address, on a Funnel row | The public `https://…` URL that funnel serves |
+| Copy IP / Copy DNS, on the device row or a peer row | That device's Tailscale IP, or its Magic DNS name (lower case) when Magic DNS is on |
+| Copy address, on a Funnel row | The public address that funnel serves: `https://…` with its path, or `host:port` for a TCP one |
 | Copy, in preferences → Help | The four version lines shown above it, for a bug report |
 
 Nothing is copied in the background, none of it leaves the machine, and

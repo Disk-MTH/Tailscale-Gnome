@@ -8,7 +8,8 @@ import GLib from 'gi://GLib';
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import { TailscaleClient } from '../lib/tailscale.js';
 import {
-    accountsFromProfiles, backendStatus, busMessageMatters, parseSwitchList,
+    accountsFromProfiles, backendStatus, busMessageMatters, funnelAddArgs,
+    funnelClash, funnelMount, funnelRemoveArgs, parseFunnels, parseSwitchList,
     parseWroteLine, peersFromStatus,
 } from '../lib/tailscale-parse.js';
 
@@ -395,5 +396,143 @@ suite('busMessageMatters', () => {
         assertTrue(busMessageMatters(null));
         assertTrue(busMessageMatters('{not json'));
         assertTrue(busMessageMatters('42'));
+    });
+});
+
+// A serve config with one of everything Funnel can publish, shaped after
+// ipn.ServeConfig: TCP keyed by port, Web by host:port, Handlers by mount.
+const SERVE = {
+    TCP: {
+        443: { HTTPS: true },
+        8443: { TCPForward: '127.0.0.1:5432', ProxyProtocol: 2 },
+        10000: { TCPForward: '127.0.0.1:22', TerminateTLS: 'box.ts.net' },
+    },
+    Web: {
+        'box.ts.net:443': {
+            Handlers: {
+                '/': { Proxy: 'http://127.0.0.1:3000' },
+                '/docs/': { Path: '/srv/docs' },
+                '/hi': { Text: 'Hello' },
+            },
+        },
+    },
+    AllowFunnel: {
+        'box.ts.net:443': true,
+        'box.ts.net:8443': true,
+        'box.ts.net:10000': true,
+        // What `funnel --tcp=… off` leaves behind: the flag, no handler.
+        'box.ts.net:9999': true,
+    },
+};
+
+suite('parseFunnels', () => {
+    const funnels = parseFunnels(SERVE);
+
+    test('one entry per HTTPS mount, sorted by port then path', () => {
+        const https = funnels.filter((f) => f.kind === 'https');
+        assertDeepEq(https.map((f) => [f.path, f.handler, f.target]), [
+            ['/', 'proxy', 'http://127.0.0.1:3000'],
+            ['/docs/', 'path', '/srv/docs'],
+            ['/hi', 'text', 'Hello'],
+        ]);
+        assertTrue(https.every((f) => f.httpsPort === 443 && f.host === 'box.ts.net'));
+    });
+
+    test('a TCP forwarder, with its PROXY protocol', () => {
+        const f = funnels.find((x) => x.httpsPort === 8443);
+        assertEq(f.kind, 'tcp');
+        assertEq(f.target, '127.0.0.1:5432');
+        assertEq(f.proxyProtocol, 2);
+        assertEq(f.path, '');
+    });
+
+    test('a TLS-terminated one', () => {
+        const f = funnels.find((x) => x.httpsPort === 10000);
+        assertEq(f.kind, 'tls-tcp');
+        assertEq(f.target, '127.0.0.1:22');
+    });
+
+    test('a port the flag opens with nothing behind it is not a funnel', () => {
+        assertTrue(!funnels.some((f) => f.httpsPort === 9999));
+    });
+
+    test('a port served but not opened to the internet is not one either', () => {
+        const closed = { ...SERVE, AllowFunnel: { 'box.ts.net:443': false } };
+        assertDeepEq(parseFunnels(closed), []);
+    });
+
+    test('no config at all is no funnels', () => {
+        assertDeepEq(parseFunnels(null), []);
+        assertDeepEq(parseFunnels({}), []);
+    });
+});
+
+suite('funnel commands', () => {
+    test('the plain HTTPS case is the command 1.1.0 ran', () => {
+        assertDeepEq(funnelAddArgs({ httpsPort: 443, target: '3000' }),
+            ['funnel', '--bg', '--yes', '--https=443', '3000']);
+    });
+
+    test('a path becomes --set-path, "/" is the default and left out', () => {
+        assertDeepEq(
+            funnelAddArgs({ kind: 'https', httpsPort: 8443, target: '3000', path: 'api' }),
+            ['funnel', '--bg', '--yes', '--https=8443', '--set-path=/api', '3000']);
+        assertDeepEq(
+            funnelAddArgs({ kind: 'https', httpsPort: 443, target: '3000', path: '/' }),
+            ['funnel', '--bg', '--yes', '--https=443', '3000']);
+    });
+
+    test('TCP kinds take --proxy-protocol, never --set-path', () => {
+        assertDeepEq(
+            funnelAddArgs({ kind: 'tcp', httpsPort: 10000, target: '5432', path: '/x', proxyProtocol: 2 }),
+            ['funnel', '--bg', '--yes', '--tcp=10000', '--proxy-protocol=2', '5432']);
+        assertDeepEq(
+            funnelAddArgs({ kind: 'tls-tcp', httpsPort: 8443, target: 'unix:/run/x.sock' }),
+            ['funnel', '--bg', '--yes', '--tls-terminated-tcp=8443', 'unix:/run/x.sock']);
+    });
+
+    test('text with spaces stays one argument', () => {
+        const args = funnelAddArgs({ httpsPort: 443, target: 'text:Hello world' });
+        assertEq(args[args.length - 1], 'text:Hello world');
+    });
+
+    test('removal names exactly one funnel', () => {
+        const [root, docs] = parseFunnels(SERVE);
+        assertDeepEq(funnelRemoveArgs(root), ['funnel', '--https=443', '--set-path=/', 'off']);
+        assertDeepEq(funnelRemoveArgs(docs), ['funnel', '--https=443', '--set-path=/docs/', 'off']);
+        assertDeepEq(funnelRemoveArgs({ kind: 'tcp', httpsPort: 8443 }),
+            ['funnel', '--tcp=8443', 'off']);
+        assertDeepEq(funnelRemoveArgs({ kind: 'tls-tcp', httpsPort: 10000 }),
+            ['funnel', '--tls-terminated-tcp=10000', 'off']);
+    });
+
+    test('mount points', () => {
+        assertEq(funnelMount(''), '/');
+        assertEq(funnelMount('  '), '/');
+        assertEq(funnelMount('api'), '/api');
+        assertEq(funnelMount('/docs/'), '/docs/');
+    });
+});
+
+suite('funnelClash', () => {
+    const funnels = parseFunnels(SERVE);
+
+    test('an HTTPS mount can join a port under a new path', () => {
+        assertEq(funnelClash(funnels, { kind: 'https', httpsPort: 443, path: '/new' }), null);
+    });
+
+    test('but not under one already served', () => {
+        assertTrue(funnelClash(funnels, { kind: 'https', httpsPort: 443, path: '' }) !== null);
+        assertTrue(funnelClash(funnels, { kind: 'https', httpsPort: 443, path: 'hi' }) !== null);
+    });
+
+    test('HTTPS and TCP never share a port', () => {
+        assertTrue(funnelClash(funnels, { kind: 'https', httpsPort: 8443, path: '/x' }) !== null);
+        assertTrue(funnelClash(funnels, { kind: 'tcp', httpsPort: 443 }) !== null);
+    });
+
+    test('a free port is free for every kind', () => {
+        for (const kind of ['https', 'tcp', 'tls-tcp'])
+            assertEq(funnelClash(funnels, { kind, httpsPort: 9999 }), null);
     });
 });

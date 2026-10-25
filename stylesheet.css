@@ -303,3 +303,24 @@
 .tailscale-port-choice-used {
     opacity: 0.4;
 }
+
+/* One field of the Funnels form: its name on the left, at the same 14px
+   inset and muted size as the section titles, then the control. The fixed
+   width lines every control up on one edge. */
+.tailscale-funnel-field {
+    padding: 2px 0;
+}
+.tailscale-funnel-field-label {
+    width: 120px;
+    padding-left: 14px;
+    font-size: 10pt;
+    opacity: 0.65;
+}
+.tailscale-funnel-field .tailscale-port-entry,
+.tailscale-funnel-field .tailscale-port-choices {
+    margin: 0 4px;
+    padding: 0;
+}
+.tailscale-funnel-field .tailscale-port-entry {
+    padding: 6px 10px;
+}

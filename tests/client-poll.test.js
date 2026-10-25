@@ -77,6 +77,12 @@ const PREFS = JSON.stringify({
 const SWITCH = 'ID    Tailnet        Account\n' +
                'abc   example.com    me@example.com*\n';
 const FUNNEL = JSON.stringify({
+    TCP: { 443: { HTTPS: true } },
+    Web: {
+        'box.tail1234.ts.net:443': {
+            Handlers: { '/': { Proxy: 'http://127.0.0.1:3000' } },
+        },
+    },
     AllowFunnel: { 'box.tail1234.ts.net:443': true },
 });
 

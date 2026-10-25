@@ -5,6 +5,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **More of Funnel in the Funnels dialog.** Besides a local port, a funnel
+  can now publish anything `tailscale funnel` takes as a target: an address
+  or URL (`https+insecure://` included), a Unix socket, a file or folder,
+  or fixed text (`text:…`). It can be mounted under a path
+  (`--set-path`), several paths sharing one public port, and it can be a raw
+  TCP forwarder (`--tcp`) or one behind TLS terminated by Tailscale
+  (`--tls-terminated-tcp`), with an optional PROXY protocol header
+  (`--proxy-protocol`). The list shows each of them with what it serves.
+- **Remove all**, in the Funnels dialog. It takes the listed funnels down
+  one by one rather than running `tailscale funnel reset`, which would also
+  wipe tailnet-only `tailscale serve` entries the dialog does not show.
+
+### Changed
+- The copy choices on device and peer rows read **Copy IP** and **Copy
+  DNS**, and device names are written, and copied, in lower case, the way
+  Magic DNS spells them.
+- **Accept routes** no longer lists `0.0.0.0/0` and `::/0`. Every peer
+  offering itself as an exit node advertises both; the Exit node submenu
+  already says which ones those are.
+
 ### Fixed
 - **Periodic micro-stutter, most visible in video on battery (#9).** Every
   poll (every 3 s by default) started two `tailscale` processes from GNOME
