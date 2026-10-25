@@ -209,7 +209,7 @@ export function makeGeneralPage(settings) {
 
     const pollRow = new Adw.SpinRow({
         title: _("Poll interval"),
-        subtitle: _("Seconds between status refreshes (1 to 60)."),
+        subtitle: _("How often to check when the daemon cannot push its updates, in seconds (1 to 60)."),
         adjustment: new Gtk.Adjustment({
             lower: 1,
             upper: 60,

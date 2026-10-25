@@ -3,6 +3,28 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- **Periodic micro-stutter, most visible in video on battery (#9).** Every
+  poll (every 3 s by default) started two `tailscale` processes from GNOME
+  Shell's own process, and on a power-capped laptop that was enough to drop
+  frames each time. The daemon's state is now read straight off its
+  LocalAPI socket, the interface the CLI is itself a client of: same JSON,
+  no process, about a millisecond instead of about thirty of CPU per read.
+  Opening the menu now starts one process instead of four.
+
+### Changed
+- **No more polling while the daemon can say what changed.** The extension
+  subscribes to tailscaled's IPN bus and re-reads its state only when told
+  to, so a change made from a terminal or the admin console shows up within
+  a quarter of a second, and an idle tailnet costs nothing. While the
+  subscription is live the timer only checks back once a minute. The
+  **Poll interval** setting now applies only when the socket cannot be
+  reached, in which case everything goes through the CLI as before.
+- A peer starting or stopping traffic no longer rebuilds the menu: that
+  flag is not shown anywhere, so it no longer counts as a change.
+
 ## [1.1.0] - 2026-10-09
 
 ### Fixed

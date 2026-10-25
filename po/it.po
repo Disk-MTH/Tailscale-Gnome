@@ -751,8 +751,8 @@ msgid "Poll interval"
 msgstr "Intervallo di aggiornamento"
 
 #: prefs/general.js:212
-msgid "Seconds between status refreshes (1 to 60)."
-msgstr "Secondi tra gli aggiornamenti di stato (da 1 a 60)."
+msgid "How often to check when the daemon cannot push its updates, in seconds (1 to 60)."
+msgstr "Frequenza di controllo quando il servizio non può inviare aggiornamenti, in secondi (da 1 a 60)."
 
 #: prefs/general.js:231
 msgid "Reset all settings"

@@ -122,6 +122,11 @@ says so.
 
 - GNOME Shell 46 → 51.
 - `tailscale` 1.70+ on `PATH`.
+- Optional, and the usual case: `tailscaled` listening on its default
+  socket, `/var/run/tailscale/tailscaled.sock`. The extension then reads
+  the daemon's state straight off the socket, the way the CLI itself does,
+  and gets told about every change instead of polling for it. Without it
+  everything still works, through the CLI, at the poll interval.
 - `pkexec` (polkit) for the privileged calls listed below.
 
 File pickers use the XDG Desktop Portal (`org.freedesktop.portal.FileChooser`), which ships with every GNOME session, no external
@@ -139,7 +144,7 @@ controls that would all be refused. That window is reduced to its Help
 page, which names which of the two states this is and the command that
 fixes it. The keybinding that opens the menu lands there too; the ones
 aimed at an action, and the Nautilus entry, refuse with a notification
-instead. Nothing is ever spawned. It keeps polling from there (at a
+instead. Nothing is ever spawned. It keeps checking from there (at a
 slow tick while the binary is missing), so installing the package or
 starting the service brings the menu and the other preference pages back
 on their own. No reload, no logout.
@@ -245,7 +250,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Exit node indicator: disconnected (icon / colour) | on / `#e6b800` |
 | General       | Taildrop inbox folder              | `Taildrop` in your download folder |
 | General       | Nautilus integration               | off           |
-| General       | Poll interval                      | 3s            |
+| General       | Poll interval (fallback only, see below) | 3s      |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
@@ -257,6 +262,26 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | Help          | Availability: Taildrop / Funnel    | read from every poll |
 | Help          | Versions, source and issue links   | read-only     |
 
+## How it stays up to date
+
+Reads go to `tailscaled`'s LocalAPI, the HTTP-over-Unix-socket interface
+the `tailscale` CLI is itself a client of: `tailscale status --json` is a
+`GET /localapi/v0/status`, printed. Asking the socket directly returns the
+same JSON in about a millisecond and starts no process at all. The
+extension only ever sends `GET`s there, to endpoints the daemon serves to
+any local user (`status`, `prefs`, `serve-config`, `watch-ipn-bus`);
+every command that changes something still goes through the CLI and is
+listed above.
+
+On top of that it subscribes to the daemon's IPN bus (what
+`tailscale debug watch-ipn` prints), so a change made anywhere, menu,
+terminal or admin console, shows up within a quarter of a second, and an
+idle tailnet costs nothing: while the bus is live the timer only checks
+back once a minute as a safety net. The **Poll interval** setting applies
+when the socket cannot be reached (a daemon started with a custom
+`--socket`, or one that is down); everything is then read through the CLI,
+as earlier versions always did.
+
 ## Debugging
 
 ```bash
@@ -266,6 +291,13 @@ journalctl --user -f /usr/bin/gnome-shell | grep -iE 'tailscale|extension'
 # What the UI sees
 tailscale status --json | jq .
 tailscale debug prefs   | jq .
+
+# The same, the way the extension reads it
+curl -s --unix-socket /var/run/tailscale/tailscaled.sock \
+    http://local-tailscaled.sock/localapi/v0/status | jq .
+
+# What wakes it up
+tailscale debug watch-ipn
 ```
 
 Looking Glass (`Alt+F2`, type `lg`) lists errors thrown since the shell
@@ -295,7 +327,8 @@ pulls in the other's toolkit.
 extension.js            # entry point: lifecycle, shortcuts, D-Bus
 prefs.js                # preferences entry point, one page per file below
 lib/                    # GNOME Shell process
-├── tailscale.js        # CLI wrapper + poller
+├── tailscale.js        # client: snapshot, IPN bus, CLI commands
+├── localapi.js         # read-only LocalAPI client (Unix socket)
 ├── indicator.js        # panel icon
 ├── menu.js             # Quick Settings toggle
 ├── menu/
