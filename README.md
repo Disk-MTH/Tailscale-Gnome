@@ -10,8 +10,8 @@
 <a href="https://extensions.gnome.org/extension/10017/tailscale/"><img align="left" width="210" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg" alt="Get it on GNOME Extensions"></a>
 
 **The complete Tailscale VPN client for the GNOME Shell Quick Settings.**
-Connect, switch accounts, manage exit nodes, publish services with Funnel, and
-send or receive files with Taildrop, all without leaving the panel or opening a
+Connect, switch accounts, manage exit nodes, share services with Serve and
+Funnel, and send or receive files with Taildrop, all without leaving the panel or opening a
 terminal. Built for GNOME Shell 46 through 51, on Wayland and Xorg.
 
 <br>
@@ -35,7 +35,7 @@ terminal. Built for GNOME Shell 46 through 51, on Wayland and Xorg.
 ## If the menu runs off your screen
 
 This extension puts a lot into the Quick Settings menu: peers, exit nodes,
-five toggles, and the Taildrop and Funnel entry points. On a short screen, at
+five toggles, and the Taildrop, Serve and Funnel entry points. On a short screen, at
 a large text scale, or next to other extensions that add toggles of their own,
 the menu can grow past the bottom edge. GNOME's Quick Settings popup does not
 scroll, so anything below that edge is simply unreachable.
@@ -59,9 +59,10 @@ with any extension that crowds the menu, not only this one.
 | **Connect** | One-click connect / disconnect and account switching, with a panel icon next to Wi-Fi while connected. |
 | **Exit nodes** | Pick None, Auto, or any peer, with a status pill and a panel warning if the selected node stops routing. |
 | **Funnel** | Publish, copy, and remove exposed services from a single dialog: HTTPS (a local server, a URL, a Unix socket, a file or folder, or fixed text, under an optional path), raw TCP or TLS-terminated TCP with optional PROXY protocol, and remove them one by one or all at once. |
+| **Serve** | Share a local service with the rest of your tailnet, from the same kind of dialog: HTTPS, HTTP, raw TCP or TLS-terminated TCP, on any port, with the same targets and options as Funnel. Ports used by a funnel are refused, so nothing private ends up on the internet by sharing a port with it. |
 | **Taildrop** | Send and receive files with peers, from the menu, from a keyboard shortcut, or from the file manager. See [Sending files](#sending-files). |
 | **Menu toggles** | Magic DNS, accepted routes, Shields up, SSH server, and LAN access, one tap away. |
-| **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, and Funnels. |
+| **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, Serve, and Funnels. |
 
 ## Sending files
 
@@ -109,9 +110,10 @@ says so.
 | **Taildrop receive** | ✅ auto, click to reveal | ❌ | ✅ manual, one shot | ❌ |
 | **File-manager integration** | ✅ Nautilus "Send with Taildrop" | ❌ | ❌ | ❌ |
 | **Funnel management** | ✅ HTTPS / TCP / TLS-terminated TCP, paths, PROXY protocol, remove all | ❌ | ❌ | ❌ |
+| **Serve management** | ✅ HTTPS / HTTP / TCP / TLS-terminated TCP, any port, paths, remove all | ❌ | ❌ | ❌ |
 | Preferences window | ✅ 4 pages | ❌ none | ✅ 1 setting | ✅ |
-| Notifications | ✅ 9 configurable categories | ❌ none | fixed | fixed |
-| Keyboard shortcuts | ✅ 6 bindable | ❌ | ❌ | ❌ |
+| Notifications | ✅ 10 configurable categories | ❌ none | fixed | fixed |
+| Keyboard shortcuts | ✅ 7 bindable | ❌ | ❌ | ❌ |
 | Shipped translations | ✅ FR · DE · IT | ❌ | ❌ | ❌ |
 | Degrades gracefully with no `tailscale` | ✅ | ❌ | ❌ | ❌ |
 | Custom login server ([Headscale](https://github.com/juanfont/headscale)) | ❌ *(soon…)* | ❌ | ✅ | ✅ |
@@ -158,7 +160,7 @@ extension therefore runs a **small, fixed set** of commands through
 
 | Command | When it runs |
 | ------- | ------------ |
-| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale set --operator=$USER` | Only when an action needs it: the Quick Settings toggle, the connect shortcut, the Taildrop and Funnels entries, or the **Set operator** button. Never on its own at login. Makes every later command work without a prompt. |
+| `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale set --operator=$USER` | Only when an action needs it: the Quick Settings toggle, the connect shortcut, the Taildrop, Serve and Funnels entries, or the **Set operator** button. Never on its own at login. Makes every later command work without a prompt. |
 | `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale login --operator=$USER` | When you click **Login**. Tailscale refuses a plain login on operator-set profiles, so this keeps the operator pref on the new profile too. |
 | `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale logout` | When you click **Logout**. One prompt only; the next **Login** restores the operator pref on its own. |
 | `pkexec /usr/bin/env TS_BE_CLI=1 <path>/tailscale switch <profile-id>` | When you switch accounts without an operator set, typically right after a logout. |
@@ -199,12 +201,12 @@ what that button sits next to on the clipboard:
 | Button | What it copies |
 | ------ | -------------- |
 | IP / DNS, on the device row or a peer row | That device's Tailscale IP, or its Magic DNS name (lower case) when Magic DNS is on. Which of the two buttons a row carries is set in preferences → General → Copy buttons |
-| Copy address, on a Funnel row | The public address that funnel serves: `https://…` with its path, or `host:port` for a TCP one |
+| Copy address, on a Funnel or Serve row | The address that entry serves: `https://…` or `http://…` with its path, or `host:port` for a TCP one |
 | Copy, in preferences → Help | The four version lines shown above it, for a bug report |
 
 Nothing is copied in the background, none of it leaves the machine, and
 no keyboard shortcut ships bound: every shortcut defaults to unset, and
-none of the six touch the clipboard at all.
+none of the seven touch the clipboard at all.
 
 ## Install
 
@@ -253,14 +255,15 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Nautilus integration               | off           |
 | General       | Poll interval (fallback only, see below) | 3s      |
 | Notifications | Minimum pending duration           | 1000ms        |
-| Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
+| Notifications | Per-category reporting (ten of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
 | Shortcuts     | Toggle automatic exit node         | unbound       |
 | Shortcuts     | Open the Tailscale menu            | unbound       |
 | Shortcuts     | Open the admin console             | unbound       |
 | Shortcuts     | Open Taildrop                      | unbound       |
 | Shortcuts     | Open Funnels                       | unbound       |
-| Help          | Availability: Taildrop / Funnel    | read from every poll |
+| Shortcuts     | Open Serve                         | unbound       |
+| Help          | Availability: Taildrop / Funnel / Serve over HTTPS | read from every poll |
 | Help          | Versions, source and issue links   | read-only     |
 
 ## How it stays up to date
@@ -340,7 +343,7 @@ lib/                    # GNOME Shell process
 ├── menu/
 │   ├── rows.js         # the rows every submenu is built from
 │   ├── send-dialog.js  # Taildrop send flow + archiving
-│   └── funnels-dialog.js
+│   └── publish-dialog.js # Funnel and Serve: one dialog, two modes
 ├── watchers.js         # snapshot diffing into semantic events
 ├── watcher-messages.js # those events, turned into translated wording
 ├── quiet-window.js     # the silence held open around an account switch
@@ -379,8 +382,8 @@ half-working.
 Only once, and only when you first ask for something. The Tailscale daemon
 accepts state-changing commands from root or from the user named in its
 `OperatorUser` pref, so the extension asks polkit once to set you as
-operator; after that, connecting, exit nodes, Taildrop and Funnel run with
-no prompt at all. The full list of elevated commands is in
+operator; after that, connecting, exit nodes, Taildrop, Serve and Funnel run
+with no prompt at all. The full list of elevated commands is in
 [Privileged operations](#privileged-operations) above, four of them, each a
 literal argument vector.
 
@@ -389,6 +392,21 @@ until the pref is set the menu still shows your peers, their addresses and
 every switch position, with the controls greyed out and a row that grants
 the pref in one click. On a machine shared between several accounts, one
 that never touches Tailscale is never asked for a password.
+
+### What is the difference between Serve and Funnel?
+
+Who can reach what you share. **Serve** shares a local service with the
+devices of your own tailnet, and nobody else: a web app on `localhost:3000`
+becomes `https://your-device.your-tailnet.ts.net` for your other machines.
+**Funnel** puts it on the public internet, at the same address, for anyone.
+Both are the same Tailscale feature underneath, so a port is either one or
+the other: each dialog refuses a port the other one uses, rather than let a
+private service end up public by sharing a port with a funnel.
+
+Serve over HTTP or TCP works on any tailnet. Over HTTPS, its default, and for
+every funnel, the tailnet needs HTTPS certificates turned on; Funnel also
+needs the `funnel` node attribute. Preferences → Help shows which of these
+your tailnet allows.
 
 ### Does it work with Headscale or another custom login server?
 
@@ -399,16 +417,17 @@ out of reach for now.
 ### Does it read my clipboard, or send anything anywhere?
 
 No. It **writes** to the clipboard and never reads from it, only when you click
-a copy button, and only the address or Funnel URL that button sits next to. No
-telemetry, no network call of its own: every piece of data on screen comes from
-the local `tailscale` CLI. See [Clipboard access](#clipboard-access).
+a copy button, and only the address that button sits next to. No telemetry, no
+network call of its own: every piece of data on screen comes from your local
+`tailscaled`, read through its Unix socket or the `tailscale` CLI. See
+[Clipboard access](#clipboard-access).
 
 ### Is this the official Tailscale app?
 
 No. This is an independent, community-built GNOME Shell extension, not
 affiliated with, sponsored by, or endorsed by Tailscale Inc. It drives the
-official `tailscale` CLI that you install yourself; it does not replace it or
-bundle it.
+official `tailscale` CLI and `tailscaled` daemon that you install yourself; it
+does not replace them or bundle them.
 
 ## License
 

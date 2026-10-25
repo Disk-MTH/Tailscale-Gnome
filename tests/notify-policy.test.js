@@ -20,6 +20,7 @@ suite('NotifyPolicy', () => {
             'network': 'notify-network',
             'taildrop': 'notify-taildrop',
             'funnel': 'notify-funnel',
+            'serve': 'notify-serve',
             'errors': 'notify-errors',
             'misc': 'notify-misc',
         };

@@ -145,6 +145,10 @@ const SHORTCUT_DEFS = [
         key: "shortcut-add-funnel",
         title: () => _("Open Funnels"),
     },
+    {
+        key: "shortcut-open-serve",
+        title: () => _("Open Serve"),
+    },
 ];
 
 export function makeShortcutsPage(settings) {

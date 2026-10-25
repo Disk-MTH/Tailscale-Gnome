@@ -306,14 +306,14 @@
     opacity: 0.4;
 }
 
-/* One field of the Funnels form: its name on the left, at the same 14px
+/* One field of the Funnel and Serve form: its name on the left, at the same 14px
    inset and muted size as the section titles, then the control. The fixed
    width lines every control up on one edge. */
 .tailscale-funnel-field {
     padding: 2px 0;
 }
 .tailscale-funnel-field-label {
-    width: 120px;
+    width: 100px;
     padding-left: 14px;
     font-size: 10pt;
     opacity: 0.65;
@@ -324,5 +324,10 @@
     padding: 0;
 }
 .tailscale-funnel-field .tailscale-port-entry {
+    padding: 6px 10px;
+}
+/* Four kinds share the Serve form's Type row: a little less padding than
+   the port buttons elsewhere is what keeps "TCP over TLS" whole. */
+.tailscale-funnel-field .tailscale-port-choice {
     padding: 6px 10px;
 }
