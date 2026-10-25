@@ -10,8 +10,8 @@
 <a href="https://extensions.gnome.org/extension/10017/tailscale/"><img align="left" width="210" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg" alt="Get it on GNOME Extensions"></a>
 
 **The complete Tailscale VPN client for the GNOME Shell Quick Settings.**
-Connect, switch accounts, manage exit nodes, publish services with Funnel, and
-send or receive files with Taildrop, all without leaving the panel or opening a
+Connect, switch accounts, manage exit nodes, share services with Serve and
+Funnel, and send or receive files with Taildrop, all without leaving the panel or opening a
 terminal. Built for GNOME Shell 46 through 51, on Wayland and Xorg.
 
 <br>
@@ -59,9 +59,10 @@ with any extension that crowds the menu, not only this one.
 | **Connect** | One-click connect / disconnect and account switching, with a panel icon next to Wi-Fi while connected. |
 | **Exit nodes** | Pick None, Auto, or any peer, with a status pill and a panel warning if the selected node stops routing. |
 | **Funnel** | Publish, copy, and remove exposed services from a single dialog: HTTPS (a local server, a URL, a Unix socket, a file or folder, or fixed text, under an optional path), raw TCP or TLS-terminated TCP with optional PROXY protocol, and remove them one by one or all at once. |
+| **Serve** | Share a local service with the rest of your tailnet, from the same kind of dialog: HTTPS, HTTP, raw TCP or TLS-terminated TCP, on any port, with the same targets and options as Funnel. Ports used by a funnel are refused, so nothing private ends up on the internet by sharing a port with it. |
 | **Taildrop** | Send and receive files with peers, from the menu, from a keyboard shortcut, or from the file manager. See [Sending files](#sending-files). |
 | **Menu toggles** | Magic DNS, accepted routes, Shields up, SSH server, and LAN access, one tap away. |
-| **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, and Funnels. |
+| **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, Serve, and Funnels. |
 
 ## Sending files
 
@@ -109,9 +110,10 @@ says so.
 | **Taildrop receive** | ✅ auto, click to reveal | ❌ | ✅ manual, one shot | ❌ |
 | **File-manager integration** | ✅ Nautilus "Send with Taildrop" | ❌ | ❌ | ❌ |
 | **Funnel management** | ✅ HTTPS / TCP / TLS-terminated TCP, paths, PROXY protocol, remove all | ❌ | ❌ | ❌ |
+| **Serve management** | ✅ HTTPS / HTTP / TCP / TLS-terminated TCP, any port, paths, remove all | ❌ | ❌ | ❌ |
 | Preferences window | ✅ 4 pages | ❌ none | ✅ 1 setting | ✅ |
-| Notifications | ✅ 9 configurable categories | ❌ none | fixed | fixed |
-| Keyboard shortcuts | ✅ 6 bindable | ❌ | ❌ | ❌ |
+| Notifications | ✅ 10 configurable categories | ❌ none | fixed | fixed |
+| Keyboard shortcuts | ✅ 7 bindable | ❌ | ❌ | ❌ |
 | Shipped translations | ✅ FR · DE · IT | ❌ | ❌ | ❌ |
 | Degrades gracefully with no `tailscale` | ✅ | ❌ | ❌ | ❌ |
 | Custom login server ([Headscale](https://github.com/juanfont/headscale)) | ❌ *(soon…)* | ❌ | ✅ | ✅ |
@@ -253,14 +255,15 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Nautilus integration               | off           |
 | General       | Poll interval (fallback only, see below) | 3s      |
 | Notifications | Minimum pending duration           | 1000ms        |
-| Notifications | Per-category reporting (nine of them, All / Errors / Off) | all |
+| Notifications | Per-category reporting (ten of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
 | Shortcuts     | Toggle automatic exit node         | unbound       |
 | Shortcuts     | Open the Tailscale menu            | unbound       |
 | Shortcuts     | Open the admin console             | unbound       |
 | Shortcuts     | Open Taildrop                      | unbound       |
 | Shortcuts     | Open Funnels                       | unbound       |
-| Help          | Availability: Taildrop / Funnel    | read from every poll |
+| Shortcuts     | Open Serve                         | unbound       |
+| Help          | Availability: Taildrop / Funnel / Serve over HTTPS | read from every poll |
 | Help          | Versions, source and issue links   | read-only     |
 
 ## How it stays up to date
@@ -340,7 +343,7 @@ lib/                    # GNOME Shell process
 ├── menu/
 │   ├── rows.js         # the rows every submenu is built from
 │   ├── send-dialog.js  # Taildrop send flow + archiving
-│   └── funnels-dialog.js
+│   └── publish-dialog.js # Funnel and Serve: one dialog, two modes
 ├── watchers.js         # snapshot diffing into semantic events
 ├── watcher-messages.js # those events, turned into translated wording
 ├── quiet-window.js     # the silence held open around an account switch

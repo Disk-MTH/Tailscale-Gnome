@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:33+0000\n"
+"POT-Creation-Date: 2026-10-25 18:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: extension.js:348 lib/menu.js:96
+#: extension.js:350 lib/menu.js:96
 msgid "Login required"
 msgstr ""
 
-#: extension.js:349
+#: extension.js:351
 msgid "Tailscale is not ready yet"
 msgstr ""
 
-#: extension.js:371 lib/menu/sections.js:156
+#: extension.js:373 lib/menu/sections.js:156
 msgid "Clearing exit node"
 msgstr ""
 
-#: extension.js:372 lib/menu/sections.js:157
+#: extension.js:374 lib/menu/sections.js:157
 msgid "Exit node cleared"
 msgstr ""
 
-#: extension.js:378 lib/menu/sections.js:168
+#: extension.js:380 lib/menu/sections.js:168
 msgid "Selecting an exit node"
 msgstr ""
 
-#: extension.js:379 lib/menu/sections.js:169
+#: extension.js:381 lib/menu/sections.js:169
 msgid "Exit node: auto"
 msgstr ""
 
-#: lib/menu.js:52 lib/menu.js:839
+#: lib/menu.js:52 lib/menu.js:902
 #, javascript-format
 msgid "Could not open %s"
 msgstr ""
@@ -87,245 +87,281 @@ msgstr ""
 msgid "Loading…"
 msgstr ""
 
-#: lib/menu.js:250 lib/notify.js:29
+#: lib/menu.js:252 lib/notify.js:29
 msgid "Tailnet"
 msgstr ""
 
-#: lib/menu.js:259 lib/menu/sections.js:243
+#: lib/menu.js:261 lib/menu/sections.js:243
 msgid "Peers"
 msgstr ""
 
-#: lib/menu.js:266 lib/notify.js:30 lib/menu/sections.js:122
+#: lib/menu.js:268 lib/notify.js:30 lib/menu/sections.js:122
 #: prefs/notifications.js:45
 msgid "Exit node"
 msgstr ""
 
-#: lib/menu.js:280
+#: lib/menu.js:282
 msgid "Magic DNS"
 msgstr ""
 
-#: lib/menu.js:283
+#: lib/menu.js:285
 msgid "Enabling Magic DNS"
 msgstr ""
 
-#: lib/menu.js:283
+#: lib/menu.js:285
 msgid "Disabling Magic DNS"
 msgstr ""
 
-#: lib/menu.js:284
+#: lib/menu.js:286
 msgid "Magic DNS: on"
 msgstr ""
 
-#: lib/menu.js:284
+#: lib/menu.js:286
 msgid "Magic DNS: off"
 msgstr ""
 
-#: lib/menu.js:294
+#: lib/menu.js:296
 msgid "Enabling Accept routes"
 msgstr ""
 
-#: lib/menu.js:294
+#: lib/menu.js:296
 msgid "Disabling Accept routes"
 msgstr ""
 
-#: lib/menu.js:295
+#: lib/menu.js:297
 msgid "Accept routes: on"
 msgstr ""
 
-#: lib/menu.js:295
+#: lib/menu.js:297
 msgid "Accept routes: off"
 msgstr ""
 
-#: lib/menu.js:302
+#: lib/menu.js:304
 msgid "Accept files"
 msgstr ""
 
-#: lib/menu.js:306
+#: lib/menu.js:308
 msgid "Shields up"
 msgstr ""
 
-#: lib/menu.js:309
+#: lib/menu.js:311
 msgid "Enabling Shields up"
 msgstr ""
 
-#: lib/menu.js:309
+#: lib/menu.js:311
 msgid "Disabling Shields up"
 msgstr ""
 
-#: lib/menu.js:310
+#: lib/menu.js:312
 msgid "Shields up: on"
 msgstr ""
 
-#: lib/menu.js:310
+#: lib/menu.js:312
 msgid "Shields up: off"
 msgstr ""
 
-#: lib/menu.js:316
+#: lib/menu.js:318
 msgid "Run SSH server"
 msgstr ""
 
-#: lib/menu.js:319
+#: lib/menu.js:321
 msgid "Enabling SSH server"
 msgstr ""
 
-#: lib/menu.js:319
+#: lib/menu.js:321
 msgid "Disabling SSH server"
 msgstr ""
 
-#: lib/menu.js:320
+#: lib/menu.js:322
 msgid "SSH server: on"
 msgstr ""
 
-#: lib/menu.js:320
+#: lib/menu.js:322
 msgid "SSH server: off"
 msgstr ""
 
-#: lib/menu.js:353 lib/notify.js:32 prefs/help.js:31 prefs/notifications.js:56
+#: lib/menu.js:355 lib/notify.js:32 prefs/help.js:32 prefs/notifications.js:56
 #: prefs/taildrop.js:47
 msgid "Taildrop"
 msgstr ""
 
-#: lib/menu.js:364
+#: lib/menu.js:366 prefs/notifications.js:67
+msgid "Serve"
+msgstr ""
+
+#: lib/menu.js:377
 msgid "Funnels"
 msgstr ""
 
-#: lib/menu.js:392
+#: lib/menu.js:405
 msgid "Extension settings"
 msgstr ""
 
-#: lib/menu.js:410
+#: lib/menu.js:423
 msgid "Admin panel"
 msgstr ""
 
-#: lib/menu.js:457
+#: lib/menu.js:470
 msgid "Operator not set"
 msgstr ""
 
-#: lib/menu.js:463
+#: lib/menu.js:476
 msgid "Set operator"
 msgstr ""
 
-#: lib/menu.js:469
+#: lib/menu.js:482
 msgid "Granting operator privilege"
 msgstr ""
 
-#: lib/menu.js:470
+#: lib/menu.js:483
 msgid "Operator set"
 msgstr ""
 
-#: lib/menu.js:523
+#: lib/menu.js:536
 msgid "Login required (see Account menu)"
 msgstr ""
 
-#: lib/menu.js:633
+#: lib/menu.js:647
 msgid "This device"
 msgstr ""
 
-#: lib/menu.js:738
+#: lib/menu.js:754
 msgid "Funnel is disabled for this tailnet by your admin."
 msgstr ""
 
-#: lib/menu.js:778
+#: lib/menu.js:815
 #, javascript-format
 msgid "Removing funnel %s"
 msgstr ""
 
-#: lib/menu.js:779
+#: lib/menu.js:816
 #, javascript-format
 msgid "Funnel removed %s"
 msgstr ""
 
-#: lib/menu.js:787
+#: lib/menu.js:824
 msgid "Removing all funnels"
 msgstr ""
 
-#: lib/menu.js:788
+#: lib/menu.js:825
 msgid "All funnels removed"
 msgstr ""
 
-#: lib/menu.js:804
+#: lib/menu.js:833
+#, javascript-format
+msgid "Stopping %s"
+msgstr ""
+
+#: lib/menu.js:834
+#, javascript-format
+msgid "Stopped sharing %s"
+msgstr ""
+
+#: lib/menu.js:842
+msgid "Stopping every shared service"
+msgstr ""
+
+#: lib/menu.js:843
+msgid "Nothing is shared any more"
+msgstr ""
+
+#: lib/menu.js:860
 msgid "Enter a local target"
 msgstr ""
 
-#: lib/menu.js:819
+#: lib/menu.js:877
 #, javascript-format
 msgid "Adding funnel %s"
 msgstr ""
 
-#: lib/menu.js:820
+#: lib/menu.js:878
+#, javascript-format
+msgid "Sharing %s"
+msgstr ""
+
+#: lib/menu.js:880
 #, javascript-format
 msgid "Funnel added %s"
 msgstr ""
 
-#: lib/menu.js:845
+#: lib/menu.js:881
+#, javascript-format
+msgid "Shared %s"
+msgstr ""
+
+#: lib/menu.js:909
 msgid "Approve Funnel in the browser, then retry."
 msgstr ""
 
-#: lib/menu.js:935
+#: lib/menu.js:910
+msgid "Approve it in the browser, then retry."
+msgstr ""
+
+#: lib/menu.js:995
 msgid "Accepting Taildrop files"
 msgstr ""
 
-#: lib/menu.js:936
+#: lib/menu.js:996
 msgid "Taildrop receiver stopped"
 msgstr ""
 
-#: lib/menu.js:972
+#: lib/menu.js:1032
 msgid "Taildrop is disabled for this tailnet by your admin."
 msgstr ""
 
-#: lib/menu.js:981
+#: lib/menu.js:1041
 msgid "No online peers available to receive files"
 msgstr ""
 
-#: lib/menu.js:1006
+#: lib/menu.js:1066
 #, javascript-format
 msgid "%d files"
 msgstr ""
 
-#: lib/menu.js:1009
+#: lib/menu.js:1069
 #, javascript-format
 msgid "%d devices"
 msgstr ""
 
-#: lib/menu.js:1029
+#: lib/menu.js:1089
 #, javascript-format
 msgid "Could not send to %s"
 msgstr ""
 
-#: lib/menu.js:1035
+#: lib/menu.js:1095
 #, javascript-format
 msgid "Sent to %d of %d devices"
 msgstr ""
 
-#: lib/menu.js:1048
+#: lib/menu.js:1108
 #, javascript-format
 msgid "Sent %s to %s"
 msgstr ""
 
-#: lib/menu.js:1053
+#: lib/menu.js:1113
 #, javascript-format
 msgid "Sending %s to %s"
 msgstr ""
 
-#: lib/menu.js:1062
+#: lib/menu.js:1122
 #, javascript-format
 msgid "Archiving %s"
 msgstr ""
 
-#: lib/menu.js:1073
+#: lib/menu.js:1133
 msgid "Could not create the archive"
 msgstr ""
 
-#: lib/menu.js:1172
+#: lib/menu.js:1232
 msgid "File chooser portal unavailable"
 msgstr ""
 
-#: lib/menu.js:1207
+#: lib/menu.js:1267
 #, javascript-format
 msgid "Received %s (%s) - click to open"
 msgstr ""
 
-#: lib/menu.js:1221
+#: lib/menu.js:1281
 #, javascript-format
 msgid "Copied %s to clipboard"
 msgstr ""
@@ -342,7 +378,7 @@ msgstr ""
 msgid "Network"
 msgstr ""
 
-#: lib/notify.js:33 prefs/help.js:45 prefs/notifications.js:62
+#: lib/notify.js:33 prefs/help.js:46 prefs/notifications.js:62
 msgid "Funnel"
 msgstr ""
 
@@ -421,125 +457,187 @@ msgstr ""
 msgid "Tailscale is installed: the menu is back"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:67
+#: lib/menu/publish-dialog.js:81
 #, javascript-format
 msgid "forwards TCP to %s"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:69
+#: lib/menu/publish-dialog.js:83
 #, javascript-format
 msgid "terminates TLS, forwards to %s"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:71
+#: lib/menu/publish-dialog.js:85
 #, javascript-format
 msgid "serves %s"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:73
+#: lib/menu/publish-dialog.js:87
 msgid "serves fixed text"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:75
+#: lib/menu/publish-dialog.js:89
 #, javascript-format
 msgid "proxies %s"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:77
+#: lib/menu/publish-dialog.js:91
 #, javascript-format
 msgid "%s, PROXY protocol v%d"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:116
+#: lib/menu/publish-dialog.js:145
 msgid "Manage Funnels"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:125
+#: lib/menu/publish-dialog.js:145
+msgid "Manage Serve"
+msgstr ""
+
+#: lib/menu/publish-dialog.js:153
 msgid "Published"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:134
+#: lib/menu/publish-dialog.js:153
+msgid "Shared in your tailnet"
+msgstr ""
+
+#: lib/menu/publish-dialog.js:162
 msgid "Remove all"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:165
+#: lib/menu/publish-dialog.js:194
 msgid "Publish"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:169
+#: lib/menu/publish-dialog.js:194
+msgid "Share"
+msgstr ""
+
+#: lib/menu/publish-dialog.js:199
 msgid "HTTPS"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:170
+#: lib/menu/publish-dialog.js:200
+msgid "HTTP"
+msgstr ""
+
+#: lib/menu/publish-dialog.js:201
 msgid "TCP"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:171
+#: lib/menu/publish-dialog.js:202
 msgid "TCP over TLS"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:174
+#: lib/menu/publish-dialog.js:205
 msgid "Type"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:187
+#: lib/menu/publish-dialog.js:218
 msgid "Local target"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:192
+#: lib/menu/publish-dialog.js:223
 msgid "/ (optional)"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:202
+#: lib/menu/publish-dialog.js:233
 msgid "Path"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:207 prefs/notifications.js:182
+#: lib/menu/publish-dialog.js:238 prefs/notifications.js:187
 msgid "Off"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:209
+#: lib/menu/publish-dialog.js:240
 msgid "PROXY protocol"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:217
+#: lib/menu/publish-dialog.js:249
 msgid "Public port"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:223 lib/menu/funnels-dialog.js:389
-msgid "Every public port is in use. Remove one to publish another."
+#: lib/menu/publish-dialog.js:253
+msgid "1 to 65535"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:230
+#: lib/menu/publish-dialog.js:265
+msgid "Port"
+msgstr ""
+
+#: lib/menu/publish-dialog.js:278
 msgid "Close"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:240
+#: lib/menu/publish-dialog.js:288
 msgid "Add"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:302
+#: lib/menu/publish-dialog.js:350
 msgid "Port, URL, unix:/socket, /path or text:…"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:303
+#: lib/menu/publish-dialog.js:351
 msgid "Port, host:port or unix:/socket"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:343
+#: lib/menu/publish-dialog.js:418
 msgid "Nothing is published yet."
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:388
+#: lib/menu/publish-dialog.js:419
+msgid "Nothing is shared yet."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:438
+#, javascript-format
+msgid "Port %d is published with Funnel."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:439
+#, javascript-format
+msgid "Port %d is shared with Serve."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:442
+#, javascript-format
+msgid "Port %d already serves this path."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:443
+#, javascript-format
+msgid "Port %d is already in use."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:483
 msgid "Every public port already serves this path."
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:424
+#: lib/menu/publish-dialog.js:484
+msgid "Every public port is in use. Remove one to publish another."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:490
+msgid "Enter a port between 1 and 65535."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:502
+msgid ""
+"HTTPS certificates are off for this tailnet; Tailscale will offer to turn "
+"them on."
+msgstr ""
+
+#: lib/menu/publish-dialog.js:540
 msgid "Copy address"
 msgstr ""
 
-#: lib/menu/funnels-dialog.js:433
+#: lib/menu/publish-dialog.js:549
 msgid "Remove funnel"
+msgstr ""
+
+#: lib/menu/publish-dialog.js:549
+msgid "Stop sharing"
 msgstr ""
 
 #: lib/menu/rows.js:152
@@ -875,28 +973,44 @@ msgstr ""
 msgid "All settings reset to defaults"
 msgstr ""
 
-#: prefs/help.js:34
+#: prefs/help.js:35
 msgid "Taildrop is disabled for this tailnet."
 msgstr ""
 
-#: prefs/help.js:37
+#: prefs/help.js:38
 msgid ""
 "Taildrop requires the feature to be enabled for the tailnet and the source "
 "and destination devices to be owned by the same user. Devices owned by a tag "
 "or by different users are not eligible."
 msgstr ""
 
-#: prefs/help.js:49
+#: prefs/help.js:50
 msgid "Funnel is not enabled for this tailnet."
 msgstr ""
 
-#: prefs/help.js:52
+#: prefs/help.js:53
 msgid ""
 "Funnel requires HTTPS certificates to be enabled tailnet-wide and the "
 "\"funnel\" node attribute granted to the current user."
 msgstr ""
 
-#: prefs/help.js:78
+#: prefs/help.js:58
+msgid "Serve over HTTPS"
+msgstr ""
+
+#: prefs/help.js:62
+msgid "HTTPS certificates are off for this tailnet."
+msgstr ""
+
+#: prefs/help.js:65
+msgid ""
+"Serve shares a local service with the rest of your tailnet. Over HTTP or TCP "
+"it works on any tailnet; over HTTPS, its default, it needs HTTPS "
+"certificates enabled in the tailnet's DNS settings. When they are off, "
+"Tailscale offers a link to turn them on the first time you serve over HTTPS."
+msgstr ""
+
+#: prefs/help.js:91
 #, javascript-format
 msgid ""
 "%s\n"
@@ -904,85 +1018,85 @@ msgid ""
 "Click to open: %s"
 msgstr ""
 
-#: prefs/help.js:91
+#: prefs/help.js:104
 msgid "Open admin"
 msgstr ""
 
-#: prefs/help.js:111
+#: prefs/help.js:124
 msgid "Available on this tailnet"
 msgstr ""
 
-#: prefs/help.js:112
+#: prefs/help.js:125
 msgid "Not available on this tailnet"
 msgstr ""
 
-#: prefs/help.js:123
+#: prefs/help.js:136
 msgid "Availability"
 msgstr ""
 
-#: prefs/help.js:125
+#: prefs/help.js:138
 msgid ""
-"What this tailnet allows. Both depend on your tailnet's admin settings, not "
+"What this tailnet allows. Each depends on your tailnet's admin settings, not "
 "on anything you can change here. (Hover over the info icon for details)"
 msgstr ""
 
-#: prefs/help.js:236
+#: prefs/help.js:249
 msgid "Help"
 msgstr ""
 
-#: prefs/help.js:260
+#: prefs/help.js:273
 msgid "About"
 msgstr ""
 
-#: prefs/help.js:262
+#: prefs/help.js:275
 msgid "What is running on this machine. Include it when reporting a problem."
 msgstr ""
 
-#: prefs/help.js:267
+#: prefs/help.js:280
 msgid "Extension"
 msgstr ""
 
-#: prefs/help.js:268
+#: prefs/help.js:281
 msgid "Tailscale daemon"
 msgstr ""
 
-#: prefs/help.js:269
+#: prefs/help.js:282
 msgid "Operating system"
 msgstr ""
 
-#: prefs/help.js:270
+#: prefs/help.js:283
 msgid "GNOME Shell"
 msgstr ""
 
-#: prefs/help.js:311
+#: prefs/help.js:324
 msgid "Daemon unreachable: this is the CLI version."
 msgstr ""
 
-#: prefs/help.js:337
+#: prefs/help.js:350
 msgid "Copy this information to the clipboard"
 msgstr ""
 
-#: prefs/help.js:349
+#: prefs/help.js:362
 msgid "Copied to clipboard"
 msgstr ""
 
-#: prefs/help.js:355
+#: prefs/help.js:368
 msgid "Project"
 msgstr ""
 
-#: prefs/help.js:360
+#: prefs/help.js:373
 msgid "Source code"
 msgstr ""
 
-#: prefs/help.js:361
+#: prefs/help.js:374
 msgid "Browse the extension's repository on GitHub."
 msgstr ""
 
-#: prefs/help.js:367
+#: prefs/help.js:380
 msgid "Report a problem"
 msgstr ""
 
-#: prefs/help.js:368
+#: prefs/help.js:381
 msgid "Open an issue on GitHub. Attach the information above."
 msgstr ""
 
@@ -1030,76 +1144,80 @@ msgstr ""
 msgid "Ports added and removed."
 msgstr ""
 
-#: prefs/notifications.js:67 prefs/notifications.js:177
+#: prefs/notifications.js:68
+msgid "Services shared in the tailnet and stopped."
+msgstr ""
+
+#: prefs/notifications.js:72 prefs/notifications.js:182
 msgid "Errors"
 msgstr ""
 
-#: prefs/notifications.js:68
+#: prefs/notifications.js:73
 msgid "Failures outside any category above."
 msgstr ""
 
-#: prefs/notifications.js:72
+#: prefs/notifications.js:77
 msgid "Other"
 msgstr ""
 
-#: prefs/notifications.js:73
+#: prefs/notifications.js:78
 msgid "Clipboard copies and manual refreshes."
 msgstr ""
 
-#: prefs/notifications.js:172
+#: prefs/notifications.js:177
 msgid "All"
 msgstr ""
 
-#: prefs/notifications.js:173
+#: prefs/notifications.js:178
 msgid "Report everything this category produces"
 msgstr ""
 
-#: prefs/notifications.js:178
+#: prefs/notifications.js:183
 msgid "Report only failures and warnings"
 msgstr ""
 
-#: prefs/notifications.js:183
+#: prefs/notifications.js:188
 msgid "Report nothing at all"
 msgstr ""
 
-#: prefs/notifications.js:223
+#: prefs/notifications.js:228
 msgid "All events"
 msgstr ""
 
-#: prefs/notifications.js:224
+#: prefs/notifications.js:229
 msgid "Apply one setting to every category below."
 msgstr ""
 
-#: prefs/notifications.js:264
+#: prefs/notifications.js:269
 msgid "Notifications"
 msgstr ""
 
-#: prefs/notifications.js:270
+#: prefs/notifications.js:275
 msgid "Presentation"
 msgstr ""
 
-#: prefs/notifications.js:272
+#: prefs/notifications.js:277
 msgid ""
 "Reports post as native GNOME notifications, stacking into a browsable "
 "history under a single Tailscale entry. How long a banner stays on screen is "
 "GNOME's own setting, not this extension's."
 msgstr ""
 
-#: prefs/notifications.js:281
+#: prefs/notifications.js:286
 msgid "Minimum pending duration"
 msgstr ""
 
-#: prefs/notifications.js:283
+#: prefs/notifications.js:288
 msgid ""
 "Milliseconds the pending state stays visible before showing the result (0 to "
 "3000). Prevents flicker on instant actions."
 msgstr ""
 
-#: prefs/notifications.js:303
+#: prefs/notifications.js:308
 msgid "Events"
 msgstr ""
 
-#: prefs/notifications.js:305
+#: prefs/notifications.js:310
 msgid ""
 "How much each kind of event may report. All lets everything through, Errors "
 "keeps only failures and warnings, Off silences the category completely."
@@ -1149,15 +1267,19 @@ msgstr ""
 msgid "Open Funnels"
 msgstr ""
 
-#: prefs/shortcuts.js:152
+#: prefs/shortcuts.js:150
+msgid "Open Serve"
+msgstr ""
+
+#: prefs/shortcuts.js:156
 msgid "Shortcuts"
 msgstr ""
 
-#: prefs/shortcuts.js:157
+#: prefs/shortcuts.js:161
 msgid "Keyboard shortcuts"
 msgstr ""
 
-#: prefs/shortcuts.js:159
+#: prefs/shortcuts.js:163
 msgid "Click a row to capture a key combination. Backspace to clear."
 msgstr ""
 

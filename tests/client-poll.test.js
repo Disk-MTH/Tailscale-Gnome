@@ -281,6 +281,24 @@ suite('refresh: the LocalAPI comes first', () => {
         client.destroy();
     });
 
+    test('one read of the serve config fills both Funnel and Serve', () => {
+        const served = {
+            ...JSON.parse(FUNNEL),
+            TCP: { ...JSON.parse(FUNNEL).TCP, 5432: { TCPForward: '127.0.0.1:5432' } },
+        };
+        const { client } = fakeClient({
+            api: { ...WITH_PROFILES, '/localapi/v0/serve-config': served },
+        });
+        const snap = settle(client.refresh());
+        assertEq(snap.funnels.length, 1);
+        assertEq(snap.serves.length, 1);
+        assertEq(snap.serves[0].kind, 'tcp');
+        // And the light poll carries both forward.
+        const light = settle(client.refresh({ full: false }));
+        assertDeepEq(light.serves, snap.serves);
+        client.destroy();
+    });
+
     test('the serve config\'s `null` is no funnels, as from the CLI', () => {
         const { client } = fakeClient({
             api: { ...API, '/localapi/v0/serve-config': null },

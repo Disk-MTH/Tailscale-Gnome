@@ -127,6 +127,13 @@
                 adds one. The name is kept so an existing binding is not
                 lost.</description>
         </key>
+        <key name="shortcut-open-serve" type="as">
+            <default><![CDATA[[]]]></default>
+            <summary>Shortcut: open the Serve dialog</summary>
+            <description>Opens the dialog that lists what this device shares
+                within the tailnet with Tailscale Serve, and adds
+                more.</description>
+        </key>
 
         <key name="taildrop-accept" type="b">
             <default>false</default>
@@ -187,6 +194,16 @@
                 ACL on its own. Read by the preferences window, which runs
                 in its own process and cannot see the snapshot the menu
                 itself gates on.</description>
+        </key>
+        <key name="feature-https-available" type="b">
+            <default>false</default>
+            <summary>Mirror: HTTPS certificates on for this tailnet</summary>
+            <description>Written by the extension from the capability map
+                in every status poll, like the two keys above. HTTPS
+                certificates are what Serve over HTTPS needs (Serve over
+                HTTP or TCP does not). Read by the preferences window, which
+                runs in its own process and cannot see the
+                snapshot.</description>
         </key>
         <key name="backend-status"
              enum="org.gnome.shell.extensions.tailscale-gnome.backend-status">
@@ -256,6 +273,11 @@
              enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
             <default>'all'</default>
             <summary>Notify about Funnel ports</summary>
+        </key>
+        <key name="notify-serve"
+             enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">
+            <default>'all'</default>
+            <summary>Notify about Serve entries</summary>
         </key>
         <key name="notify-errors"
              enum="org.gnome.shell.extensions.tailscale-gnome.notify-mode">

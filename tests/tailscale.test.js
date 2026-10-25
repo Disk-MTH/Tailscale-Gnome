@@ -8,9 +8,10 @@ import GLib from 'gi://GLib';
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import { TailscaleClient } from '../lib/tailscale.js';
 import {
-    accountsFromProfiles, backendStatus, busMessageMatters, funnelAddArgs,
-    funnelClash, funnelMount, funnelRemoveArgs, parseFunnels, parseSwitchList,
-    parseWroteLine, peersFromStatus,
+    accountsFromProfiles, backendStatus, buildSnapshot, busMessageMatters,
+    funnelAddArgs, funnelClash, funnelMount, funnelRemoveArgs, parseFunnels,
+    parseServeConfig, parseServes, parseSwitchList, parseWroteLine,
+    peersFromStatus, serveAddArgs, serveClash, serveRemoveArgs,
 } from '../lib/tailscale-parse.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
@@ -534,5 +535,139 @@ suite('funnelClash', () => {
     test('a free port is free for every kind', () => {
         for (const kind of ['https', 'tcp', 'tls-tcp'])
             assertEq(funnelClash(funnels, { kind, httpsPort: 9999 }), null);
+    });
+});
+
+// One config, both features: a funnel on 443, and inside the tailnet an
+// HTTP server on 80 with two mounts, a raw TCP forwarder on 5432 and an
+// HTTPS one on 8443. Only the flag map tells the public part apart.
+const MIXED = {
+    TCP: {
+        443: { HTTPS: true },
+        80: { HTTP: true },
+        8443: { HTTPS: true },
+        5432: { TCPForward: '127.0.0.1:5432' },
+    },
+    Web: {
+        'box.ts.net:443': { Handlers: { '/': { Proxy: 'http://127.0.0.1:3000' } } },
+        'box.ts.net:80': {
+            Handlers: {
+                '/': { Proxy: 'http://127.0.0.1:8080' },
+                '/files/': { Path: '/srv/files' },
+            },
+        },
+        'box.ts.net:8443': { Handlers: { '/': { Proxy: 'https+insecure://localhost:9443' } } },
+    },
+    AllowFunnel: { 'box.ts.net:443': true },
+};
+
+suite('parseServeConfig: Funnel and Serve in one document', () => {
+    const all = parseServeConfig(MIXED);
+
+    test('the flag map alone decides what is public', () => {
+        assertDeepEq(parseFunnels(MIXED).map((e) => e.httpsPort), [443]);
+        assertDeepEq(parseServes(MIXED).map((e) => [e.httpsPort, e.path]),
+            [[80, '/'], [80, '/files/'], [5432, ''], [8443, '/']]);
+        assertTrue(all.every((e) => e.public === (e.httpsPort === 443)));
+    });
+
+    test('HTTP is told from HTTPS by the port\'s own flag', () => {
+        const kinds = Object.fromEntries(all.map((e) => [e.httpsPort, e.kind]));
+        assertEq(kinds[80], 'http');
+        assertEq(kinds[8443], 'https');
+        assertEq(kinds[5432], 'tcp');
+    });
+
+    test('a TCP forwarder borrows its host from the rest of the config', () => {
+        assertEq(all.find((e) => e.httpsPort === 5432).host, 'box.ts.net');
+    });
+
+    test('a TCP forwarder alone in the config has no host to name', () => {
+        const lone = parseServeConfig({ TCP: { 22: { TCPForward: '127.0.0.1:22' } } });
+        assertEq(lone.length, 1);
+        assertEq(lone[0].host, '');
+        assertEq(lone[0].public, false);
+    });
+});
+
+suite('serveClash', () => {
+    const all = parseServeConfig(MIXED);
+
+    test('Serve never lands on a funnel\'s port, nor Funnel on a served one', () => {
+        // Serving would take the funnel down; publishing would put the
+        // tailnet-only mounts on the internet.
+        assertTrue(serveClash(all, { kind: 'https', httpsPort: 443, path: '/x' }) !== null);
+        assertTrue(funnelClash(all, { kind: 'https', httpsPort: 8443, path: '/x' }) !== null);
+    });
+
+    test('a new path joins a served port of the same scheme', () => {
+        assertEq(serveClash(all, { kind: 'http', httpsPort: 80, path: '/api' }), null);
+    });
+
+    test('but HTTP and HTTPS never share one', () => {
+        assertTrue(serveClash(all, { kind: 'https', httpsPort: 80, path: '/api' }) !== null);
+    });
+
+    test('a TCP forwarder takes its port alone', () => {
+        assertTrue(serveClash(all, { kind: 'tcp', httpsPort: 80 }) !== null);
+        assertTrue(serveClash(all, { kind: 'http', httpsPort: 5432 }) !== null);
+    });
+
+    test('any other port is free', () => {
+        assertEq(serveClash(all, { kind: 'tcp', httpsPort: 2222 }), null);
+    });
+});
+
+suite('serve commands', () => {
+    test('the plain case: HTTPS on 443, in the background', () => {
+        assertDeepEq(serveAddArgs({ httpsPort: 443, target: '3000' }),
+            ['serve', '--bg', '--yes', '--https=443', '3000']);
+    });
+
+    test('HTTP, with a path', () => {
+        assertDeepEq(
+            serveAddArgs({ kind: 'http', httpsPort: 8080, target: '3000', path: 'app' }),
+            ['serve', '--bg', '--yes', '--http=8080', '--set-path=/app', '3000']);
+    });
+
+    test('TCP with PROXY protocol', () => {
+        assertDeepEq(
+            serveAddArgs({ kind: 'tcp', httpsPort: 5432, target: '5432', proxyProtocol: 1 }),
+            ['serve', '--bg', '--yes', '--tcp=5432', '--proxy-protocol=1', '5432']);
+    });
+
+    test('removal goes through `serve`, by port and mount', () => {
+        const [http] = parseServes(MIXED);
+        assertDeepEq(serveRemoveArgs(http), ['serve', '--http=80', '--set-path=/', 'off']);
+        assertDeepEq(serveRemoveArgs({ kind: 'tcp', httpsPort: 5432 }),
+            ['serve', '--tcp=5432', 'off']);
+    });
+
+    test('the funnel wrappers are the same vectors under `funnel`', () => {
+        const spec = { kind: 'tcp', httpsPort: 10000, target: '22' };
+        assertDeepEq(funnelAddArgs(spec).slice(1), serveAddArgs(spec).slice(1));
+        assertEq(funnelAddArgs(spec)[0], 'funnel');
+        assertEq(funnelRemoveArgs(spec)[0], 'funnel');
+    });
+});
+
+suite('buildSnapshot: what Serve needs from the status', () => {
+    const status = {
+        BackendState: 'Running',
+        Self: { HostName: 'box', DNSName: 'box.ts.net.', CapMap: { https: null } },
+    };
+
+    test('HTTPS certificates and our own DNS name', () => {
+        const snap = buildSnapshot(status, {}, [], true, [], parseServes(MIXED));
+        assertEq(snap.httpsAvailable, true);
+        assertEq(snap.selfDnsName, 'box.ts.net');
+        assertEq(snap.serves.length, 4);
+    });
+
+    test('no certificates is a no, no CapMap is a don\'t know', () => {
+        const without = { ...status, Self: { ...status.Self, CapMap: {} } };
+        assertEq(buildSnapshot(without, {}, [], true, []).httpsAvailable, false);
+        const old = { ...status, Self: { HostName: 'box' } };
+        assertEq(buildSnapshot(old, {}, [], true, []).httpsAvailable, null);
     });
 });

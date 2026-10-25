@@ -63,6 +63,11 @@ const NOTIFY_DEFS = [
         subtitle: () => _("Ports added and removed."),
     },
     {
+        key: "notify-serve",
+        title: () => _("Serve"),
+        subtitle: () => _("Services shared in the tailnet and stopped."),
+    },
+    {
         key: "notify-errors",
         title: () => _("Errors"),
         subtitle: () => _("Failures outside any category above."),
@@ -141,7 +146,7 @@ const ModeToggleGroup = GObject.registerClass(
         }
 
         // Null is a value here, not an absence: the "All events" row blanks
-        // the group when the nine categories disagree.
+        // the group when the ten categories disagree.
         set active_name(name) {
             this._apply(name || null);
         }
@@ -242,7 +247,7 @@ function _makeAllEventsRow(settings) {
         if (syncing) return;
         const mode = group.active_name;
         // Null means sync() blanked it for a mixed list, not a click. There
-        // is nothing to apply, and applying "" would clear nine keys.
+        // is nothing to apply, and applying "" would clear ten keys.
         if (!mode) return;
         syncing = true;
         for (const k of keys) settings.set_string(k, mode);
@@ -253,7 +258,7 @@ function _makeAllEventsRow(settings) {
     sync();
 
     row.add_suffix(group);
-    // Resets the nine category keys only, not the whole page, and not the
+    // Resets the ten category keys only, not the whole page, and not the
     // pending-duration spinner above it.
     row.add_suffix(resetButton(settings, keys));
     return row;

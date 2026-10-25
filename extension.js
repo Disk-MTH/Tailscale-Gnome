@@ -33,6 +33,7 @@ const SHORTCUT_KEYS = [
     'shortcut-open-admin-panel',
     'shortcut-send-file',
     'shortcut-add-funnel',
+    'shortcut-open-serve',
 ];
 
 // Session-bus interface exposed for the Nautilus right-click scripts so they
@@ -180,6 +181,7 @@ export default class TailscaleGnomeExtension extends Extension {
         for (const [key, value] of [
             ['feature-taildrop-available', snap.taildropAvailable],
             ['feature-funnels-available', snap.funnelsAvailable],
+            ['feature-https-available', snap.httpsAvailable],
         ]) {
             if (typeof value !== 'boolean') continue;
             if (this._settings.get_boolean(key) === value) continue;
@@ -405,6 +407,8 @@ export default class TailscaleGnomeExtension extends Extension {
             };
         case 'shortcut-add-funnel':
             return () => this._indicator.openFunnels();
+        case 'shortcut-open-serve':
+            return () => this._indicator.openServe();
         default:
             return null;
         }

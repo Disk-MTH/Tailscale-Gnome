@@ -6,6 +6,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **Tailscale Serve.** A **Serve** button next to Taildrop and Funnels, and
+  a keyboard shortcut, open a dialog that lists what this device shares
+  within the tailnet and shares more: HTTPS, HTTP, raw TCP or
+  TLS-terminated TCP, on any port, with the same targets and options as
+  Funnel (a path, PROXY protocol), and Remove all. Serve over HTTP and TCP
+  needs nothing from the tailnet's admin; over HTTPS it needs HTTPS
+  certificates, which the Help page now reports next to Taildrop and Funnel,
+  and which Tailscale offers to turn on, with a link the extension opens,
+  the first time they are needed. Serve has its own notification category.
+- Funnel and Serve share one serve config, and a port is either on the
+  internet or tailnet-only as a whole, so each dialog refuses a port the
+  other uses: publishing a funnel next to a tailnet-only service would put
+  that service on the internet, and serving next to a funnel would take
+  the funnel down.
 - **More of Funnel in the Funnels dialog.** Besides a local port, a funnel
   can now publish anything `tailscale funnel` takes as a target: an address
   or URL (`https+insecure://` included), a Unix socket, a file or folder,

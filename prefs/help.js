@@ -19,7 +19,8 @@ import { fmt as _fmt } from "../lib/util.js";
 import { run as _spawn, tailscaleBin as _bin } from "../lib/spawn.js";
 import { makeBackendGroup, watchSetting } from "./common.js";
 
-// Taildrop and Funnel can be forbidden tailnet-wide by an administrator.
+// Taildrop and Funnel can be forbidden tailnet-wide by an administrator,
+// and Serve over HTTPS needs certificates the admin turns on.
 // That is a fact to report, not a setting: each row shows what the shell's
 // last poll saw and points at the admin page when the answer is no. There
 // is nothing to re-check by hand: the extension reads availability out of
@@ -50,6 +51,18 @@ const AVAILABILITY_DEFS = [
         infoText: () =>
             _(
                 'Funnel requires HTTPS certificates to be enabled tailnet-wide and the "funnel" node attribute granted to the current user.',
+            ),
+    },
+    {
+        availabilityKey: "feature-https-available",
+        title: () => _("Serve over HTTPS"),
+        adminUrl: "https://login.tailscale.com/admin/dns",
+        docUrl: "https://tailscale.com/docs/features/tailscale-serve",
+        unavailableHint: () =>
+            _("HTTPS certificates are off for this tailnet."),
+        infoText: () =>
+            _(
+                "Serve shares a local service with the rest of your tailnet. Over HTTP or TCP it works on any tailnet; over HTTPS, its default, it needs HTTPS certificates enabled in the tailnet's DNS settings. When they are off, Tailscale offers a link to turn them on the first time you serve over HTTPS.",
             ),
     },
 ];
@@ -122,7 +135,7 @@ function _makeAvailabilityGroup(settings) {
     const group = new Adw.PreferencesGroup({
         title: _("Availability"),
         description: _(
-            "What this tailnet allows. Both depend on your tailnet's admin settings, not on anything you can change here. (Hover over the info icon for details)",
+            "What this tailnet allows. Each depends on your tailnet's admin settings, not on anything you can change here. (Hover over the info icon for details)",
         ),
     });
     for (const def of AVAILABILITY_DEFS)
