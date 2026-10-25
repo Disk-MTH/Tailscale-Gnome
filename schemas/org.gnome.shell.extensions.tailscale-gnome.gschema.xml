@@ -14,6 +14,12 @@
         <value nick="not-running" value="2"/>
     </enum>
 
+    <enum id="org.gnome.shell.extensions.tailscale-gnome.copy-buttons">
+        <value nick="ip" value="0"/>
+        <value nick="dns" value="1"/>
+        <value nick="both" value="2"/>
+    </enum>
+
     <schema id="org.gnome.shell.extensions.tailscale-gnome"
             path="/org/gnome/shell/extensions/tailscale-gnome/">
 
@@ -21,9 +27,24 @@
             <default>3</default>
             <range min="1" max="60"/>
             <summary>Status poll interval (seconds)</summary>
-            <description>How often the extension calls `tailscale status --json`
-                to refresh its UI. Lower values feel snappier but slightly
-                increase CPU/wakeups.</description>
+            <description>How often the extension re-reads the daemon's
+                state when it cannot subscribe to its IPN bus (tailscaled
+                not answering on /var/run/tailscale/tailscaled.sock). While
+                the subscription is live the daemon pushes every change
+                itself and the extension only checks back once a minute,
+                or at this interval if that is longer.</description>
+        </key>
+
+        <key name="copy-buttons"
+             enum="org.gnome.shell.extensions.tailscale-gnome.copy-buttons">
+            <default>'both'</default>
+            <summary>Copy buttons on device and peer rows</summary>
+            <description>Which copy buttons the device row and every peer
+                row of the Quick Settings menu carry: "ip" for the Tailscale
+                IP only, "dns" for the Magic DNS name only, "both" for one
+                button each. The Magic DNS name is only offered while Magic
+                DNS is on; a row set to "dns" then offers the IP
+                instead.</description>
         </key>
 
         <key name="show-indicator" type="b">

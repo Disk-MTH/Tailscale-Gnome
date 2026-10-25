@@ -137,6 +137,44 @@ function _makeExitNodeIndicatorRow(settings, def) {
     return row;
 }
 
+// The Quick Settings menu's own options. One for now: which copy buttons
+// the device and peer rows carry. A combo rather than three switches,
+// because the three answers exclude each other and none of them is "none".
+const COPY_BUTTON_MODES = ["ip", "dns", "both"];
+
+function _makeMenuGroup(settings) {
+    const group = new Adw.PreferencesGroup({
+        title: _("Quick Settings menu"),
+    });
+
+    const row = new Adw.ComboRow({
+        title: _("Copy buttons"),
+        subtitle: _(
+            "What the buttons on the device and peer rows copy. The Magic " +
+                "DNS name needs Magic DNS on; without it the IP is offered.",
+        ),
+        model: Gtk.StringList.new([
+            _("IP address"),
+            _("Magic DNS name"),
+            _("Both"),
+        ]),
+    });
+    const sync = () => {
+        const i = COPY_BUTTON_MODES.indexOf(settings.get_string("copy-buttons"));
+        if (i >= 0 && row.selected !== i) row.selected = i;
+    };
+    row.connect("notify::selected", () => {
+        const mode = COPY_BUTTON_MODES[row.selected];
+        if (mode && settings.get_string("copy-buttons") !== mode)
+            settings.set_string("copy-buttons", mode);
+    });
+    watchSetting(row, settings, "copy-buttons", sync);
+    sync();
+    row.add_suffix(resetButton(settings, "copy-buttons"));
+    group.add(row);
+    return group;
+}
+
 export function makeGeneralPage(settings) {
     const page = new Adw.PreferencesPage({
         title: _("General"),
@@ -198,6 +236,9 @@ export function makeGeneralPage(settings) {
         }),
     );
 
+    /* ------------------------------- Menu --------------------------- */
+    page.add(_makeMenuGroup(settings));
+
     /* ----------------------------- Taildrop ------------------------- */
     page.add(makeTaildropGroup(settings));
 
@@ -209,7 +250,7 @@ export function makeGeneralPage(settings) {
 
     const pollRow = new Adw.SpinRow({
         title: _("Poll interval"),
-        subtitle: _("Seconds between status refreshes (1 to 60)."),
+        subtitle: _("How often to check when the daemon cannot push its updates, in seconds (1 to 60)."),
         adjustment: new Gtk.Adjustment({
             lower: 1,
             upper: 60,

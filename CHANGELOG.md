@@ -3,6 +3,63 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- **More of Funnel in the Funnels dialog.** Besides a local port, a funnel
+  can now publish anything `tailscale funnel` takes as a target: an address
+  or URL (`https+insecure://` included), a Unix socket, a file or folder,
+  or fixed text (`text:…`). It can be mounted under a path
+  (`--set-path`), several paths sharing one public port, and it can be a raw
+  TCP forwarder (`--tcp`) or one behind TLS terminated by Tailscale
+  (`--tls-terminated-tcp`), with an optional PROXY protocol header
+  (`--proxy-protocol`). The list shows each of them with what it serves.
+- **Remove all**, in the Funnels dialog. It takes the listed funnels down
+  one by one rather than running `tailscale funnel reset`, which would also
+  wipe tailnet-only `tailscale serve` entries the dialog does not show.
+
+### Changed
+- **Copying is one click.** Device and peer rows carry their copy buttons
+  directly, **IP** and **DNS**, instead of one button that unfolded a
+  chooser. Which ones a row carries is a new setting, General → **Copy
+  buttons**: the IP, the Magic DNS name, or both (the default). Device
+  names are written, and copied, in lower case, the way Magic DNS spells
+  them.
+- **Accept routes** no longer lists `0.0.0.0/0` and `::/0`. Every peer
+  offering itself as an exit node advertises both; the Exit node submenu
+  already says which ones those are.
+
+### Fixed
+- **Periodic micro-stutter, most visible in video on battery (#9).** Every
+  poll (every 3 s by default) started two `tailscale` processes from GNOME
+  Shell's own process, and on a power-capped laptop that was enough to drop
+  frames each time. The daemon's state is now read straight off its
+  LocalAPI socket, the interface the CLI is itself a client of: same JSON,
+  no process, about a millisecond instead of about thirty of CPU per read.
+  Opening the menu no longer starts any process either (it used to start
+  four), the profile list included.
+
+### Changed
+- **No more polling while the daemon can say what changed.** The extension
+  subscribes to tailscaled's IPN bus and re-reads its state only when told
+  to, so a change made from a terminal or the admin console shows up within
+  a quarter of a second, and an idle tailnet costs nothing. While the
+  subscription is live the timer only checks back once a minute. The
+  **Poll interval** setting now applies only when the socket cannot be
+  reached, in which case everything goes through the CLI as before.
+- A peer starting or stopping traffic no longer rebuilds the menu: that
+  flag is not shown anywhere, so it no longer counts as a change.
+- The peers, exit nodes, tailnets and routes submenus are no longer rebuilt
+  while nobody can see them. A change that lands while the menu is closed
+  marks a folded submenu stale, and it is rebuilt when the menu opens; on a
+  large tailnet that rebuild was most of the cost of every update.
+- Bus messages that cannot change anything on screen are ignored: peers
+  roaming, re-handshaking or changing relay, Taildrop transfer progress,
+  health and version news. On a large tailnet those are most of the
+  traffic, and each one used to cost a full re-read of the daemon's state.
+  Anything not known to be harmless still counts, and the once-a-minute
+  check bounds whatever a wrong guess could cost.
+
 ## [1.1.0] - 2026-10-09
 
 ### Fixed

@@ -8,7 +8,9 @@ import GLib from 'gi://GLib';
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import { TailscaleClient } from '../lib/tailscale.js';
 import {
-    backendStatus, parseWroteLine, peersFromStatus,
+    accountsFromProfiles, backendStatus, busMessageMatters, funnelAddArgs,
+    funnelClash, funnelMount, funnelRemoveArgs, parseFunnels, parseSwitchList,
+    parseWroteLine, peersFromStatus,
 } from '../lib/tailscale-parse.js';
 
 // Enabling Funnel makes the control plane push its ingress relays into our
@@ -288,5 +290,249 @@ suite('backendStatus', () => {
             backendState: 'NeedsLogin',
             loggedOut: true,
         }), 'ready');
+    });
+});
+
+// The LocalAPI's profile list has to land on the same rows `switch --list`
+// prints, since the menu cannot tell which of the two it came from.
+suite('accountsFromProfiles', () => {
+    const work = {
+        ID: '13ee', Name: 'me@example.com',
+        NetworkProfile: { DomainName: 'corp.example', DisplayName: 'Corp' },
+    };
+    const own = {
+        ID: '3c95', Name: 'me@example.com',
+        NetworkProfile: { DomainName: 'me@example.com' },
+    };
+
+    test('the rows the CLI prints for the same profiles', () => {
+        const cli = parseSwitchList(
+            'ID    Tailnet          Account\n' +
+            '13ee  Corp             me@example.com*\n' +
+            '3c95  me@example.com   me@example.com\n');
+        assertDeepEq(accountsFromProfiles(work, [work, own]), cli);
+    });
+
+    test('the domain stands in for a missing display name', () => {
+        assertEq(accountsFromProfiles(null, [own])[0].tailnet, 'me@example.com');
+    });
+
+    test('no current profile marks none', () => {
+        const rows = accountsFromProfiles({}, [work, own]);
+        assertTrue(rows.every((a) => !a.current));
+    });
+
+    test('a profile with no tailnet yet is left out, as by the CLI', () => {
+        assertDeepEq(accountsFromProfiles(null, [{ ID: 'x', Name: 'n' }]), []);
+    });
+
+    test('anything but a list is no profiles', () => {
+        assertDeepEq(accountsFromProfiles(null, null), []);
+        assertDeepEq(accountsFromProfiles(null, {}), []);
+    });
+
+    // The text parser splits on runs of two spaces; JSON has no such trap.
+    test('a tailnet name with two spaces survives', () => {
+        const odd = { ID: 'a', Name: 'me', NetworkProfile: { DisplayName: 'My  Net' } };
+        assertEq(accountsFromProfiles(odd, [odd])[0].tailnet, 'My  Net');
+    });
+});
+
+// What is worth a re-read of the daemon's state. Wrongly dropping a message
+// costs up to a minute of staleness; wrongly keeping one costs a read. So
+// the tests below pin the drops, and everything else must stay a yes.
+suite('busMessageMatters', () => {
+    const msg = (o) => JSON.stringify({ Version: '1.104.2', ErrMessage: null, ...o });
+
+    test('state, prefs, our own node, peers coming and going: yes', () => {
+        assertTrue(busMessageMatters(msg({ State: 6 })));
+        assertTrue(busMessageMatters(msg({ Prefs: { WantRunning: true } })));
+        assertTrue(busMessageMatters(msg({ SelfChange: { ID: 1 } })));
+        assertTrue(busMessageMatters(msg({ PeersChanged: [{ ID: 2 }] })));
+        assertTrue(busMessageMatters(msg({ PeersRemoved: [2] })));
+        assertTrue(busMessageMatters(msg({ LoginFinished: {} })));
+        assertTrue(busMessageMatters(msg({ ErrMessage: 'boom' })));
+    });
+
+    test('a peer going on or offline: yes, offline included', () => {
+        assertTrue(busMessageMatters(msg({ PeerChangedPatch: [{ NodeID: 2, Online: true }] })));
+        assertTrue(busMessageMatters(msg({ PeerChangedPatch: [{ NodeID: 2, Online: false }] })));
+    });
+
+    test('peers roaming and re-handshaking: no', () => {
+        assertEq(busMessageMatters(msg({
+            PeerChangedPatch: [
+                { NodeID: 2, LastSeen: '2026-10-25T12:00:00Z' },
+                { NodeID: 3, Endpoints: ['1.2.3.4:41641'], DERPRegion: 4 },
+            ],
+        })), false);
+    });
+
+    test('one patch that matters in a batch of noise: yes', () => {
+        assertTrue(busMessageMatters(msg({
+            PeerChangedPatch: [
+                { NodeID: 2, LastSeen: '2026-10-25T12:00:00Z' },
+                { NodeID: 3, Online: true },
+            ],
+        })));
+    });
+
+    test('a patch field nobody knows yet: yes', () => {
+        assertTrue(busMessageMatters(msg({ PeerChangedPatch: [{ NodeID: 2, Shiny: 1 }] })));
+    });
+
+    test('health, transfers, version news on their own: no', () => {
+        assertEq(busMessageMatters(msg({ Health: { Warnings: {} } })), false);
+        assertEq(busMessageMatters(msg({ IncomingFiles: [{ Name: 'a' }] })), false);
+        assertEq(busMessageMatters(msg({ ClientVersion: { RunningLatest: true } })), false);
+        assertEq(busMessageMatters(msg({})), false, 'just the version');
+    });
+
+    test('a field nobody knows yet: yes', () => {
+        assertTrue(busMessageMatters(msg({ SomethingNew: { a: 1 } })));
+    });
+
+    test('a network map too big to decode, or garbage: yes', () => {
+        assertTrue(busMessageMatters(null));
+        assertTrue(busMessageMatters('{not json'));
+        assertTrue(busMessageMatters('42'));
+    });
+});
+
+// A serve config with one of everything Funnel can publish, shaped after
+// ipn.ServeConfig: TCP keyed by port, Web by host:port, Handlers by mount.
+const SERVE = {
+    TCP: {
+        443: { HTTPS: true },
+        8443: { TCPForward: '127.0.0.1:5432', ProxyProtocol: 2 },
+        10000: { TCPForward: '127.0.0.1:22', TerminateTLS: 'box.ts.net' },
+    },
+    Web: {
+        'box.ts.net:443': {
+            Handlers: {
+                '/': { Proxy: 'http://127.0.0.1:3000' },
+                '/docs/': { Path: '/srv/docs' },
+                '/hi': { Text: 'Hello' },
+            },
+        },
+    },
+    AllowFunnel: {
+        'box.ts.net:443': true,
+        'box.ts.net:8443': true,
+        'box.ts.net:10000': true,
+        // What `funnel --tcp=… off` leaves behind: the flag, no handler.
+        'box.ts.net:9999': true,
+    },
+};
+
+suite('parseFunnels', () => {
+    const funnels = parseFunnels(SERVE);
+
+    test('one entry per HTTPS mount, sorted by port then path', () => {
+        const https = funnels.filter((f) => f.kind === 'https');
+        assertDeepEq(https.map((f) => [f.path, f.handler, f.target]), [
+            ['/', 'proxy', 'http://127.0.0.1:3000'],
+            ['/docs/', 'path', '/srv/docs'],
+            ['/hi', 'text', 'Hello'],
+        ]);
+        assertTrue(https.every((f) => f.httpsPort === 443 && f.host === 'box.ts.net'));
+    });
+
+    test('a TCP forwarder, with its PROXY protocol', () => {
+        const f = funnels.find((x) => x.httpsPort === 8443);
+        assertEq(f.kind, 'tcp');
+        assertEq(f.target, '127.0.0.1:5432');
+        assertEq(f.proxyProtocol, 2);
+        assertEq(f.path, '');
+    });
+
+    test('a TLS-terminated one', () => {
+        const f = funnels.find((x) => x.httpsPort === 10000);
+        assertEq(f.kind, 'tls-tcp');
+        assertEq(f.target, '127.0.0.1:22');
+    });
+
+    test('a port the flag opens with nothing behind it is not a funnel', () => {
+        assertTrue(!funnels.some((f) => f.httpsPort === 9999));
+    });
+
+    test('a port served but not opened to the internet is not one either', () => {
+        const closed = { ...SERVE, AllowFunnel: { 'box.ts.net:443': false } };
+        assertDeepEq(parseFunnels(closed), []);
+    });
+
+    test('no config at all is no funnels', () => {
+        assertDeepEq(parseFunnels(null), []);
+        assertDeepEq(parseFunnels({}), []);
+    });
+});
+
+suite('funnel commands', () => {
+    test('the plain HTTPS case is the command 1.1.0 ran', () => {
+        assertDeepEq(funnelAddArgs({ httpsPort: 443, target: '3000' }),
+            ['funnel', '--bg', '--yes', '--https=443', '3000']);
+    });
+
+    test('a path becomes --set-path, "/" is the default and left out', () => {
+        assertDeepEq(
+            funnelAddArgs({ kind: 'https', httpsPort: 8443, target: '3000', path: 'api' }),
+            ['funnel', '--bg', '--yes', '--https=8443', '--set-path=/api', '3000']);
+        assertDeepEq(
+            funnelAddArgs({ kind: 'https', httpsPort: 443, target: '3000', path: '/' }),
+            ['funnel', '--bg', '--yes', '--https=443', '3000']);
+    });
+
+    test('TCP kinds take --proxy-protocol, never --set-path', () => {
+        assertDeepEq(
+            funnelAddArgs({ kind: 'tcp', httpsPort: 10000, target: '5432', path: '/x', proxyProtocol: 2 }),
+            ['funnel', '--bg', '--yes', '--tcp=10000', '--proxy-protocol=2', '5432']);
+        assertDeepEq(
+            funnelAddArgs({ kind: 'tls-tcp', httpsPort: 8443, target: 'unix:/run/x.sock' }),
+            ['funnel', '--bg', '--yes', '--tls-terminated-tcp=8443', 'unix:/run/x.sock']);
+    });
+
+    test('text with spaces stays one argument', () => {
+        const args = funnelAddArgs({ httpsPort: 443, target: 'text:Hello world' });
+        assertEq(args[args.length - 1], 'text:Hello world');
+    });
+
+    test('removal names exactly one funnel', () => {
+        const [root, docs] = parseFunnels(SERVE);
+        assertDeepEq(funnelRemoveArgs(root), ['funnel', '--https=443', '--set-path=/', 'off']);
+        assertDeepEq(funnelRemoveArgs(docs), ['funnel', '--https=443', '--set-path=/docs/', 'off']);
+        assertDeepEq(funnelRemoveArgs({ kind: 'tcp', httpsPort: 8443 }),
+            ['funnel', '--tcp=8443', 'off']);
+        assertDeepEq(funnelRemoveArgs({ kind: 'tls-tcp', httpsPort: 10000 }),
+            ['funnel', '--tls-terminated-tcp=10000', 'off']);
+    });
+
+    test('mount points', () => {
+        assertEq(funnelMount(''), '/');
+        assertEq(funnelMount('  '), '/');
+        assertEq(funnelMount('api'), '/api');
+        assertEq(funnelMount('/docs/'), '/docs/');
+    });
+});
+
+suite('funnelClash', () => {
+    const funnels = parseFunnels(SERVE);
+
+    test('an HTTPS mount can join a port under a new path', () => {
+        assertEq(funnelClash(funnels, { kind: 'https', httpsPort: 443, path: '/new' }), null);
+    });
+
+    test('but not under one already served', () => {
+        assertTrue(funnelClash(funnels, { kind: 'https', httpsPort: 443, path: '' }) !== null);
+        assertTrue(funnelClash(funnels, { kind: 'https', httpsPort: 443, path: 'hi' }) !== null);
+    });
+
+    test('HTTPS and TCP never share a port', () => {
+        assertTrue(funnelClash(funnels, { kind: 'https', httpsPort: 8443, path: '/x' }) !== null);
+        assertTrue(funnelClash(funnels, { kind: 'tcp', httpsPort: 443 }) !== null);
+    });
+
+    test('a free port is free for every kind', () => {
+        for (const kind of ['https', 'tcp', 'tls-tcp'])
+            assertEq(funnelClash(funnels, { kind, httpsPort: 9999 }), null);
     });
 });
