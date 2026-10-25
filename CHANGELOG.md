@@ -3,7 +3,7 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.2.0] - 2026-10-25
 
 ### Added
 - **Tailscale Serve.** A **Serve** button next to Taildrop and Funnels, and
@@ -42,18 +42,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Accept routes** no longer lists `0.0.0.0/0` and `::/0`. Every peer
   offering itself as an exit node advertises both; the Exit node submenu
   already says which ones those are.
-
-### Fixed
-- **Periodic micro-stutter, most visible in video on battery (#9).** Every
-  poll (every 3 s by default) started two `tailscale` processes from GNOME
-  Shell's own process, and on a power-capped laptop that was enough to drop
-  frames each time. The daemon's state is now read straight off its
-  LocalAPI socket, the interface the CLI is itself a client of: same JSON,
-  no process, about a millisecond instead of about thirty of CPU per read.
-  Opening the menu no longer starts any process either (it used to start
-  four), the profile list included.
-
-### Changed
 - **No more polling while the daemon can say what changed.** The extension
   subscribes to tailscaled's IPN bus and re-reads its state only when told
   to, so a change made from a terminal or the admin console shows up within
@@ -73,6 +61,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   traffic, and each one used to cost a full re-read of the daemon's state.
   Anything not known to be harmless still counts, and the once-a-minute
   check bounds whatever a wrong guess could cost.
+
+### Fixed
+- **Periodic micro-stutter, most visible in video on battery (#9).** Every
+  poll (every 3 s by default) started two `tailscale` processes from GNOME
+  Shell's own process, and on a power-capped laptop that was enough to drop
+  frames each time. The daemon's state is now read straight off its
+  LocalAPI socket, the interface the CLI is itself a client of: same JSON,
+  no process, about a millisecond instead of about thirty of CPU per read.
+  Opening the menu no longer starts any process either (it used to start
+  four), the profile list included.
 
 ## [1.1.0] - 2026-10-09
 
