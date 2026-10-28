@@ -3,6 +3,41 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2.1] - 2026-10-28
+
+Review feedback from the GNOME Extensions submission of 1.2.0.
+
+### Changed
+- Every privileged command is written out whole where it runs:
+  `['pkexec', '/usr/bin/env', 'TS_BE_CLI=1', tailscale, 'logout']` and its
+  three siblings in `lib/tailscale.js`, instead of a short argument list
+  that a helper in `lib/spawn.js` wrapped in `pkexec` and `env`. The plain
+  `pkexec <path>/tailscale` fallback for a system without `/usr/bin/env`
+  is gone with it, so each command has exactly one form. No command or
+  privilege changed.
+- The `tailscale serve` and `tailscale funnel` commands are built in
+  `lib/tailscale.js`, next to the code that runs them, one line per kind
+  (HTTPS, HTTP, TCP, TLS-terminated TCP), instead of being assembled flag
+  by flag in the parsing module. An unknown kind is refused rather than
+  turned into a `--undefined=` flag.
+- The launch functions in `lib/spawn.js` are `spawn()`, `spawnStreaming()`
+  and `spawnInDir()`, imported under those names everywhere, rather than
+  `run()` and friends renamed at each import.
+- Every main-loop source sits in a property of its own and is removed by
+  name in the `destroy()` of the file that adds it; `disable()` lists which
+  call removes which. The LocalAPI reader no longer has a timeout source at
+  all: its 10 s bound is the socket's own I/O timeout, so nothing is left
+  to track through the helper, the cancellable and the `finally` it used
+  to take.
+- One Serve or Funnel command runs at a time, with a single watchdog,
+  instead of a set of watchdogs, one per command in flight.
+
+### Fixed
+- A `tailscale funnel` or `tailscale serve` command still waiting on its
+  tailnet (feature not enabled) when the extension was disabled was left
+  running: its watchdog was removed but the process was not. It is now
+  killed along with the Taildrop receiver.
+
 ## [1.2.0] - 2026-10-25
 
 ### Added
