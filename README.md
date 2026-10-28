@@ -189,8 +189,10 @@ Safeguards:
   starts as the daemon and refuses the command. `TS_BE_CLI` is
   Tailscale's own override for this; `env` is the only way to set a
   variable across `pkexec`, which wipes the environment. `env` is not a
-  shell, the vector stays literal, and the plain form is used on any
-  system without `/usr/bin/env`.
+  shell, and the vector stays literal.
+- Each of the four is written out whole, `pkexec` included, at the one
+  place in `lib/tailscale.js` that runs it, so
+  `grep -n "'pkexec'" lib/tailscale.js` lists all of them.
 
 ## Clipboard access
 
