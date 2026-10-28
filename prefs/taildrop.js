@@ -13,7 +13,7 @@ import Gtk from "gi://Gtk";
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
 import { fmt as _fmt, taildropInboxDefault } from "../lib/util.js";
-import { run as _spawn } from "../lib/spawn.js";
+import { spawn } from "../lib/spawn.js";
 // The preferences ask whether the integration is possible, the shell acts
 // on the answer, and both read it out of one place.
 import { hasPythonLoader } from "../lib/nautilus.js";
@@ -367,7 +367,7 @@ function _confirmQuit(widget, onConfirm, onCancel = () => {}) {
 // for Snap: its confinement offers no "ask the app to quit", and killing it
 // outright is not ours to do.
 async function _quitFileManagers() {
-    await _spawn(["nautilus", "-q"]);
+    await spawn(["nautilus", "-q"]);
 
     const flatpakApp = GLib.build_filenamev([
         GLib.get_home_dir(),
@@ -376,5 +376,5 @@ async function _quitFileManagers() {
         "org.gnome.Nautilus",
     ]);
     if (Gio.File.new_for_path(flatpakApp).query_exists(null))
-        await _spawn(["flatpak", "kill", "org.gnome.Nautilus"]);
+        await spawn(["flatpak", "kill", "org.gnome.Nautilus"]);
 }

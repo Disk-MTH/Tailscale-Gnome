@@ -150,6 +150,15 @@ export default class TailscaleGnomeExtension extends Extension {
         this._indicator.destroy();
         this._indicator = null;
 
+        // Every main-loop source the extension creates is removed by one of
+        // the three calls below, each in the same file that adds it:
+        //   TailscaleClient.destroy()  poll timer, bus settle, Taildrop
+        //                              receiver restart, serve/funnel
+        //                              watchdog (lib/tailscale.js)
+        //   QuietWindow.close()        debounce and ceiling
+        //                              (lib/quiet-window.js)
+        //   Notifier.destroy()         pending-banner floors (lib/notify.js)
+        // The LocalAPI reader has none: its timeout belongs to the socket.
         this._client.destroy();
         this._client = null;
 

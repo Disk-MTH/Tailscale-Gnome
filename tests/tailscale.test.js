@@ -6,13 +6,16 @@
 import GLib from 'gi://GLib';
 
 import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
-import { TailscaleClient } from '../lib/tailscale.js';
+import { TailscaleClient, serveArgs, serveOffArgs } from '../lib/tailscale.js';
 import {
     accountsFromProfiles, backendStatus, buildSnapshot, busMessageMatters,
-    funnelAddArgs, funnelClash, funnelMount, funnelRemoveArgs, parseFunnels,
+    funnelClash, funnelMount, parseFunnels,
     parseServeConfig, parseServes, parseSwitchList, parseWroteLine,
-    peersFromStatus, serveAddArgs, serveClash, serveRemoveArgs,
+    peersFromStatus, serveClash,
 } from '../lib/tailscale-parse.js';
+
+const funnelArgs = (spec) => serveArgs(spec, { funnel: true });
+const funnelOffArgs = (entry) => serveOffArgs(entry, { funnel: true });
 
 // Enabling Funnel makes the control plane push its ingress relays into our
 // netmap. They are flagged `ShareeNode` precisely so clients hide them, and
@@ -470,40 +473,50 @@ suite('parseFunnels', () => {
 
 suite('funnel commands', () => {
     test('the plain HTTPS case is the command 1.1.0 ran', () => {
-        assertDeepEq(funnelAddArgs({ httpsPort: 443, target: '3000' }),
+        assertDeepEq(funnelArgs({ httpsPort: 443, target: '3000' }),
             ['funnel', '--bg', '--yes', '--https=443', '3000']);
     });
 
     test('a path becomes --set-path, "/" is the default and left out', () => {
         assertDeepEq(
-            funnelAddArgs({ kind: 'https', httpsPort: 8443, target: '3000', path: 'api' }),
+            funnelArgs({ kind: 'https', httpsPort: 8443, target: '3000', path: 'api' }),
             ['funnel', '--bg', '--yes', '--https=8443', '--set-path=/api', '3000']);
         assertDeepEq(
-            funnelAddArgs({ kind: 'https', httpsPort: 443, target: '3000', path: '/' }),
+            funnelArgs({ kind: 'https', httpsPort: 443, target: '3000', path: '/' }),
             ['funnel', '--bg', '--yes', '--https=443', '3000']);
     });
 
     test('TCP kinds take --proxy-protocol, never --set-path', () => {
         assertDeepEq(
-            funnelAddArgs({ kind: 'tcp', httpsPort: 10000, target: '5432', path: '/x', proxyProtocol: 2 }),
+            funnelArgs({ kind: 'tcp', httpsPort: 10000, target: '5432', path: '/x', proxyProtocol: 2 }),
             ['funnel', '--bg', '--yes', '--tcp=10000', '--proxy-protocol=2', '5432']);
         assertDeepEq(
-            funnelAddArgs({ kind: 'tls-tcp', httpsPort: 8443, target: 'unix:/run/x.sock' }),
+            funnelArgs({ kind: 'tls-tcp', httpsPort: 8443, target: 'unix:/run/x.sock' }),
             ['funnel', '--bg', '--yes', '--tls-terminated-tcp=8443', 'unix:/run/x.sock']);
     });
 
+    test('an unknown kind is refused rather than guessed', () => {
+        let threw = false;
+        try {
+            funnelArgs({ kind: 'udp', httpsPort: 53, target: '53' });
+        } catch {
+            threw = true;
+        }
+        assertTrue(threw);
+    });
+
     test('text with spaces stays one argument', () => {
-        const args = funnelAddArgs({ httpsPort: 443, target: 'text:Hello world' });
+        const args = funnelArgs({ httpsPort: 443, target: 'text:Hello world' });
         assertEq(args[args.length - 1], 'text:Hello world');
     });
 
     test('removal names exactly one funnel', () => {
         const [root, docs] = parseFunnels(SERVE);
-        assertDeepEq(funnelRemoveArgs(root), ['funnel', '--https=443', '--set-path=/', 'off']);
-        assertDeepEq(funnelRemoveArgs(docs), ['funnel', '--https=443', '--set-path=/docs/', 'off']);
-        assertDeepEq(funnelRemoveArgs({ kind: 'tcp', httpsPort: 8443 }),
+        assertDeepEq(funnelOffArgs(root), ['funnel', '--https=443', '--set-path=/', 'off']);
+        assertDeepEq(funnelOffArgs(docs), ['funnel', '--https=443', '--set-path=/docs/', 'off']);
+        assertDeepEq(funnelOffArgs({ kind: 'tcp', httpsPort: 8443 }),
             ['funnel', '--tcp=8443', 'off']);
-        assertDeepEq(funnelRemoveArgs({ kind: 'tls-tcp', httpsPort: 10000 }),
+        assertDeepEq(funnelOffArgs({ kind: 'tls-tcp', httpsPort: 10000 }),
             ['funnel', '--tls-terminated-tcp=10000', 'off']);
     });
 
@@ -620,34 +633,34 @@ suite('serveClash', () => {
 
 suite('serve commands', () => {
     test('the plain case: HTTPS on 443, in the background', () => {
-        assertDeepEq(serveAddArgs({ httpsPort: 443, target: '3000' }),
+        assertDeepEq(serveArgs({ httpsPort: 443, target: '3000' }),
             ['serve', '--bg', '--yes', '--https=443', '3000']);
     });
 
     test('HTTP, with a path', () => {
         assertDeepEq(
-            serveAddArgs({ kind: 'http', httpsPort: 8080, target: '3000', path: 'app' }),
+            serveArgs({ kind: 'http', httpsPort: 8080, target: '3000', path: 'app' }),
             ['serve', '--bg', '--yes', '--http=8080', '--set-path=/app', '3000']);
     });
 
     test('TCP with PROXY protocol', () => {
         assertDeepEq(
-            serveAddArgs({ kind: 'tcp', httpsPort: 5432, target: '5432', proxyProtocol: 1 }),
+            serveArgs({ kind: 'tcp', httpsPort: 5432, target: '5432', proxyProtocol: 1 }),
             ['serve', '--bg', '--yes', '--tcp=5432', '--proxy-protocol=1', '5432']);
     });
 
     test('removal goes through `serve`, by port and mount', () => {
         const [http] = parseServes(MIXED);
-        assertDeepEq(serveRemoveArgs(http), ['serve', '--http=80', '--set-path=/', 'off']);
-        assertDeepEq(serveRemoveArgs({ kind: 'tcp', httpsPort: 5432 }),
+        assertDeepEq(serveOffArgs(http), ['serve', '--http=80', '--set-path=/', 'off']);
+        assertDeepEq(serveOffArgs({ kind: 'tcp', httpsPort: 5432 }),
             ['serve', '--tcp=5432', 'off']);
     });
 
-    test('the funnel wrappers are the same vectors under `funnel`', () => {
+    test('a funnel is the same vector under `funnel`', () => {
         const spec = { kind: 'tcp', httpsPort: 10000, target: '22' };
-        assertDeepEq(funnelAddArgs(spec).slice(1), serveAddArgs(spec).slice(1));
-        assertEq(funnelAddArgs(spec)[0], 'funnel');
-        assertEq(funnelRemoveArgs(spec)[0], 'funnel');
+        assertDeepEq(funnelArgs(spec).slice(1), serveArgs(spec).slice(1));
+        assertEq(funnelArgs(spec)[0], 'funnel');
+        assertEq(funnelOffArgs(spec)[0], 'funnel');
     });
 });
 

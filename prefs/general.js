@@ -11,7 +11,7 @@ import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { run as _spawn, tailscaleBin as _bin } from "../lib/spawn.js";
+import { spawn, tailscaleBin } from "../lib/spawn.js";
 import { makeBackendGroup, resetButton, watchSetting } from "./common.js";
 import { makeTaildropGroup } from "./taildrop.js";
 
@@ -290,10 +290,10 @@ export function makeGeneralPage(settings) {
         // Tailscale. Null means there is none on this machine, and the
         // daemon half of the reset is skipped: the GSettings half above
         // already happened, which is the half this window owns.
-        const bin = _bin();
+        const tailscale = tailscaleBin();
         try {
-            if (bin) await _spawn([
-                bin,
+            if (tailscale) await spawn([
+                tailscale,
                 "set",
                 "--accept-dns=false",
                 "--accept-routes=false",
@@ -307,7 +307,7 @@ export function makeGeneralPage(settings) {
         // `funnel reset` is its own subcommand; ignore failures (most
         // likely "no funnels to reset", which is exactly what we want).
         try {
-            if (bin) await _spawn([bin, "funnel", "reset"]);
+            if (tailscale) await spawn([tailscale, "funnel", "reset"]);
         } catch {}
 
         // The two availability keys were reset along with everything
