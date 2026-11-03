@@ -3,7 +3,9 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.2.2] - 2026-11-03
+
+A memory leak on screen lock, found and fixed by @asp24 (#13).
 
 ### Fixed
 - The Quick Settings menu no longer leaks on each screen lock. GNOME Shell
