@@ -3,6 +3,15 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- The Quick Settings menu no longer leaks on each screen lock. GNOME Shell
+  disables the extension on lock, and it does not destroy the menu of a
+  destroyed `QuickMenuToggle`. Each lock left the old menu and all its peer
+  and exit-node rows in memory until the end of the session, so GNOME Shell
+  became slower over time. `TailscaleToggle.destroy()` now destroys its menu.
+
 ## [1.2.1] - 2026-10-28
 
 Review feedback from the GNOME Extensions submission of 1.2.0.
