@@ -85,7 +85,7 @@ suite('computeEvents: exit node, auto mode', () => {
 
     test('switching between two routable nodes reports the new one', () => {
         const t = seed(auto({ currentExitNode: node() }));
-        const next = node({ id: 'n2', hostname: 'lyon' });
+        const next = node({ id: 'n2', hostname: 'lyon', dnsName: 'lyon.tail.ts.net' });
         const { events } = computeEvents(t, auto({ currentExitNode: next }));
         assertDeepEq(types(events), ['exit-node-switched']);
         assertEq(events[0].data.name, 'lyon');
@@ -123,7 +123,7 @@ suite('computeEvents: exit node, pinned mode', () => {
     test('changing the pinned target emits nothing: the user did that', () => {
         const t = seed(pinned({ currentExitNode: node() }));
         const { events } = computeEvents(t, snapshot({
-            exitNodeID: 'n2', currentExitNode: node({ id: 'n2', hostname: 'lyon' }),
+            exitNodeID: 'n2', currentExitNode: node({ id: 'n2', hostname: 'lyon', dnsName: 'lyon.tail.ts.net' }),
         }));
         assertDeepEq(types(events), []);
     });
@@ -135,11 +135,34 @@ suite('computeEvents: exit node, pinned mode', () => {
         assertDeepEq(types(events), []);
     });
 
-    test('falls back to the dnsName leaf when hostname is empty', () => {
-        const t = seed(pinned({ currentExitNode: node() }));
-        const bare = node({ hostname: '', online: false });
-        const { events } = computeEvents(t, pinned({ currentExitNode: bare }));
+    test('names the node by its machine name, not its OS hostname', () => {
+        // A machine renamed in the admin console keeps its old hostname.
+        const t = seed(pinned({ currentExitNode: node({ hostname: 'Old-Laptop' }) }));
+        const down = node({ hostname: 'Old-Laptop', online: false });
+        const { events } = computeEvents(t, pinned({ currentExitNode: down }));
         assertEq(events[0].data.name, 'paris');
+    });
+
+    test('carries the hostname too, for show-os-hostnames', () => {
+        const t = seed(pinned({ currentExitNode: node({ hostname: 'Old-Laptop' }) }));
+        const down = node({ hostname: 'Old-Laptop', online: false });
+        const { events } = computeEvents(t, pinned({ currentExitNode: down }));
+        assertEq(events[0].data.hostname, 'Old-Laptop');
+        assertEq(events[0].data.dnsName, 'paris.tail.ts.net');
+    });
+
+    test('carries the IPs, for a node with no name', () => {
+        const t = seed(pinned({ currentExitNode: node({ ips: ['100.64.0.9'] }) }));
+        const down = node({ ips: ['100.64.0.9'], online: false });
+        const { events } = computeEvents(t, pinned({ currentExitNode: down }));
+        assertDeepEq(events[0].data.ips, ['100.64.0.9']);
+    });
+
+    test('falls back to the hostname when dnsName is empty', () => {
+        const t = seed(pinned({ currentExitNode: node() }));
+        const bare = node({ hostname: 'lyon', dnsName: '', online: false });
+        const { events } = computeEvents(t, pinned({ currentExitNode: bare }));
+        assertEq(events[0].data.name, 'lyon');
     });
 
     test('every event is flagged spontaneous', () => {

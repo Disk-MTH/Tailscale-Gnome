@@ -208,7 +208,9 @@ export default class TailscaleGnomeExtension extends Extension {
         this._mirrorState(snap);
 
         for (const ev of this._watcher.feed(snap)) {
-            const message = watcherMessage(ev, snap);
+            const message = watcherMessage(ev, snap, {
+                showHostname: this._settings.get_boolean('show-os-hostnames'),
+            });
             if (ev.type === 'account-switched') {
                 // Unconditional: the daemon churns after a switch whoever
                 // started it, and admin ACLs differ per tailnet, so the

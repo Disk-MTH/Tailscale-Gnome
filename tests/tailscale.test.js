@@ -9,9 +9,9 @@ import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import { TailscaleClient, serveArgs, serveOffArgs } from '../lib/tailscale.js';
 import {
     accountsFromProfiles, backendStatus, buildSnapshot, busMessageMatters,
-    funnelClash, funnelMount, parseFunnels,
+    displayName, dnsLeaf, funnelClash, funnelMount, machineName, parseFunnels, sortByName,
     parseServeConfig, parseServes, parseSwitchList, parseWroteLine,
-    peersFromStatus, serveClash,
+    peersFromStatus, serveClash, snapshotEqual,
 } from '../lib/tailscale-parse.js';
 
 const funnelArgs = (spec) => serveArgs(spec, { funnel: true });
@@ -59,6 +59,95 @@ const STALE_ENGINE_PEER = {
     InNetworkMap: false,
 };
 
+suite('node names', () => {
+    // Renamed to "paris" in the admin console; the OS still says Old-Laptop.
+    const renamed = { hostname: 'Old-Laptop', dnsName: 'paris.tail.ts.net' };
+    const noDns = { hostname: 'Old-Laptop', dnsName: '' };
+
+    test('dnsLeaf is the first label of the Magic DNS name', () => {
+        assertEq(dnsLeaf(renamed), 'paris');
+    });
+
+    test('dnsLeaf is empty without a DNS name, never the hostname', () => {
+        assertEq(dnsLeaf(noDns), '');
+        assertEq(dnsLeaf({ hostname: 'x', dnsName: null }), '');
+        assertEq(dnsLeaf(null), '');
+    });
+
+    test('machineName prefers the DNS leaf over the hostname', () => {
+        assertEq(machineName(renamed), 'paris');
+    });
+
+    test('machineName falls back to the hostname, case kept', () => {
+        assertEq(machineName(noDns), 'Old-Laptop');
+        assertEq(machineName(null), '');
+    });
+
+    test('displayName shows the machine name by default', () => {
+        assertEq(displayName(renamed, false), 'paris');
+    });
+
+    test('displayName shows the hostname as reported when asked', () => {
+        assertEq(displayName(renamed, true), 'Old-Laptop');
+    });
+
+    test('displayName falls back to the machine name with no hostname', () => {
+        assertEq(displayName({ hostname: '', dnsName: 'paris.tail.ts.net' }, true), 'paris');
+    });
+
+    test('displayName falls back to the IP for a node with no name', () => {
+        const bare = { hostname: '', dnsName: '', ips: ['100.64.0.9'] };
+        assertEq(displayName(bare, false), '100.64.0.9');
+        assertEq(displayName(bare, true), '100.64.0.9');
+        assertEq(displayName({ hostname: '', dnsName: '' }, false), '');
+    });
+
+    test('sortByName places a nameless node by its IP, not first', () => {
+        const nodes = [
+            { hostname: '', dnsName: '', ips: ['100.64.0.9'] },
+            { hostname: 'x', dnsName: 'alpha.tail.ts.net', ips: ['100.64.0.1'] },
+        ];
+        assertDeepEq(sortByName(nodes, false).map((n) => displayName(n, false)),
+            ['100.64.0.9', 'alpha']);
+    });
+
+    test('sortByName orders by the name on screen', () => {
+        const nodes = [
+            { hostname: 'mango', dnsName: 'beta.tail.ts.net' },
+            { hostname: 'Zebra', dnsName: 'alpha.tail.ts.net' },
+        ];
+        assertDeepEq(sortByName(nodes, false).map((n) => n.hostname), ['Zebra', 'mango']);
+        assertDeepEq(sortByName(nodes, true).map((n) => n.hostname), ['mango', 'Zebra']);
+        // A copy: the snapshot's own order is left alone.
+        assertEq(nodes[0].hostname, 'mango');
+    });
+});
+
+suite('buildSnapshot: subnet routes', () => {
+    const status = (host, dns) => ({
+        BackendState: 'Running',
+        Self: { HostName: 'box', DNSName: 'box.ts.net.' },
+        Peer: {
+            a: { ...REAL_PEER, HostName: host, DNSName: dns,
+                AllowedIPs: ['100.102.193.116/32', '192.168.1.0/24'] },
+        },
+    });
+
+    test('a route carries both names of its peer', () => {
+        const [route] = buildSnapshot(status('Old-Laptop', 'paris.tail.ts.net.'), {}, [], true, [])
+            .advertisedRoutes;
+        assertEq(route.cidr, '192.168.1.0/24');
+        assertEq(displayName(route, false), 'paris');
+        assertEq(displayName(route, true), 'Old-Laptop');
+    });
+
+    test('renaming the peer of a route is a change worth a render', () => {
+        const before = buildSnapshot(status('Old-Laptop', 'paris.tail.ts.net.'), {}, [], true, []);
+        const after = buildSnapshot(status('Old-Laptop', 'lyon.tail.ts.net.'), {}, [], true, []);
+        assertEq(snapshotEqual(before, after), false);
+    });
+});
+
 suite('peersFromStatus', () => {
     test('hides a wireguard session that left the network map', () => {
         const peers = peersFromStatus({
@@ -99,11 +188,23 @@ suite('peersFromStatus', () => {
         assertDeepEq(peers[0].ips, ['100.102.193.116']);
     });
 
-    test('sorts by hostname, case-insensitively', () => {
+    test('sorts by machine name, not hostname', () => {
+        // b was renamed to "alpha" in the admin console; its OS hostname
+        // still sorts after a's.
         const peers = peersFromStatus({
             Peer: {
-                a: { ...REAL_PEER, ID: 'a', HostName: 'zebra' },
-                b: { ...REAL_PEER, ID: 'b', HostName: 'Alpha' },
+                a: { ...REAL_PEER, ID: 'a', HostName: 'mango', DNSName: 'beta.tail.ts.net.' },
+                b: { ...REAL_PEER, ID: 'b', HostName: 'zebra', DNSName: 'alpha.tail.ts.net.' },
+            },
+        }, null);
+        assertDeepEq(peers.map((p) => p.hostname), ['zebra', 'mango']);
+    });
+
+    test('sorts by hostname when there is no DNS name, case-insensitively', () => {
+        const peers = peersFromStatus({
+            Peer: {
+                a: { ...REAL_PEER, ID: 'a', HostName: 'zebra', DNSName: '' },
+                b: { ...REAL_PEER, ID: 'b', HostName: 'Alpha', DNSName: '' },
             },
         }, null);
         assertDeepEq(peers.map((p) => p.hostname), ['Alpha', 'zebra']);

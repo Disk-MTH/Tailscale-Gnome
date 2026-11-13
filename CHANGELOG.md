@@ -3,6 +3,17 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Devices are named by their Tailscale machine name, so a machine renamed in
+  the admin console shows its new name, and **Copy DNS** copies its Magic DNS
+  name instead of an OS hostname that no longer resolves.
+
+### Added
+- **Show OS hostnames**, in preferences → General, names devices by the
+  hostname they report instead.
+
 ## [1.2.2] - 2026-11-03
 
 A memory leak on screen lock, found and fixed by @asp24 (#13).
