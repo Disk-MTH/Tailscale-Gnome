@@ -3,7 +3,10 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.3.0] - 2026-11-15
+
+Connection types on the peer dots, and devices named by their machine
+name (#14).
 
 ### Added
 - **Show connection types**, in preferences → General, on by default.
