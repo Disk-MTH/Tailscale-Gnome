@@ -47,6 +47,20 @@
                 instead.</description>
         </key>
 
+        <key name="show-os-hostnames" type="b">
+            <default>false</default>
+            <summary>Name devices by their OS hostname</summary>
+            <description>If false, device and peer rows are titled with the
+                Tailscale machine name, the one Magic DNS resolves and the
+                admin console shows. If true, they are titled with the
+                hostname each device reports instead, which stays the same
+                when a machine is renamed in the admin console. Row order,
+                subnet route labels and exit-node notifications follow the
+                same choice. Copy DNS always copies the Magic DNS name, the
+                only one that resolves, and is not offered for a device
+                without one.</description>
+        </key>
+
         <key name="show-indicator" type="b">
             <default>true</default>
             <summary>Show the panel indicator icon</summary>

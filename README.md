@@ -253,6 +253,7 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Exit node indicator: connected (icon / colour) | on / theme |
 | General       | Exit node indicator: disconnected (icon / colour) | on / `#e6b800` |
 | General       | Copy buttons (IP / Magic DNS name / both) | both   |
+| General       | Show OS hostnames (name devices by the hostname they report, not their machine name) | off |
 | General       | Taildrop inbox folder              | `Taildrop` in your download folder |
 | General       | Nautilus integration               | off           |
 | General       | Poll interval (fallback only, see below) | 3s      |

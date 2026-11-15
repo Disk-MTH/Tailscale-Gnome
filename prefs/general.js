@@ -137,9 +137,10 @@ function _makeExitNodeIndicatorRow(settings, def) {
     return row;
 }
 
-// The Quick Settings menu's own options. One for now: which copy buttons
-// the device and peer rows carry. A combo rather than three switches,
-// because the three answers exclude each other and none of them is "none".
+// The Quick Settings menu's own options: which copy buttons the device and
+// peer rows carry, and whether rows show machine names or OS hostnames. The
+// copy buttons are a combo rather than three switches, because the three
+// answers exclude each other and none of them is "none".
 const COPY_BUTTON_MODES = ["ip", "dns", "both"];
 
 function _makeMenuGroup(settings) {
@@ -172,6 +173,23 @@ function _makeMenuGroup(settings) {
     sync();
     row.add_suffix(resetButton(settings, "copy-buttons"));
     group.add(row);
+
+    const hostRow = new Adw.SwitchRow({
+        title: _("Show OS hostnames"),
+        subtitle: _(
+            "Name devices by the hostname they report instead of their " +
+                "Tailscale machine name. Copy DNS still copies the Magic DNS name, " +
+                "when the device has one.",
+        ),
+    });
+    settings.bind(
+        "show-os-hostnames",
+        hostRow,
+        "active",
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    hostRow.add_suffix(resetButton(settings, "show-os-hostnames"));
+    group.add(hostRow);
     return group;
 }
 
