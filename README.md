@@ -61,6 +61,7 @@ with any extension that crowds the menu, not only this one.
 | **Funnel** | Publish, copy, and remove exposed services from a single dialog: HTTPS (a local server, a URL, a Unix socket, a file or folder, or fixed text, under an optional path), raw TCP or TLS-terminated TCP with optional PROXY protocol, and remove them one by one or all at once. |
 | **Serve** | Share a local service with the rest of your tailnet, from the same kind of dialog: HTTPS, HTTP, raw TCP or TLS-terminated TCP, on any port, with the same targets and options as Funnel. Ports used by a funnel are refused, so nothing private ends up on the internet by sharing a port with it. |
 | **Taildrop** | Send and receive files with peers, from the menu, from a keyboard shortcut, or from the file manager. See [Sending files](#sending-files). |
+| **Connection types** | Optional: each peer's dot says whether it is reached directly, through a relay (Tailscale's DERP servers or a peer relay), or is idle, in colours of your choice, with the details on hover. Off by default. |
 | **Menu toggles** | Magic DNS, accepted routes, Shields up, SSH server, and LAN access, one tap away. |
 | **Shortcuts** | Bind your own keys for connect, exit node, menu, admin console, Taildrop, Serve, and Funnels. |
 
@@ -253,9 +254,11 @@ Open with `gnome-extensions prefs tailscale-gnome@diskmth.fr` or click
 | General       | Exit node indicator: connected (icon / colour) | on / theme |
 | General       | Exit node indicator: disconnected (icon / colour) | on / `#e6b800` |
 | General       | Copy buttons (IP / Magic DNS name / both) | both   |
+| General       | Show connection types on the peer dots | off   |
+| General       | Dot colours: direct / relayed / idle / offline | `#66d68a` / `#e6b800` / `#62a0ea` / `#888888` |
 | General       | Taildrop inbox folder              | `Taildrop` in your download folder |
 | General       | Nautilus integration               | off           |
-| General       | Poll interval (fallback only, see below) | 3s      |
+| General       | Poll interval (fallback, and connection types while the menu is open; see below) | 3s |
 | Notifications | Minimum pending duration           | 1000ms        |
 | Notifications | Per-category reporting (ten of them, All / Errors / Off) | all |
 | Shortcuts     | Connect / disconnect               | unbound       |
@@ -292,6 +295,16 @@ back once a minute as a safety net. The **Poll interval** setting applies
 when the socket cannot be reached (a daemon started with a custom
 `--socket`, or one that is down); everything is then read through the CLI,
 as earlier versions always did.
+
+Connection types are the one thing the bus does not carry: a connection
+going direct, or falling back to a relay, is the daemon's own business and
+not news on the bus. With **Show connection types** on, the status is
+re-read at the poll interval while the menu is open, and only then; it is
+the same local `GET /localapi/v0/status`, and nothing is sent to the peers
+to find out. The answer is the one `tailscale status` prints (`direct`,
+`relay "par"`, `peer-relay`, `idle`). A peer is idle when nothing has been
+sent to it for about two minutes: Tailscale only sets up a connection when
+there is traffic, so until then there is no path to report.
 
 ## Debugging
 

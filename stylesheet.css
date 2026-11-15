@@ -28,6 +28,19 @@
     background-color: #888888;
 }
 
+/* Connection-type dot (peer-connection-status): the colour is an inline
+   style, and the dot sits in a padded hit area so it can be hovered. The
+   padding stands in for the dot's own left margin, so the dot does not
+   move when the setting is switched. */
+.tailscale-peer-dot-hit {
+    padding: 4px;
+    margin-left: 2px;
+}
+
+.tailscale-peer-dot-hit .tailscale-peer-dot {
+    margin-left: 0;
+}
+
 /* Sub-menu node items: tag the active exit node. */
 .tailscale-exit-node-active StLabel {
     font-weight: bold;

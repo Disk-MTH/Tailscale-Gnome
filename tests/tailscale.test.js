@@ -9,7 +9,7 @@ import { assertEq, assertDeepEq, assertTrue, suite, test } from './harness.js';
 import { TailscaleClient, serveArgs, serveOffArgs } from '../lib/tailscale.js';
 import {
     accountsFromProfiles, backendStatus, buildSnapshot, busMessageMatters,
-    displayName, dnsLeaf, funnelClash, funnelMount, machineName, parseFunnels, sortByName,
+    connectionPath, displayName, dnsLeaf, funnelClash, funnelMount, machineName, parseFunnels, sortByName,
     parseServeConfig, parseServes, parseSwitchList, parseWroteLine,
     peersFromStatus, serveClash, snapshotEqual,
 } from '../lib/tailscale-parse.js';
@@ -136,6 +136,74 @@ suite('buildSnapshot: subnet routes', () => {
         const before = buildSnapshot(status('Old-Laptop', 'paris.tail.ts.net.'), {}, [], true, []);
         const after = buildSnapshot(status('Old-Laptop', 'lyon.tail.ts.net.'), {}, [], true, []);
         assertEq(snapshotEqual(before, after), false);
+    });
+});
+
+suite('connection paths', () => {
+    const peer = (fields) => ({ ...REAL_PEER, Online: true, Active: true, ...fields });
+
+    test('an address of its own is a direct connection', () => {
+        assertDeepEq(connectionPath(peer({ CurAddr: '203.0.113.7:41641', Relay: 'par' })),
+            { kind: 'direct', region: '' });
+    });
+
+    test('a DERP region alone is a relay, and names the region', () => {
+        assertDeepEq(connectionPath(peer({ CurAddr: '', Relay: 'par' })),
+            { kind: 'derp', region: 'par' });
+    });
+
+    test('a peer relay is told apart from DERP', () => {
+        assertDeepEq(connectionPath(peer({ PeerRelay: '100.64.0.5:7777:12', Relay: 'par' })),
+            { kind: 'peer-relay', region: '' });
+    });
+
+    test('a peer with no recent traffic is idle, whatever path it last had', () => {
+        assertEq(connectionPath(peer({ Active: false, CurAddr: '203.0.113.7:41641' })).kind,
+            'idle');
+    });
+
+    test('active with no path at all is idle too, as the CLI prints nothing', () => {
+        assertEq(connectionPath(peer({ CurAddr: '', Relay: '' })).kind, 'idle');
+    });
+
+    test('offline wins over everything', () => {
+        assertEq(connectionPath(peer({ Online: false, CurAddr: '203.0.113.7:41641' })).kind,
+            'offline');
+        assertEq(connectionPath(null).kind, 'offline');
+    });
+
+    const status = (fields) => ({
+        BackendState: 'Running',
+        Self: { HostName: 'box', DNSName: 'box.ts.net.' },
+        Peer: { a: peer(fields) },
+    });
+
+    test('a snapshot carries no paths unless asked', () => {
+        const snap = buildSnapshot(status({ Relay: 'par' }), {}, [], true, []);
+        assertEq(snap.peers[0].path, null);
+    });
+
+    test('so traffic starting or stopping is no change without them', () => {
+        const before = buildSnapshot(status({ Active: true, Relay: 'par' }), {}, [], true, []);
+        const after = buildSnapshot(status({ Active: false, Relay: 'par' }), {}, [], true, []);
+        assertEq(snapshotEqual(before, after), true);
+    });
+
+    test('with them, a path changing is a change worth a render', () => {
+        const opts = { paths: true };
+        const relayed = buildSnapshot(status({ Relay: 'par' }), {}, [], true, [], [], opts);
+        const direct = buildSnapshot(status({ CurAddr: '203.0.113.7:41641', Relay: 'par' }),
+            {}, [], true, [], [], opts);
+        const fra = buildSnapshot(status({ Relay: 'fra' }), {}, [], true, [], [], opts);
+        assertEq(relayed.peers[0].path.kind, 'derp');
+        assertEq(snapshotEqual(relayed, direct), false);
+        assertEq(snapshotEqual(relayed, fra), false);
+    });
+
+    test('the current exit node carries its path too', () => {
+        const snap = buildSnapshot(status({ ExitNode: true, CurAddr: '203.0.113.7:41641' }),
+            {}, [], true, [], [], { paths: true });
+        assertEq(snap.currentExitNode.path.kind, 'direct');
     });
 });
 

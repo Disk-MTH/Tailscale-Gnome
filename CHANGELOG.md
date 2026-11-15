@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Show connection types**, in preferences → General, off by default.
+  Each peer's and exit node's dot then says how traffic to it travels:
+  direct (green), through a relay (amber: Tailscale's DERP servers or a
+  peer relay), idle when nothing has been sent to it lately so no
+  connection is set up yet (blue), or offline (grey). Each colour can be
+  changed. Hovering a dot says which, with the DERP region. The answer is
+  the daemon's own, the one `tailscale status` prints: nothing is sent to
+  the peers to find out. The bus does not carry path changes, so while the
+  menu is open and shows them the status is re-read at the poll interval;
+  with the menu closed, or the setting off, nothing more is read than
+  before.
+
 ### Fixed
 - Devices are named by their Tailscale machine name, so a machine renamed in
   the admin console shows its new name, and **Copy DNS** copies its Magic DNS

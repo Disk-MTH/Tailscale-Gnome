@@ -46,7 +46,9 @@ function _formatColor(rgba) {
 
 // Colour picker bound to a GSettings #rrggbb string.
 //
-// `themeDefault` marks a key whose default is no colour at all: the value
+// `fallback` is the colour shown for a value that is not one (the key's
+// default; the warning amber when not given), and `tooltip` the button's
+// tooltip ("Icon colour" when not given). `themeDefault` marks a key whose default is no colour at all: the value
 // is then empty, the shell leaves the icon in the panel's own ink, and it
 // follows a light or dark theme without being told to. A colour button has
 // no way to draw "none", so it shows white as a stand-in and says which of
@@ -61,13 +63,13 @@ function _makeIndicatorColorButton(settings, def) {
     });
     const fallback = def.themeDefault
         ? THEME_COLOR_PLACEHOLDER
-        : DEFAULT_WARN_COLOR;
+        : (def.fallback ?? DEFAULT_WARN_COLOR);
     const read = () => settings.get_string(def.colorKey);
     const syncTooltip = () => {
         button.tooltip_text =
             def.themeDefault && !_isHexColor(read())
                 ? _("Follows the panel colour. Pick one to override it.")
-                : _("Icon colour");
+                : (def.tooltip ?? _("Icon colour"));
     };
 
     // Guard against the loop: writing the key re-enters this handler via
@@ -137,10 +139,63 @@ function _makeExitNodeIndicatorRow(settings, def) {
     return row;
 }
 
-// The Quick Settings menu's own options. One for now: which copy buttons
-// the device and peer rows carry. A combo rather than three switches,
-// because the three answers exclude each other and none of them is "none".
+// The Quick Settings menu's own options: which copy buttons the device and
+// peer rows carry, and whether the peer dots show connection types. The
+// copy buttons are a combo rather than three switches, because the three
+// answers exclude each other and none of them is "none".
 const COPY_BUTTON_MODES = ["ip", "dns", "both"];
+
+// One colour row per dot state. The fallbacks repeat the schema defaults,
+// for a value edited by hand into something that is not a colour.
+function _pathColorRows() {
+    return [
+        { colorKey: "peer-color-direct", fallback: "#66d68a",
+            title: _("Direct connection") },
+        { colorKey: "peer-color-relay", fallback: "#e6b800",
+            title: _("Relayed connection"),
+            subtitle: _("Through Tailscale's DERP servers or a peer relay.") },
+        { colorKey: "peer-color-idle", fallback: "#62a0ea",
+            title: _("Online, idle"),
+            subtitle: _("No recent traffic, so no connection to show.") },
+        { colorKey: "peer-color-offline", fallback: "#888888",
+            title: _("Offline") },
+    ];
+}
+
+// The switch and its four colours in one expander: the colours mean
+// nothing with the switch off, and folding them away with it keeps the
+// group as short as it was for everyone who leaves the feature alone.
+function _makeConnectionStatusRow(settings) {
+    const row = new Adw.ExpanderRow({
+        title: _("Show connection types"),
+        subtitle: _(
+            "Colour each peer's dot by how traffic reaches it: direct, " +
+                "relayed or idle. Hover a dot for details.",
+        ),
+        show_enable_switch: true,
+    });
+    settings.bind(
+        "peer-connection-status",
+        row,
+        "enable-expansion",
+        Gio.SettingsBindFlags.DEFAULT,
+    );
+    row.add_suffix(resetButton(settings, "peer-connection-status"));
+
+    for (const def of _pathColorRows()) {
+        const colorRow = new Adw.ActionRow({
+            title: def.title,
+            subtitle: def.subtitle ?? "",
+        });
+        colorRow.add_suffix(_makeIndicatorColorButton(settings, {
+            ...def,
+            tooltip: _("Dot colour"),
+        }));
+        colorRow.add_suffix(resetButton(settings, def.colorKey));
+        row.add_row(colorRow);
+    }
+    return row;
+}
 
 function _makeMenuGroup(settings) {
     const group = new Adw.PreferencesGroup({
@@ -172,6 +227,7 @@ function _makeMenuGroup(settings) {
     sync();
     row.add_suffix(resetButton(settings, "copy-buttons"));
     group.add(row);
+    group.add(_makeConnectionStatusRow(settings));
     return group;
 }
 
@@ -250,7 +306,10 @@ export function makeGeneralPage(settings) {
 
     const pollRow = new Adw.SpinRow({
         title: _("Poll interval"),
-        subtitle: _("How often to check when the daemon cannot push its updates, in seconds (1 to 60)."),
+        subtitle: _(
+            "How often to check when the daemon cannot push its updates, " +
+                "and while the menu shows connection types, in seconds (1 to 60).",
+        ),
         adjustment: new Gtk.Adjustment({
             lower: 1,
             upper: 60,

@@ -32,7 +32,11 @@
                 not answering on /var/run/tailscale/tailscaled.sock). While
                 the subscription is live the daemon pushes every change
                 itself and the extension only checks back once a minute,
-                or at this interval if that is longer.</description>
+                or at this interval if that is longer. The one exception is
+                peer-connection-status: while the menu is open and shows
+                connection types, they are re-read at this interval, since
+                the daemon does not push a connection going direct or
+                through a relay.</description>
         </key>
 
         <key name="copy-buttons"
@@ -45,6 +49,54 @@
                 button each. The Magic DNS name is only offered while Magic
                 DNS is on; a row set to "dns" then offers the IP
                 instead.</description>
+        </key>
+
+        <key name="peer-connection-status" type="b">
+            <default>false</default>
+            <summary>Show connection types on the peer dots</summary>
+            <description>If true, the dot beside each peer and exit node
+                says how traffic to it travels: direct, through a relay
+                (Tailscale's DERP servers or a peer relay), or idle when
+                nothing has been sent to it recently, so no connection is
+                set up to report on. Hovering the dot says which, with the
+                DERP region. The answer is the daemon's own; nothing is
+                sent to the peers to find out. While the menu is open the
+                status is re-read at the poll interval. If false, the dot
+                only says online or offline.</description>
+        </key>
+
+        <key name="peer-color-direct" type="s">
+            <default>'#66d68a'</default>
+            <summary>Dot colour: direct connection</summary>
+            <description>Six-digit hex colour, e.g. "#66d68a", used with
+                peer-connection-status on. Anything that is not a #rrggbb
+                literal is ignored and the default is used.</description>
+        </key>
+
+        <key name="peer-color-relay" type="s">
+            <default>'#e6b800'</default>
+            <summary>Dot colour: relayed connection</summary>
+            <description>Six-digit hex colour, e.g. "#e6b800", used with
+                peer-connection-status on, for a DERP server or a peer
+                relay alike. Anything that is not a #rrggbb literal is
+                ignored and the default is used.</description>
+        </key>
+
+        <key name="peer-color-idle" type="s">
+            <default>'#62a0ea'</default>
+            <summary>Dot colour: online, idle</summary>
+            <description>Six-digit hex colour, e.g. "#62a0ea", used with
+                peer-connection-status on, for a peer that is online but
+                has had no traffic recently. Anything that is not a
+                #rrggbb literal is ignored and the default is used.</description>
+        </key>
+
+        <key name="peer-color-offline" type="s">
+            <default>'#888888'</default>
+            <summary>Dot colour: offline</summary>
+            <description>Six-digit hex colour, e.g. "#888888", used with
+                peer-connection-status on. Anything that is not a #rrggbb
+                literal is ignored and the default is used.</description>
         </key>
 
         <key name="show-indicator" type="b">

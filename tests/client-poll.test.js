@@ -315,6 +315,42 @@ suite('refresh: the LocalAPI comes first', () => {
     });
 });
 
+suite('connection paths', () => {
+    const withPeer = JSON.stringify({
+        ...JSON.parse(STATUS),
+        Peer: {
+            a: {
+                ID: 'a', HostName: 'paris', DNSName: 'paris.tail1234.ts.net.',
+                TailscaleIPs: ['100.64.0.2'], Online: true, Active: true,
+                Relay: 'par', CurAddr: '',
+            },
+        },
+    });
+    const pathClient = () => {
+        const fake = fakeClient();
+        const run = fake.client._run;
+        fake.client._run = (args) => args.join(' ') === 'status --json'
+            ? { ok: true, code: 0, stdout: withPeer, stderr: '' }
+            : run(args);
+        return fake;
+    };
+
+    test('off by default: the snapshot is what it always was', () => {
+        const { client } = pathClient();
+        const snap = settle(client.refresh());
+        assertEq(snap.peers[0].path, null);
+        client.destroy();
+    });
+
+    test('on, every peer says how it is reached', () => {
+        const { client } = pathClient();
+        client.setTrackPaths(true);
+        const snap = settle(client.refresh());
+        assertDeepEq(snap.peers[0].path, { kind: 'derp', region: 'par' });
+        client.destroy();
+    });
+});
+
 suite('timer cadence', () => {
     test('the user\'s interval while nothing else says when to look', () => {
         const { client } = fakeClient();
@@ -337,6 +373,23 @@ suite('timer cadence', () => {
         client._watch = { live: false, stop: () => {} };
         assertEq(client._timerSeconds(), 3);
         client.destroy();
+    });
+
+    test('the user\'s interval while the menu shows connection types', () => {
+        const { client } = fakeClient();
+        client._watch = { live: true, stop: () => {} };
+        client.setFastPoll(true);
+        assertEq(client._timerSeconds(), 3);
+        client.setFastPoll(false);
+        assertEq(client._timerSeconds(), 60);
+        client.destroy();
+    });
+
+    test('a timer stopped by teardown is not put back', () => {
+        const { client } = fakeClient();
+        client.destroy();
+        client.setFastPoll(true);
+        assertEq(client._timerId, 0);
     });
 });
 
