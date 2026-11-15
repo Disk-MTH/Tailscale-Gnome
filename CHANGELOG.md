@@ -8,11 +8,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - Devices are named by their Tailscale machine name, so a machine renamed in
   the admin console shows its new name, and **Copy DNS** copies its Magic DNS
-  name instead of an OS hostname that no longer resolves.
-
-### Added
-- **Show OS hostnames**, in preferences → General, names devices by the
-  hostname they report instead.
+  name instead of an OS hostname that no longer resolves. A device without a
+  Magic DNS name gets no DNS button. Found and fixed by @GughanR (#14).
+- A peer with no name is titled with its IP instead of a blank row, and its
+  subtitle no longer repeats the IP or ends in a dangling `•` when its OS is
+  unknown.
 
 ## [1.2.2] - 2026-11-03
 

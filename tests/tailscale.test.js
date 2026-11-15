@@ -83,23 +83,15 @@ suite('node names', () => {
         assertEq(machineName(null), '');
     });
 
-    test('displayName shows the machine name by default', () => {
-        assertEq(displayName(renamed, false), 'paris');
-    });
-
-    test('displayName shows the hostname as reported when asked', () => {
-        assertEq(displayName(renamed, true), 'Old-Laptop');
-    });
-
-    test('displayName falls back to the machine name with no hostname', () => {
-        assertEq(displayName({ hostname: '', dnsName: 'paris.tail.ts.net' }, true), 'paris');
+    test('displayName is the machine name, not the OS hostname', () => {
+        assertEq(displayName(renamed), 'paris');
+        assertEq(displayName(noDns), 'Old-Laptop');
     });
 
     test('displayName falls back to the IP for a node with no name', () => {
         const bare = { hostname: '', dnsName: '', ips: ['100.64.0.9'] };
-        assertEq(displayName(bare, false), '100.64.0.9');
-        assertEq(displayName(bare, true), '100.64.0.9');
-        assertEq(displayName({ hostname: '', dnsName: '' }, false), '');
+        assertEq(displayName(bare), '100.64.0.9');
+        assertEq(displayName({ hostname: '', dnsName: '' }), '');
     });
 
     test('sortByName places a nameless node by its IP, not first', () => {
@@ -107,7 +99,7 @@ suite('node names', () => {
             { hostname: '', dnsName: '', ips: ['100.64.0.9'] },
             { hostname: 'x', dnsName: 'alpha.tail.ts.net', ips: ['100.64.0.1'] },
         ];
-        assertDeepEq(sortByName(nodes, false).map((n) => displayName(n, false)),
+        assertDeepEq(sortByName(nodes).map((n) => displayName(n)),
             ['100.64.0.9', 'alpha']);
     });
 
@@ -116,8 +108,7 @@ suite('node names', () => {
             { hostname: 'mango', dnsName: 'beta.tail.ts.net' },
             { hostname: 'Zebra', dnsName: 'alpha.tail.ts.net' },
         ];
-        assertDeepEq(sortByName(nodes, false).map((n) => n.hostname), ['Zebra', 'mango']);
-        assertDeepEq(sortByName(nodes, true).map((n) => n.hostname), ['mango', 'Zebra']);
+        assertDeepEq(sortByName(nodes).map((n) => n.hostname), ['Zebra', 'mango']);
         // A copy: the snapshot's own order is left alone.
         assertEq(nodes[0].hostname, 'mango');
     });
@@ -137,8 +128,8 @@ suite('buildSnapshot: subnet routes', () => {
         const [route] = buildSnapshot(status('Old-Laptop', 'paris.tail.ts.net.'), {}, [], true, [])
             .advertisedRoutes;
         assertEq(route.cidr, '192.168.1.0/24');
-        assertEq(displayName(route, false), 'paris');
-        assertEq(displayName(route, true), 'Old-Laptop');
+        assertEq(route.hostname, 'Old-Laptop');
+        assertEq(displayName(route), 'paris');
     });
 
     test('renaming the peer of a route is a change worth a render', () => {

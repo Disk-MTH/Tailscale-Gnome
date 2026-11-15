@@ -143,19 +143,12 @@ suite('computeEvents: exit node, pinned mode', () => {
         assertEq(events[0].data.name, 'paris');
     });
 
-    test('carries the hostname too, for show-os-hostnames', () => {
-        const t = seed(pinned({ currentExitNode: node({ hostname: 'Old-Laptop' }) }));
-        const down = node({ hostname: 'Old-Laptop', online: false });
+    test('names a node with no name by its IP, as the menu does', () => {
+        const bare = { hostname: '', dnsName: '', ips: ['100.64.0.9'] };
+        const t = seed(pinned({ currentExitNode: node(bare) }));
+        const down = node({ ...bare, online: false });
         const { events } = computeEvents(t, pinned({ currentExitNode: down }));
-        assertEq(events[0].data.hostname, 'Old-Laptop');
-        assertEq(events[0].data.dnsName, 'paris.tail.ts.net');
-    });
-
-    test('carries the IPs, for a node with no name', () => {
-        const t = seed(pinned({ currentExitNode: node({ ips: ['100.64.0.9'] }) }));
-        const down = node({ ips: ['100.64.0.9'], online: false });
-        const { events } = computeEvents(t, pinned({ currentExitNode: down }));
-        assertDeepEq(events[0].data.ips, ['100.64.0.9']);
+        assertEq(events[0].data.name, '100.64.0.9');
     });
 
     test('falls back to the hostname when dnsName is empty', () => {
