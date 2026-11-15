@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tailscale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 09:47+0000\n"
+"POT-Creation-Date: 2026-11-15 10:55+0100\n"
 "PO-Revision-Date: 2026-07-28 19:39+0200\n"
 "Last-Translator: Disk-MTH <diskmth@outlook.fr>\n"
 "Language-Team: French\n"
@@ -23,19 +23,19 @@ msgstr "Connexion requise"
 msgid "Tailscale is not ready yet"
 msgstr "Tailscale n'est pas encore prêt"
 
-#: extension.js:382 lib/menu/sections.js:192
+#: extension.js:382 lib/menu/sections.js:191
 msgid "Clearing exit node"
 msgstr "Effacement du nœud de sortie"
 
-#: extension.js:383 lib/menu/sections.js:193
+#: extension.js:383 lib/menu/sections.js:192
 msgid "Exit node cleared"
 msgstr "Nœud de sortie effacé"
 
-#: extension.js:389 lib/menu/sections.js:204
+#: extension.js:389 lib/menu/sections.js:203
 msgid "Selecting an exit node"
 msgstr "Sélection d'un nœud de sortie"
 
-#: extension.js:390 lib/menu/sections.js:205
+#: extension.js:390 lib/menu/sections.js:204
 msgid "Exit node: auto"
 msgstr "Nœud de sortie : auto"
 
@@ -52,7 +52,7 @@ msgstr "Tailscale n'est pas installé"
 msgid "Tailscale is not running"
 msgstr "Tailscale n'est pas démarré"
 
-#: lib/menu.js:115 lib/menu/sections.js:462
+#: lib/menu.js:115 lib/menu/sections.js:461
 msgid "Logged out"
 msgstr "Déconnecté"
 
@@ -88,11 +88,11 @@ msgstr "Chargement…"
 msgid "Tailnet"
 msgstr "Tailnet"
 
-#: lib/menu.js:304 lib/menu/sections.js:283
+#: lib/menu.js:304 lib/menu/sections.js:282
 msgid "Peers"
 msgstr "Pairs"
 
-#: lib/menu.js:311 lib/notify.js:30 lib/menu/sections.js:159
+#: lib/menu.js:311 lib/notify.js:30 lib/menu/sections.js:158
 #: prefs/notifications.js:45
 msgid "Exit node"
 msgstr "Nœud de sortie"
@@ -626,8 +626,8 @@ msgid ""
 "HTTPS certificates are off for this tailnet; Tailscale will offer to turn "
 "them on."
 msgstr ""
-"Les certificats HTTPS sont désactivés sur ce tailnet ; Tailscale proposera de"
-" les activer."
+"Les certificats HTTPS sont désactivés sur ce tailnet ; Tailscale proposera "
+"de les activer."
 
 #: lib/menu/publish-dialog.js:540
 msgid "Copy address"
@@ -641,180 +641,183 @@ msgstr "Supprimer le funnel"
 msgid "Stop sharing"
 msgstr "Arrêter le partage"
 
-#: lib/menu/rows.js:230
+#: lib/menu/rows.js:231
 msgid "Copy IP"
 msgstr "Copier l'IP"
 
-#: lib/menu/rows.js:230
+#: lib/menu/rows.js:231
 msgid "IP"
 msgstr "IP"
 
-#: lib/menu/rows.js:233
+#: lib/menu/rows.js:234
 msgid "Copy DNS"
 msgstr "Copier le DNS"
 
-#: lib/menu/rows.js:233
+#: lib/menu/rows.js:234
 msgid "DNS"
 msgstr "DNS"
 
-#: lib/menu/rows.js:327
+#: lib/menu/rows.js:328
 msgid "Accept routes"
 msgstr "Accepter les routes"
 
-#: lib/menu/sections.js:43 prefs/general.js:153
-msgid "Direct connection"
-msgstr "Connexion directe"
+#: lib/menu/sections.js:48
+msgid "Direct"
+msgstr "Direct"
 
-#: lib/menu/sections.js:47
 #, javascript-format
-msgid "Relayed by Tailscale (DERP %s)"
-msgstr "Connexion relayée par Tailscale (DERP %s)"
+#: lib/menu/sections.js:50
+msgid "DERP relay (%s)"
+msgstr "Relais DERP (%s)"
 
-#: lib/menu/sections.js:51
-msgid "Relayed by a peer relay"
-msgstr "Connexion relayée par un pair relais"
+#: lib/menu/sections.js:52 prefs/general.js:159
+msgid "Peer relay"
+msgstr "Pair relais"
 
-#: lib/menu/sections.js:55
-msgid "Online, idle: no recent traffic, so no connection to show"
-msgstr ""
-"En ligne, inactif : pas de trafic récent, donc pas de connexion à afficher"
+#: lib/menu/sections.js:54
+msgid "Idle"
+msgstr "Inactif"
 
-#: lib/menu/sections.js:59 prefs/general.js:161
+#: lib/menu/sections.js:56
+msgid "No traffic yet"
+msgstr "Pas encore de trafic"
+
+#: lib/menu/sections.js:58 prefs/general.js:162
 msgid "Offline"
 msgstr "Hors ligne"
 
-#: lib/menu/sections.js:83
+#: lib/menu/sections.js:82
 msgid "Personal"
 msgstr "Personnel"
 
-#: lib/menu/sections.js:84
+#: lib/menu/sections.js:83
 msgid "Guest"
 msgstr "Invité"
 
-#: lib/menu/sections.js:85
+#: lib/menu/sections.js:84
 msgid "Organisation"
 msgstr "Organisation"
 
-#: lib/menu/sections.js:126
+#: lib/menu/sections.js:125
 msgid "1 route"
 msgstr "1 route"
 
 #, javascript-format
-#: lib/menu/sections.js:127
+#: lib/menu/sections.js:126
 msgid "%d routes"
 msgstr "%d routes"
 
 #, javascript-format
-#: lib/menu/sections.js:137
+#: lib/menu/sections.js:136
 msgid "via %s"
 msgstr "via %s"
 
 #, javascript-format
-#: lib/menu/sections.js:172
+#: lib/menu/sections.js:171
 msgid "Auto (%s)"
 msgstr "Auto (%s)"
 
-#: lib/menu/sections.js:173
+#: lib/menu/sections.js:172
 msgid "Auto (None)"
 msgstr "Auto (aucun)"
 
 #, javascript-format
-#: lib/menu/sections.js:176
+#: lib/menu/sections.js:175
 msgid "Offline (%s)"
 msgstr "Hors ligne (%s)"
 
 #, javascript-format
-#: lib/menu/sections.js:178
+#: lib/menu/sections.js:177
 msgid "Disabled (%s)"
 msgstr "Désactivé (%s)"
 
-#: lib/menu/sections.js:181 lib/menu/sections.js:188
+#: lib/menu/sections.js:180 lib/menu/sections.js:187
 msgid "None"
 msgstr "Aucun"
 
-#: lib/menu/sections.js:200
+#: lib/menu/sections.js:199
 msgid "Auto"
 msgstr "Auto"
 
-#: lib/menu/sections.js:224
+#: lib/menu/sections.js:223
 msgid "No approved exit nodes"
 msgstr "Aucun nœud de sortie approuvé"
 
 #, javascript-format
-#: lib/menu/sections.js:247
+#: lib/menu/sections.js:246
 msgid "Routing through %s"
 msgstr "Routage via %s"
 
 #, javascript-format
-#: lib/menu/sections.js:248
+#: lib/menu/sections.js:247
 msgid "Exit node: %s"
 msgstr "Nœud de sortie : %s"
 
-#: lib/menu/sections.js:263
+#: lib/menu/sections.js:262
 msgid "Allow LAN access"
 msgstr "Autoriser l'accès au réseau local"
 
-#: lib/menu/sections.js:266
+#: lib/menu/sections.js:265
 msgid "Enabling LAN access"
 msgstr "Activation de l'accès au réseau local"
 
-#: lib/menu/sections.js:266
+#: lib/menu/sections.js:265
 msgid "Disabling LAN access"
 msgstr "Désactivation de l'accès au réseau local"
 
-#: lib/menu/sections.js:267
+#: lib/menu/sections.js:266
 msgid "LAN access: on"
 msgstr "Accès au réseau local : activé"
 
-#: lib/menu/sections.js:267
+#: lib/menu/sections.js:266
 msgid "LAN access: off"
 msgstr "Accès au réseau local : désactivé"
 
-#: lib/menu/sections.js:288
+#: lib/menu/sections.js:287
 msgid "No peers"
 msgstr "Aucun pair"
 
-#: lib/menu/sections.js:339
+#: lib/menu/sections.js:338
 msgid "No tailnet"
 msgstr "Aucun tailnet"
 
 #, javascript-format
-#: lib/menu/sections.js:341
+#: lib/menu/sections.js:340
 msgid "Tailnet: %s"
 msgstr "Tailnet : %s"
 
 #, javascript-format
-#: lib/menu/sections.js:404
+#: lib/menu/sections.js:403
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
 #, javascript-format
-#: lib/menu/sections.js:410
+#: lib/menu/sections.js:409
 msgid "Switching to %s"
 msgstr "Bascule vers %s"
 
 #, javascript-format
-#: lib/menu/sections.js:411
+#: lib/menu/sections.js:410
 msgid "Active tailnet: %s"
 msgstr "Tailnet actif : %s"
 
-#: lib/menu/sections.js:436
+#: lib/menu/sections.js:435
 msgid "Login"
 msgstr "Connexion"
 
-#: lib/menu/sections.js:444
+#: lib/menu/sections.js:443
 msgid "Opening Tailscale login"
 msgstr "Ouverture de la connexion Tailscale"
 
-#: lib/menu/sections.js:445
+#: lib/menu/sections.js:444
 msgid "Login flow started"
 msgstr "Procédure de connexion démarrée"
 
-#: lib/menu/sections.js:453
+#: lib/menu/sections.js:452
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: lib/menu/sections.js:461
+#: lib/menu/sections.js:460
 msgid "Logging out"
 msgstr "Déconnexion en cours"
 
@@ -887,8 +890,8 @@ msgid ""
 "picks it up on its own, with no reload."
 msgstr ""
 "La commande « tailscale » est introuvable dans le PATH : le menu n'a rien à "
-"piloter. Installez-la avec le gestionnaire de paquets de votre distribution ;"
-" l'extension la détecte d'elle-même, sans rechargement."
+"piloter. Installez-la avec le gestionnaire de paquets de votre "
+"distribution ; l'extension la détecte d'elle-même, sans rechargement."
 
 #: prefs/common.js:97
 msgid ""
@@ -908,47 +911,51 @@ msgstr "Suit la couleur du panneau. Choisissez-en une pour la remplacer."
 msgid "Icon colour"
 msgstr "Couleur de l'icône"
 
-#: prefs/general.js:155
-msgid "Relayed connection"
-msgstr "Connexion relayée"
+#: prefs/general.js:153
+msgid "Direct connection"
+msgstr "Connexion directe"
+
+#: prefs/general.js:154
+msgid "Also the ring of an idle peer."
+msgstr "Aussi l'anneau d'un pair inactif."
 
 #: prefs/general.js:156
-msgid "Through Tailscale's DERP servers or a peer relay."
-msgstr "Par les serveurs DERP de Tailscale ou un pair relais."
+msgid "DERP relay"
+msgstr "Relais DERP"
 
-#: prefs/general.js:158
-msgid "Online, idle"
-msgstr "En ligne, inactif"
+#: prefs/general.js:157
+msgid "Through Tailscale's relay servers."
+msgstr "Par les serveurs relais de Tailscale."
 
-#: prefs/general.js:159
-msgid "No recent traffic, so no connection to show."
-msgstr "Pas de trafic récent, donc pas de connexion à afficher."
+#: prefs/general.js:160
+msgid "Through a relay node of your tailnet."
+msgstr "Par un nœud relais de votre tailnet."
 
-#: prefs/general.js:170
+#: prefs/general.js:171
 msgid "Show connection types"
 msgstr "Afficher le type de connexion"
 
-#: prefs/general.js:172
+#: prefs/general.js:173
 msgid ""
-"Colour each peer's dot by how traffic reaches it: direct, relayed or idle. "
-"Hover a dot for details."
+"Filled while a connection is up, coloured by how it travels; a ring while "
+"the peer is idle. Hover a dot for details."
 msgstr ""
-"Colore le point de chaque pair selon le chemin du trafic : direct, relayé "
-"ou inactif. Survolez un point pour le détail."
+"Plein quand une connexion est établie, coloré selon son chemin ; un anneau "
+"quand le pair est inactif. Survolez un point pour les détails."
 
-#: prefs/general.js:192
+#: prefs/general.js:193
 msgid "Dot colour"
 msgstr "Couleur du point"
 
-#: prefs/general.js:202
+#: prefs/general.js:203
 msgid "Quick Settings menu"
 msgstr "Menu des réglages rapides"
 
-#: prefs/general.js:206
+#: prefs/general.js:207
 msgid "Copy buttons"
 msgstr "Boutons de copie"
 
-#: prefs/general.js:208
+#: prefs/general.js:209
 msgid ""
 "What the buttons on the device and peer rows copy. The Magic DNS name needs "
 "Magic DNS on; without it the IP is offered."
@@ -956,51 +963,51 @@ msgstr ""
 "Ce que copient les boutons des lignes de l'appareil et des pairs. Le nom "
 "Magic DNS nécessite Magic DNS ; sans lui, l'IP est proposée."
 
-#: prefs/general.js:212
+#: prefs/general.js:213
 msgid "IP address"
 msgstr "Adresse IP"
 
-#: prefs/general.js:213
+#: prefs/general.js:214
 msgid "Magic DNS name"
 msgstr "Nom Magic DNS"
 
-#: prefs/general.js:214
+#: prefs/general.js:215
 msgid "Both"
 msgstr "Les deux"
 
-#: prefs/general.js:236
+#: prefs/general.js:237
 msgid "General"
 msgstr "Général"
 
-#: prefs/general.js:253
+#: prefs/general.js:254
 msgid "Indicators"
 msgstr "Indicateurs"
 
-#: prefs/general.js:254
+#: prefs/general.js:255
 msgid "Icons shown in the top bar, next to Wi-Fi."
 msgstr "Icônes affichées dans la barre supérieure, à côté du Wi-Fi."
 
-#: prefs/general.js:259
+#: prefs/general.js:260
 msgid "Show Tailscale panel indicator"
 msgstr "Afficher l'indicateur Tailscale dans le panneau"
 
-#: prefs/general.js:260
+#: prefs/general.js:261
 msgid "Small Tailscale icon shown while connected."
 msgstr "Petite icône Tailscale affichée lorsque connecté."
 
-#: prefs/general.js:276
+#: prefs/general.js:277
 msgid "Show exit node panel indicator: connected"
 msgstr "Afficher l'indicateur de nœud de sortie : connecté"
 
-#: prefs/general.js:278
+#: prefs/general.js:279
 msgid "Icon shown while the exit node is routing your traffic."
 msgstr "Icône affichée lorsque le nœud de sortie achemine votre trafic."
 
-#: prefs/general.js:287
+#: prefs/general.js:288
 msgid "Show exit node panel indicator: disconnected"
 msgstr "Afficher l'indicateur de nœud de sortie : déconnecté"
 
-#: prefs/general.js:289
+#: prefs/general.js:290
 msgid ""
 "Icon shown when the exit node cannot route your traffic, leaving this device "
 "without internet."
@@ -1008,37 +1015,36 @@ msgstr ""
 "Icône affichée lorsque le nœud de sortie ne peut pas acheminer votre trafic, "
 "ce qui laisse cet appareil sans accès à Internet."
 
-#: prefs/general.js:303
+#: prefs/general.js:304
 msgid "Advanced"
 msgstr "Avancé"
 
-#: prefs/general.js:308
+#: prefs/general.js:309
 msgid "Poll interval"
 msgstr "Intervalle d'interrogation"
 
-#: prefs/general.js:310
+#: prefs/general.js:311
 msgid ""
 "How often to check when the daemon cannot push its updates, and while the "
 "menu shows connection types, in seconds (1 to 60)."
 msgstr ""
 "Fréquence de vérification quand le service ne peut pas envoyer ses mises à "
-"jour, et tant que le menu affiche le type de connexion, en secondes (1 à "
-"60)."
+"jour, et tant que le menu affiche le type de connexion, en secondes (1 à 60)."
 
-#: prefs/general.js:331
+#: prefs/general.js:332
 msgid "Reset all settings"
 msgstr "Réinitialiser tous les paramètres"
 
-#: prefs/general.js:332
+#: prefs/general.js:333
 msgid "Restore every setting to its default, on all pages."
 msgstr ""
 "Restaure chaque paramètre à sa valeur par défaut, sur toutes les pages."
 
-#: prefs/general.js:335
+#: prefs/general.js:336
 msgid "Reset all"
 msgstr "Tout réinitialiser"
 
-#: prefs/general.js:381
+#: prefs/general.js:382
 msgid "All settings reset to defaults"
 msgstr "Tous les paramètres ont été réinitialisés"
 
@@ -1081,15 +1087,15 @@ msgstr "Les certificats HTTPS sont désactivés sur ce tailnet."
 #: prefs/help.js:65
 msgid ""
 "Serve shares a local service with the rest of your tailnet. Over HTTP or TCP "
-"it works on any tailnet; over HTTPS, its default, it needs HTTPS certificates"
-" enabled in the tailnet's DNS settings. When they are off, Tailscale offers a"
-" link to turn them on the first time you serve over HTTPS."
+"it works on any tailnet; over HTTPS, its default, it needs HTTPS "
+"certificates enabled in the tailnet's DNS settings. When they are off, "
+"Tailscale offers a link to turn them on the first time you serve over HTTPS."
 msgstr ""
 "Serve partage un service local avec le reste de votre tailnet. En HTTP ou en "
 "TCP, il fonctionne sur n'importe quel tailnet ; en HTTPS, son mode par "
 "défaut, il nécessite les certificats HTTPS activés dans les réglages DNS du "
-"tailnet. S'ils sont désactivés, Tailscale propose un lien pour les activer la"
-" première fois que vous servez en HTTPS."
+"tailnet. S'ils sont désactivés, Tailscale propose un lien pour les activer "
+"la première fois que vous servez en HTTPS."
 
 #, javascript-format
 #: prefs/help.js:91
@@ -1286,9 +1292,9 @@ msgstr "Présentation"
 
 #: prefs/notifications.js:277
 msgid ""
-"Reports post as native GNOME notifications, stacking into a browsable history"
-" under a single Tailscale entry. How long a banner stays on screen is GNOME's"
-" own setting, not this extension's."
+"Reports post as native GNOME notifications, stacking into a browsable "
+"history under a single Tailscale entry. How long a banner stays on screen is "
+"GNOME's own setting, not this extension's."
 msgstr ""
 "Les rapports sont publiés comme notifications GNOME natives et s'empilent en "
 "un historique consultable sous une seule entrée Tailscale. La durée "
@@ -1438,13 +1444,13 @@ msgstr "Fermer le gestionnaire de fichiers ?"
 
 #: prefs/taildrop.js:340
 msgid ""
-"Nautilus loads its extensions when it starts, so it has to be closed for this"
-" to take effect. Any open Nautilus window will be closed, and the next one "
-"you open picks up the change."
+"Nautilus loads its extensions when it starts, so it has to be closed for "
+"this to take effect. Any open Nautilus window will be closed, and the next "
+"one you open picks up the change."
 msgstr ""
-"Nautilus charge ses extensions à son démarrage : il doit donc être fermé pour"
-" que ce réglage prenne effet. Toute fenêtre Nautilus ouverte sera fermée, et "
-"la prochaine que vous ouvrirez tiendra compte du changement."
+"Nautilus charge ses extensions à son démarrage : il doit donc être fermé "
+"pour que ce réglage prenne effet. Toute fenêtre Nautilus ouverte sera "
+"fermée, et la prochaine que vous ouvrirez tiendra compte du changement."
 
 #: prefs/taildrop.js:347
 msgid "Quit Nautilus"

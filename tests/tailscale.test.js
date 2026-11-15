@@ -157,9 +157,18 @@ suite('connection paths', () => {
             { kind: 'peer-relay', region: '' });
     });
 
+    const WROTE = '2026-11-15T12:00:00.123456789+01:00';
+
     test('a peer with no recent traffic is idle, whatever path it last had', () => {
-        assertEq(connectionPath(peer({ Active: false, CurAddr: '203.0.113.7:41641' })).kind,
-            'idle');
+        assertEq(connectionPath(peer({
+            Active: false, LastWrite: WROTE, CurAddr: '203.0.113.7:41641',
+        })).kind, 'idle');
+    });
+
+    test('a peer nothing was ever sent to is unused, not idle', () => {
+        assertEq(connectionPath(peer({ Active: false, LastWrite: '0001-01-01T00:00:00Z' })).kind,
+            'unused');
+        assertEq(connectionPath(peer({ Active: false, LastWrite: undefined })).kind, 'unused');
     });
 
     test('active with no path at all is idle too, as the CLI prints nothing', () => {

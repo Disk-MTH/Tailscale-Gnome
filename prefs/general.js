@@ -150,13 +150,14 @@ const COPY_BUTTON_MODES = ["ip", "dns", "both"];
 function _pathColorRows() {
     return [
         { colorKey: "peer-color-direct", fallback: "#66d68a",
-            title: _("Direct connection") },
-        { colorKey: "peer-color-relay", fallback: "#e6b800",
-            title: _("Relayed connection"),
-            subtitle: _("Through Tailscale's DERP servers or a peer relay.") },
-        { colorKey: "peer-color-idle", fallback: "#62a0ea",
-            title: _("Online, idle"),
-            subtitle: _("No recent traffic, so no connection to show.") },
+            title: _("Direct connection"),
+            subtitle: _("Also the ring of an idle peer.") },
+        { colorKey: "peer-color-derp", fallback: "#e6b800",
+            title: _("DERP relay"),
+            subtitle: _("Through Tailscale's relay servers.") },
+        { colorKey: "peer-color-peer-relay", fallback: "#62a0ea",
+            title: _("Peer relay"),
+            subtitle: _("Through a relay node of your tailnet.") },
         { colorKey: "peer-color-offline", fallback: "#888888",
             title: _("Offline") },
     ];
@@ -169,8 +170,8 @@ function _makeConnectionStatusRow(settings) {
     const row = new Adw.ExpanderRow({
         title: _("Show connection types"),
         subtitle: _(
-            "Colour each peer's dot by how traffic reaches it: direct, " +
-                "relayed or idle. Hover a dot for details.",
+            "Filled while a connection is up, coloured by how it travels; " +
+                "a ring while the peer is idle. Hover a dot for details.",
         ),
         show_enable_switch: true,
     });

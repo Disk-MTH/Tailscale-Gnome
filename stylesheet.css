@@ -41,6 +41,16 @@
     margin-left: 0;
 }
 
+/* Online with no connection up: a ring of the inline border colour. St
+   adds the border to the size, so 4 + 2 * 2 keeps it as wide as a dot. */
+.tailscale-peer-dot.hollow {
+    width: 4px;
+    height: 4px;
+    border-width: 2px;
+    border-style: solid;
+    background-color: transparent;
+}
+
 /* Sub-menu node items: tag the active exit node. */
 .tailscale-exit-node-active StLabel {
     font-weight: bold;

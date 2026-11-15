@@ -52,13 +52,14 @@
         </key>
 
         <key name="peer-connection-status" type="b">
-            <default>false</default>
+            <default>true</default>
             <summary>Show connection types on the peer dots</summary>
             <description>If true, the dot beside each peer and exit node
-                says how traffic to it travels: direct, through a relay
-                (Tailscale's DERP servers or a peer relay), or idle when
-                nothing has been sent to it recently, so no connection is
-                set up to report on. Hovering the dot says which, with the
+                says how traffic to it travels. Filled when a connection is
+                up: direct, or through a relay (Tailscale's DERP servers or
+                a peer relay). A ring when the peer is online but idle,
+                nothing having been sent to it recently, so no connection
+                is up to report on. Hovering the dot says which, with the
                 DERP region. The answer is the daemon's own; nothing is
                 sent to the peers to find out. While the menu is open the
                 status is re-read at the poll interval. If false, the dot
@@ -69,26 +70,28 @@
             <default>'#66d68a'</default>
             <summary>Dot colour: direct connection</summary>
             <description>Six-digit hex colour, e.g. "#66d68a", used with
-                peer-connection-status on. Anything that is not a #rrggbb
+                peer-connection-status on, for a direct connection, and for
+                the ring of a peer that is online but idle. Anything that
+                is not a #rrggbb literal is ignored and the default is
+                used.</description>
+        </key>
+
+        <key name="peer-color-derp" type="s">
+            <default>'#e6b800'</default>
+            <summary>Dot colour: DERP relay</summary>
+            <description>Six-digit hex colour, e.g. "#e6b800", used with
+                peer-connection-status on, for a connection relayed by
+                Tailscale's DERP servers. Anything that is not a #rrggbb
                 literal is ignored and the default is used.</description>
         </key>
 
-        <key name="peer-color-relay" type="s">
-            <default>'#e6b800'</default>
-            <summary>Dot colour: relayed connection</summary>
-            <description>Six-digit hex colour, e.g. "#e6b800", used with
-                peer-connection-status on, for a DERP server or a peer
-                relay alike. Anything that is not a #rrggbb literal is
-                ignored and the default is used.</description>
-        </key>
-
-        <key name="peer-color-idle" type="s">
+        <key name="peer-color-peer-relay" type="s">
             <default>'#62a0ea'</default>
-            <summary>Dot colour: online, idle</summary>
+            <summary>Dot colour: peer relay</summary>
             <description>Six-digit hex colour, e.g. "#62a0ea", used with
-                peer-connection-status on, for a peer that is online but
-                has had no traffic recently. Anything that is not a
-                #rrggbb literal is ignored and the default is used.</description>
+                peer-connection-status on, for a connection relayed by a
+                peer relay of the tailnet. Anything that is not a #rrggbb
+                literal is ignored and the default is used.</description>
         </key>
 
         <key name="peer-color-offline" type="s">

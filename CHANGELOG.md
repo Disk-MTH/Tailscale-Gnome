@@ -6,13 +6,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- **Show connection types**, in preferences → General, off by default.
-  Each peer's and exit node's dot then says how traffic to it travels:
-  direct (green), through a relay (amber: Tailscale's DERP servers or a
-  peer relay), idle when nothing has been sent to it lately so no
-  connection is set up yet (blue), or offline (grey). Each colour can be
-  changed. Hovering a dot says which, with the DERP region. The answer is
-  the daemon's own, the one `tailscale status` prints: nothing is sent to
+- **Show connection types**, in preferences → General, on by default.
+  Each peer's and exit node's dot says how traffic to it travels: a filled
+  dot while a connection is up, direct (green), through Tailscale's DERP
+  servers (amber) or through a peer relay (blue); a green ring while the
+  peer is online but idle, nothing having been sent to it lately so no
+  connection is up; grey when offline. Each colour can be changed.
+  Hovering a dot says which in a word or two, with the DERP region. The
+  answer is the daemon's own, the one `tailscale status` prints: nothing is sent to
   the peers to find out. The bus does not carry path changes, so while the
   menu is open and shows them the status is re-read at the poll interval;
   with the menu closed, or the setting off, nothing more is read than
